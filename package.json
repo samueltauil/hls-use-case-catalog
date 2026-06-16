@@ -1,0 +1,9 @@
+{
+  "name": "hls-usecases-catalog",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FY27 HLS Sales Play Catalog — static site (no build step).",
+  "scripts": {
+    "build": "node tools/build-static.mjs"
+  }
+}

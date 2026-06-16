@@ -10,3 +10,9 @@ Thumbs.db
 *.log
 .vscode/
 .idea/
+
+# Azure Developer CLI (local env state)
+.azure/
+
+# Static Web App staged build output
+dist/

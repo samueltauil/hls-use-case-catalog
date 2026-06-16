@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: hls-usecases-catalog
+metadata:
+  template: hls-usecases-catalog@1.0.0
+
+services:
+  web:
+    project: .
+    language: js
+    host: staticwebapp
+    dist: dist
