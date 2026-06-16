@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Denial Prediction & Prevention — Level 100 Demo</title>
+<script>
+  (() => {
+    const param = new URLSearchParams(window.location.search).get("clawpilotTheme");
+    const theme = param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+</script>
+<style>
+:root {
+  color-scheme:light;
+  --cp-bg:#f7f4ef;--cp-bg-elevated:#fcfbf8;--cp-surface:#ffffff;--cp-surface-soft:#f5f5f5;
+  --cp-border:#dedede;--cp-border-strong:#919191;--cp-text:#242424;--cp-text-muted:#5c5c5c;
+  --cp-text-soft:#6f6f6f;--cp-accent:#b11f4b;--cp-accent-hover:#9a1a41;
+  --cp-accent-soft:rgba(177,31,75,0.08);--cp-accent-fg:#ffffff;--cp-success:#16a34a;
+  --cp-danger:#dc2626;--cp-warning:#f59e0b;--cp-link:#0078d4;
+  --cp-shadow:0 18px 48px rgba(0,0,0,0.12);--cp-overlay:rgba(255,255,255,0.8);
+  --cp-panel:rgba(255,255,255,0.86);--cp-panel-strong:rgba(255,255,255,0.96);
+  --cp-sheen:rgba(255,255,255,0.55);--cp-highlight:rgba(177,31,75,0.12);
+}
+html[data-theme="dark"]{
+  color-scheme:dark;--cp-bg:#3d3b3a;--cp-bg-elevated:#343231;--cp-surface:#292929;
+  --cp-surface-soft:#2e2e2e;--cp-border:#474747;--cp-border-strong:#5f5f5f;--cp-text:#dedede;
+  --cp-text-muted:#919191;--cp-text-soft:#b0b0b0;--cp-accent:#fd8ea1;--cp-accent-hover:#fb7b91;
+  --cp-accent-soft:rgba(253,142,161,0.14);--cp-accent-fg:#1a1a1a;--cp-success:#4ade80;
+  --cp-danger:#f87171;--cp-warning:#fbbf24;--cp-link:#4da6ff;
+  --cp-shadow:0 18px 48px rgba(0,0,0,0.32);--cp-overlay:rgba(41,41,41,0.88);
+  --cp-panel:rgba(41,41,41,0.72);--cp-panel-strong:rgba(41,41,41,0.96);
+  --cp-sheen:rgba(255,255,255,0.04);--cp-highlight:rgba(253,142,161,0.12);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:"Segoe UI",Aptos,Calibri,-apple-system,BlinkMacSystemFont,sans-serif;background:#0a0614;color:#fff;overflow:hidden;user-select:none}
+.deck{position:fixed;inset:0;overflow:hidden}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:50px 72px;opacity:0;transform:translateX(50px);transition:opacity .42s ease,transform .42s ease;pointer-events:none}
+.slide.active{opacity:1;transform:translateX(0);pointer-events:all}
+.slide.exit{opacity:0;transform:translateX(-50px)}
+.deck-nav{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:14px;z-index:200}
+.nav-btn{width:38px;height:38px;border-radius:50%;border:1.5px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;backdrop-filter:blur(6px)}
+.nav-btn:hover:not(:disabled){background:rgba(255,255,255,.18)}
+.nav-btn:disabled{opacity:.25;cursor:default}
+.dots{display:flex;gap:7px;align-items:center}
+.dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.25);cursor:pointer;transition:background .3s,transform .3s}
+.dot.active{background:#a855f7;transform:scale(1.35)}
+.slide-ctr{position:fixed;top:18px;right:22px;font-size:11px;color:rgba(255,255,255,.3);z-index:200}
+.key-hint{position:fixed;bottom:24px;right:22px;font-size:10px;color:rgba(255,255,255,.18);display:flex;gap:5px;align-items:center}
+.k{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:3px;padding:1px 5px;font-family:Consolas,monospace}
+.section-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#a855f7;font-weight:700;margin-bottom:10px}
+.slide-title{font-size:clamp(22px,3vw,36px);font-weight:700;color:#fff;line-height:1.12;margin-bottom:8px}
+.slide-sub{font-size:14px;color:rgba(255,255,255,.4);margin-bottom:24px;line-height:1.6}
+.st1{transition-delay:.1s!important}.st2{transition-delay:.22s!important}.st3{transition-delay:.34s!important}.st4{transition-delay:.46s!important}.st5{transition-delay:.58s!important}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(1.8)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+@keyframes scanLine{0%{top:-2px}100%{top:100%}}
+@keyframes rowSlide{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes scoreCount{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+@keyframes flash{0%,100%{background:rgba(239,68,68,.08)}50%{background:rgba(239,68,68,.22)}}
+
+/* ═══ SLIDE 1 — HERO ═══ */
+.s1-bg{position:absolute;inset:0;background:linear-gradient(135deg,#0a0614 0%,#120820 50%,#0a0614 100%);overflow:hidden}
+.hex-grid{position:absolute;inset:0;background-image:radial-gradient(circle at 1px 1px,rgba(168,85,247,.06) 1px,transparent 0);background-size:32px 32px}
+.s1-inner{position:relative;z-index:2;text-align:center;max-width:820px}
+.badge{display:inline-flex;align-items:center;gap:8px;background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.28);border-radius:100px;padding:5px 16px;font-size:11px;color:#c084fc;letter-spacing:.09em;text-transform:uppercase;margin-bottom:26px}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:#c084fc;animation:pulse 1.8s infinite}
+.hero-h{font-size:clamp(34px,5.2vw,60px);font-weight:800;line-height:1.08;letter-spacing:-.025em;color:#fff;margin-bottom:16px}
+.hero-h em{font-style:normal;color:#c084fc}
+.hero-sub{font-size:17px;color:rgba(255,255,255,.46);margin-bottom:36px;line-height:1.65}
+.pills{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:24px}
+.pill{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:100px;padding:5px 15px;font-size:12px;color:rgba(255,255,255,.6)}
+.ms-sig{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#5aaeff;margin-top:36px}
+.click-hint{position:absolute;bottom:72px;font-size:12px;color:rgba(255,255,255,.22);display:flex;align-items:center;gap:5px;animation:bob 2.2s ease-in-out infinite}
+
+/* ═══ SLIDE 2 — PROBLEM ═══ */
+.s2-bg{position:absolute;inset:0;background:linear-gradient(155deg,#100a1a 0%,#0a0614 100%)}
+.p2-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:22px;width:100%;max-width:1040px}
+.p2c{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:22px}
+.p2c-lbl{font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
+.p2c-h{font-size:16px;font-weight:600;color:#fff;margin-bottom:16px}
+.sr{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.sn{font-size:28px;font-weight:800;color:#c084fc;min-width:68px;line-height:1;font-variant-numeric:tabular-nums}
+.sl{font-size:12px;color:rgba(255,255,255,.5);line-height:1.45}
+.deny-table{width:100%}
+.dt-hdr{display:flex;gap:8px;font-size:9px;text-transform:uppercase;letter-spacing:.09em;color:rgba(255,255,255,.3);padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:6px}
+.dt-hdr span:first-child{flex:1}
+.dt-hdr span:last-child{width:60px;text-align:right}
+.dt-row{display:flex;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.dt-row:last-child{border-bottom:none}
+.dt-payer{flex:1;font-size:12px;color:#fff}
+.dt-rate{width:80px}
+.dt-track{flex:1;height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden}
+.dt-fill{height:100%;border-radius:3px;width:0;transition:width 1.1s cubic-bezier(.4,0,.2,1)}
+.slide.active .dt-fill{width:var(--w)}
+.slide:not(.active) .dt-fill{width:0!important;transition:none}
+.dt-val{width:36px;font-size:11px;color:rgba(255,255,255,.38);text-align:right}
+
+/* ═══ SLIDE 3 — HOW IT WORKS ═══ */
+.s3-bg{position:absolute;inset:0;background:linear-gradient(155deg,#0a0614 0%,#100a1a 100%)}
+.hiw-grid{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:center;width:100%;max-width:1040px;position:relative;z-index:2}
+.pipe-chain{display:flex;flex-direction:column;gap:10px}
+.pc-node{display:flex;gap:12px;align-items:center;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:11px;padding:13px;opacity:0;transform:translateX(-14px);transition:opacity .4s ease,transform .4s ease}
+.slide.active .pc-node{opacity:1;transform:translateX(0)}
+.slide:not(.active) .pc-node{opacity:0;transform:translateX(-14px);transition:none}
+.pc-ico{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.pc-ico.fab{background:rgba(168,85,247,.1)}
+.pc-ico.db{background:rgba(255,106,0,.1)}
+.pc-ico.aml{background:rgba(0,120,212,.1)}
+.pc-ico.wf{background:rgba(34,197,94,.1)}
+.pc-arrow{text-align:center;color:rgba(168,85,247,.35);font-size:16px;margin:-2px 0}
+.pc-strong{display:block;font-size:13px;font-weight:600;color:#fff;margin-bottom:2px}
+.pc-detail{font-size:11px;color:rgba(255,255,255,.42);line-height:1.45}
+.hiw-right{display:flex;flex-direction:column;gap:12px}
+.hiw-stat{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:16px;opacity:0;transform:translateY(10px);transition:opacity .4s ease,transform .4s ease}
+.slide.active .hiw-stat{opacity:1;transform:translateY(0)}
+.slide:not(.active) .hiw-stat{opacity:0;transform:translateY(10px);transition:none}
+.hiw-stat-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.3);margin-bottom:5px}
+.hiw-stat-val{font-size:13px;color:rgba(255,255,255,.72);line-height:1.5}
+.hiw-stat-accent{color:#c084fc;font-weight:600}
+
+/* ═══ SLIDE 4 — CLAIMS SCORING QUEUE ═══ */
+.s4-bg{position:absolute;inset:0;background:#060311}
+.queue-wrap{position:relative;z-index:2;width:100%;max-width:1060px}
+.queue-frame{background:#08040f;border:1.5px solid rgba(255,255,255,.07);border-radius:14px;overflow:hidden;box-shadow:0 0 40px rgba(0,0,0,.6)}
+.queue-topbar{background:#0c0618;border-bottom:1px solid rgba(255,255,255,.06);padding:10px 18px;display:flex;align-items:center;gap:10px}
+.queue-brand{font-size:12px;font-weight:600;color:#c084fc;display:flex;align-items:center;gap:7px}
+.queue-meta{font-size:11px;color:rgba(255,255,255,.35);margin-left:auto;display:flex;gap:14px}
+.scan-bar{position:relative;overflow:hidden}
+.scan-line{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(168,85,247,.6),transparent);animation:scanLine 3s linear infinite}
+.claim-table-hdr{display:grid;grid-template-columns:90px 1fr 100px 100px 90px 80px 120px;gap:8px;padding:10px 18px;font-size:9px;text-transform:uppercase;letter-spacing:.09em;color:rgba(255,255,255,.28);border-bottom:1px solid rgba(255,255,255,.05)}
+.claim-table-body{max-height:280px;overflow:hidden;position:relative}
+.claim-row{display:grid;grid-template-columns:90px 1fr 100px 100px 90px 80px 120px;gap:8px;padding:9px 18px;border-bottom:1px solid rgba(255,255,255,.04);align-items:center;opacity:0;animation:rowSlide .35s ease forwards}
+.claim-row:last-child{border-bottom:none}
+.cr-id{font-size:11px;color:rgba(255,255,255,.45);font-family:Consolas,monospace}
+.cr-desc{font-size:12px;color:#fff}
+.cr-payer{font-size:11px;color:rgba(255,255,255,.55)}
+.cr-amt{font-size:12px;font-weight:600;color:#fff;font-variant-numeric:tabular-nums}
+.cr-cpt{font-size:10px;color:rgba(255,255,255,.4);font-family:Consolas,monospace}
+.cr-status{font-size:10px;color:rgba(255,255,255,.35)}
+.risk-badge{display:inline-flex;align-items:center;gap:5px;border-radius:6px;padding:4px 9px;font-size:11px;font-weight:700}
+.risk-low{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.25);color:#86efac}
+.risk-med{background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3);color:#fbbf24}
+.risk-high{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#fca5a5;animation:flash 1.8s infinite}
+.risk-scan{background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.25);color:#c084fc}
+.queue-footer{padding:10px 18px;border-top:1px solid rgba(255,255,255,.05);display:flex;align-items:center;justify-content:space-between;background:#0c0618}
+.qf-stats{display:flex;gap:20px}
+.qf-s{font-size:11px;color:rgba(255,255,255,.4)}
+.qf-s span{font-weight:700}
+.qf-s .green{color:#86efac}
+.qf-s .yellow{color:#fbbf24}
+.qf-s .red{color:#fca5a5}
+.fab-tag{font-size:9px;background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.2);color:#c084fc;border-radius:5px;padding:2px 7px;display:flex;align-items:center;gap:4px}
+
+/* ═══ SLIDE 5 — DENIAL RISK DETAIL ═══ */
+.s5-bg{position:absolute;inset:0;background:#060311}
+.detail-wrap{position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr;gap:20px;width:100%;max-width:1060px}
+.claim-detail-card{background:#08040f;border:1.5px solid rgba(239,68,68,.3);border-radius:14px;overflow:hidden}
+.cdc-topbar{background:rgba(239,68,68,.08);border-bottom:1px solid rgba(239,68,68,.2);padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
+.cdc-title{font-size:13px;font-weight:700;color:#fca5a5;display:flex;align-items:center;gap:8px}
+.cdc-id{font-size:11px;color:rgba(255,255,255,.35);font-family:Consolas,monospace}
+.cdc-body{padding:16px}
+.cdc-field{margin-bottom:10px}
+.cdc-flbl{font-size:9px;text-transform:uppercase;letter-spacing:.09em;color:rgba(255,255,255,.3);margin-bottom:3px}
+.cdc-fval{font-size:13px;color:rgba(255,255,255,.8)}
+.risk-factors{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.rf-item{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:8px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.15)}
+.rf-ico{font-size:16px;flex-shrink:0;margin-top:1px}
+.rf-title{font-size:12px;font-weight:600;color:#fca5a5;margin-bottom:2px}
+.rf-body{font-size:11px;color:rgba(255,255,255,.55);line-height:1.45}
+.ai-panel{display:flex;flex-direction:column;gap:12px}
+.ai-rec-card{background:#08040f;border:1px solid rgba(168,85,247,.25);border-radius:13px;padding:18px}
+.ai-rec-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:#c084fc;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.ai-explanation{font-size:12px;color:rgba(255,255,255,.68);line-height:1.7;margin-bottom:12px;border-left:2px solid rgba(168,85,247,.3);padding-left:12px}
+.fix-actions{display:flex;flex-direction:column;gap:7px}
+.fix-item{display:flex;gap:9px;align-items:flex-start;padding:9px 11px;border-radius:8px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.18)}
+.fix-n{width:18px;height:18px;border-radius:50%;background:rgba(34,197,94,.18);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#86efac;flex-shrink:0}
+.fix-txt{font-size:11px;color:rgba(255,255,255,.68);line-height:1.45}
+.prob-bar-wrap{margin-top:10px}
+.prob-lbl{font-size:9px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;display:flex;justify-content:space-between}
+.prob-track{height:10px;background:rgba(255,255,255,.06);border-radius:5px;overflow:hidden}
+.prob-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,#f87171,#ef4444);width:0;transition:width 1.3s cubic-bezier(.4,0,.2,1)}
+.slide.active .prob-fill{width:var(--w)}
+.slide:not(.active) .prob-fill{width:0!important;transition:none}
+
+/* ═══ SLIDE 6 — ROOT CAUSE ANALYTICS ═══ */
+.s6-bg{position:absolute;inset:0;background:#060311}
+.rca-wrap{position:relative;z-index:2;width:100%;max-width:1060px}
+.rca-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.rca-panel{background:#08040f;border:1px solid rgba(255,255,255,.07);border-radius:13px;padding:18px}
+.rca-panel-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.3);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.payer-bars{display:flex;flex-direction:column;gap:9px}
+.pb-row{display:flex;align-items:center;gap:9px}
+.pb-lbl{font-size:11px;color:rgba(255,255,255,.55);width:120px;flex-shrink:0}
+.pb-track{flex:1;height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden}
+.pb-fill{height:100%;border-radius:4px;width:0;transition:width 1.1s cubic-bezier(.4,0,.2,1)}
+.slide.active .pb-fill{width:var(--w)}
+.slide:not(.active) .pb-fill{width:0!important;transition:none}
+.pb-val{font-size:11px;width:34px;text-align:right}
+/* donut */
+.donut-wrap{display:flex;gap:16px;align-items:center}
+.donut-legend{display:flex;flex-direction:column;gap:8px;flex:1}
+.dl-item{display:flex;align-items:center;gap:8px;font-size:11px;color:rgba(255,255,255,.6)}
+.dl-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+/* trend */
+.trend-wrap{position:relative;height:100px;margin-top:8px}
+.trend-svg{width:100%;height:100%}
+/* top claims table */
+.tc-table{width:100%}
+.tc-hdr{display:flex;gap:8px;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.28);padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:4px}
+.tc-row{display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.tc-row:last-child{border-bottom:none}
+.tc-dept{flex:1;font-size:11px;color:#fff}
+.tc-vol{width:50px;font-size:11px;color:rgba(255,255,255,.55);text-align:right}
+.tc-rate{width:40px;font-size:11px;font-weight:700;text-align:right}
+.tc-cost{width:60px;font-size:11px;font-weight:600;text-align:right}
+
+/* ═══ SLIDE 7 — BUSINESS IMPACT ═══ */
+.s7-bg{position:absolute;inset:0;background:linear-gradient(155deg,#0a0614 0%,#100a1a 100%)}
+.bi-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;max-width:860px;margin-top:10px}
+.bi-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:24px;position:relative;overflow:hidden;opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s ease}
+.bi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--bca,#c084fc)}
+.slide.active .bi-card{opacity:1;transform:translateY(0)}
+.slide:not(.active) .bi-card{opacity:0;transform:translateY(14px);transition:none}
+.bi-val{font-size:46px;font-weight:800;line-height:1;margin-bottom:5px;font-variant-numeric:tabular-nums}
+.bi-unit{font-size:20px;font-weight:600}
+.bi-lbl{font-size:13px;color:rgba(255,255,255,.58);margin-bottom:6px}
+.bi-sub{font-size:11px;color:rgba(255,255,255,.28);line-height:1.5}
+
+/* ═══ SLIDE 8 — ARCHITECTURE ═══ */
+.s8-bg{position:absolute;inset:0;background:linear-gradient(155deg,#0a0614 0%,#100a1a 100%)}
+.arch-wrap{position:relative;z-index:2;width:100%;max-width:1000px}
+.arch-flow{display:flex;align-items:center;margin-bottom:22px}
+.arch-node{flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px 10px;text-align:center;position:relative;opacity:0;transform:translateY(12px);transition:opacity .4s ease,transform .4s ease}
+.slide.active .arch-node{opacity:1;transform:translateY(0)}
+.slide:not(.active) .arch-node{opacity:0;transform:translateY(12px);transition:none}
+.arch-fab{border-color:rgba(168,85,247,.28);background:rgba(168,85,247,.06)}
+.arch-db{border-color:rgba(255,106,0,.28);background:rgba(255,106,0,.06)}
+.arch-az{border-color:rgba(0,120,212,.28);background:rgba(0,120,212,.06)}
+.arch-pbi{border-color:rgba(251,191,36,.25);background:rgba(251,191,36,.05)}
+.arch-arrow{flex:0 0 22px;text-align:center;color:rgba(255,255,255,.18);font-size:15px}
+.arch-ico{font-size:24px;display:block;margin-bottom:6px}
+.arch-name{font-size:10px;font-weight:700;color:#fff;margin-bottom:2px}
+.arch-svc{font-size:9px;line-height:1.35}
+.arch-fab .arch-svc{color:#c084fc}
+.arch-db .arch-svc{color:#ff9447}
+.arch-az .arch-svc{color:#5aaeff}
+.arch-pbi .arch-svc{color:#fbbf24}
+.xb{position:absolute;top:-7px;right:-7px;font-size:7px;font-weight:700;border-radius:100px;padding:2px 5px;letter-spacing:.05em;text-transform:uppercase}
+.xb-fab{background:#7c3aed;color:#fff}
+.xb-db{background:#ff6a00;color:#fff}
+.xb-az{background:#0078d4;color:#fff}
+.xb-pbi{background:#f2b600;color:#000}
+.arch-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.arch-tile{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:13px 15px}
+.arch-tile-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.28);margin-bottom:5px}
+.arch-tile-txt{font-size:11px;color:rgba(255,255,255,.55);line-height:1.5}
+
+/* ═══ SLIDE 9 — DISCOVERY ═══ */
+.s9-bg{position:absolute;inset:0;background:linear-gradient(155deg,#0a0614 0%,#100a1a 100%)}
+.d9-wrap{position:relative;z-index:2;width:100%;max-width:820px}
+.d9-qs{display:flex;flex-direction:column;gap:12px;margin-top:26px}
+.d9-q{display:flex;gap:13px;align-items:flex-start;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:15px 18px;opacity:0;transform:translateX(-16px);transition:opacity .4s ease,transform .4s ease}
+.d9-q.show{opacity:1;transform:translateX(0)}
+.d9-qn{font-size:10px;font-weight:700;color:#c084fc;background:rgba(168,85,247,.08);border-radius:5px;padding:3px 7px;flex-shrink:0;margin-top:2px}
+.d9-qt{font-size:13px;color:rgba(255,255,255,.75);line-height:1.5}
+.d9-qw{font-size:11px;color:rgba(255,255,255,.28);margin-top:4px}
+
+/* ═══ SLIDE 10 — CTA ═══ */
+.s10-bg{position:absolute;inset:0;background:linear-gradient(135deg,#0a0614 0%,#120820 50%,#0a0614 100%);overflow:hidden}
+.cta-wrap{position:relative;z-index:2;text-align:center;max-width:720px}
+.cta-h{font-size:clamp(30px,4.5vw,54px);font-weight:800;color:#fff;line-height:1.1;margin-bottom:14px}
+.cta-h em{font-style:normal;color:#c084fc}
+.cta-sub{font-size:16px;color:rgba(255,255,255,.45);margin-bottom:40px;line-height:1.65}
+.cta-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn-pri{background:#7c3aed;color:#fff;border:none;border-radius:10px;padding:13px 28px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:7px;transition:background .2s}
+.btn-pri:hover{background:#6d28d9}
+.btn-sec{background:transparent;color:rgba(255,255,255,.6);border:1.5px solid rgba(255,255,255,.18);border-radius:10px;padding:13px 28px;font-size:14px;cursor:pointer;font-family:inherit;transition:border-color .2s,color .2s}
+.btn-sec:hover{border-color:rgba(255,255,255,.4);color:#fff}
+.assess-row{display:flex;gap:36px;justify-content:center;margin-top:44px;flex-wrap:wrap}
+.ar-item{text-align:center}
+.ar-val{font-size:22px;font-weight:800;color:#c084fc}
+.ar-lbl{font-size:11px;color:rgba(255,255,255,.35);margin-top:2px}
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+<!-- ══ SLIDE 1 ════════════════════ -->
+<div class="slide active" id="s1">
+  <div class="s1-bg"><div class="hex-grid"></div></div>
+  <div class="s1-inner">
+    <div class="badge"><div class="badge-dot"></div>Revenue Cycle Management</div>
+    <h1 class="hero-h">Denial Prediction<br>&amp; <em>Prevention</em></h1>
+    <p class="hero-sub">Stop reacting to denials. Start preventing them. Score every claim before submission — and fix the ones that will fail.<br>Powered by Microsoft Fabric + Databricks + Azure ML.</p>
+    <div class="pills">
+      <span class="pill">💼 VP Revenue Cycle &amp; CFO</span>
+      <span class="pill">🧵 Microsoft Fabric</span>
+      <span class="pill">🧱 Databricks</span>
+      <span class="pill">🤖 Azure Machine Learning</span>
+      <span class="pill">📊 Power BI</span>
+    </div>
+    <div class="ms-sig">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="#5aaeff"><path d="M13.5 1.5L0 23.5h5.25L13.5 7.5l5.25 9H13.5L11.25 20H24L13.5 1.5z"/></svg>
+      Microsoft Azure + Fabric · Level 100 Demo
+    </div>
+  </div>
+  <div class="click-hint">Click anywhere or press → to advance</div>
+</div>
+
+<!-- ══ SLIDE 2 — PROBLEM ══════════ -->
+<div class="slide" id="s2">
+  <div class="s2-bg"></div>
+  <div style="position:relative;z-index:2;width:100%;max-width:1040px">
+    <div class="section-label">The Problem</div>
+    <h2 class="slide-title">Denial management is a $5M annual drag on every major health system</h2>
+    <p class="slide-sub">Teams rework after the damage is done — payer decisions are already locked, rework costs are sunk, and write-offs quietly erode margin.</p>
+    <div class="p2-grid">
+      <div class="p2c">
+        <div class="p2c-lbl">💸 The Cost of Reactive Denial Management</div>
+        <div class="p2c-h">Every dollar denied costs two to recover</div>
+        <div class="sr"><div class="sn">~15%</div><div class="sl">average initial denial rate across U.S. health systems — up significantly over the past 3 years (HFMA 2024, Premier 2025)</div></div>
+        <div class="sr"><div class="sn">$57</div><div class="sl">average administrative cost to rework a single denied claim — $43–$64 per claim depending on payer type (HFMA / Premier Inc. 2025)</div></div>
+        <div class="sr"><div class="sn">65%</div><div class="sl">of denied claims are never reworked — written off as bad debt silently (HFMA)</div></div>
+        <div class="sr"><div class="sn">$19.7B</div><div class="sl">spent annually by U.S. health systems fighting denials — administrative cost alone, excluding lost claim value (AHA / Premier 2025)</div></div>
+      </div>
+      <div class="p2c">
+        <div class="p2c-lbl">📊 Initial Denial Rate by Payer — Your Portfolio</div>
+        <div class="p2c-h">Where the losses concentrate</div>
+        <div class="deny-table">
+          <div class="dt-hdr"><span style="flex:1">Payer</span><span style="width:80px"></span><span style="width:36px">Rate</span></div>
+          <div class="dt-row"><div class="dt-payer">Blue Cross PPO</div><div class="dt-rate"><div class="dt-track"><div class="dt-fill" style="--w:82%;background:#f87171"></div></div></div><div class="dt-val" style="color:#f87171">18.2%</div></div>
+          <div class="dt-row"><div class="dt-payer">United Healthcare</div><div class="dt-rate"><div class="dt-track"><div class="dt-fill" style="--w:74%;background:#f87171"></div></div></div><div class="dt-val" style="color:#f87171">16.1%</div></div>
+          <div class="dt-row"><div class="dt-payer">Aetna Commercial</div><div class="dt-rate"><div class="dt-track"><div class="dt-fill" style="--w:62%;background:#fbbf24"></div></div></div><div class="dt-val" style="color:#fbbf24">13.4%</div></div>
+          <div class="dt-row"><div class="dt-payer">Medicare Advantage</div><div class="dt-rate"><div class="dt-track"><div class="dt-fill" style="--w:55%;background:#fbbf24"></div></div></div><div class="dt-val" style="color:#fbbf24">11.8%</div></div>
+          <div class="dt-row"><div class="dt-payer">Medicaid</div><div class="dt-rate"><div class="dt-track"><div class="dt-fill" style="--w:40%;background:#86efac"></div></div></div><div class="dt-val" style="color:#86efac">8.6%</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 3 — HOW IT WORKS ════ -->
+<div class="slide" id="s3">
+  <div class="s3-bg"></div>
+  <div class="hiw-grid" style="position:relative;z-index:2">
+    <div>
+      <div class="section-label">Solution Pipeline</div>
+      <h2 class="slide-title">Predict. Explain. Fix.<br>Before you bill.</h2>
+      <p style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:18px;line-height:1.6">Every claim is scored before submission. High-risk claims are flagged with the exact reason it will be denied and a prioritized fix list — intercepted in the pre-bill queue.</p>
+      <div class="pipe-chain">
+        <div class="pc-node st1"><div class="pc-ico fab">🧵</div><div><span class="pc-strong">Fabric — Claims Ingestion</span><span class="pc-detail">Pulls claims from EHR, billing system, and payer contract data in real time via Fabric pipelines</span></div></div>
+        <div class="pc-arrow">↓</div>
+        <div class="pc-node st2"><div class="pc-ico db">🧱</div><div><span class="pc-strong">Databricks — Feature Engineering</span><span class="pc-detail">Builds 200+ features per claim: CPT/DX alignment, auth status, payer rules, historical denial patterns</span></div></div>
+        <div class="pc-arrow">↓</div>
+        <div class="pc-node st3"><div class="pc-ico aml">🤖</div><div><span class="pc-strong">Azure Machine Learning</span><span class="pc-detail">XGBoost denial prediction model — scores each claim 0–100% denial probability with explainability</span></div></div>
+        <div class="pc-arrow">↓</div>
+        <div class="pc-node st4"><div class="pc-ico wf">✅</div><div><span class="pc-strong">Pre-Bill Workflow Intervention</span><span class="pc-detail">High-risk claims routed to billing staff with specific fix actions — before submission, not after denial</span></div></div>
+      </div>
+    </div>
+    <div class="hiw-right">
+      <div style="font-size:11px;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:.09em;margin-bottom:4px">What makes it different</div>
+      <div class="hiw-stat st1"><div class="hiw-stat-lbl">Explainability — not just a score</div><div class="hiw-stat-val">Every flagged claim includes <span class="hiw-stat-accent">the exact reason it will be denied</span> — missing auth, CPT/DX mismatch, payer policy violation, timely filing risk</div></div>
+      <div class="hiw-stat st2"><div class="hiw-stat-lbl">Embedded in existing workflow</div><div class="hiw-stat-val">Scores surface in your <span class="hiw-stat-accent">existing pre-bill review queue</span> — no new system to log into, no workflow change</div></div>
+      <div class="hiw-stat st3"><div class="hiw-stat-lbl">Payer-specific models</div><div class="hiw-stat-val">Separate models per payer — <span class="hiw-stat-accent">Blue Cross denies differently than UHC</span>. Generic models miss payer-specific policy triggers.</div></div>
+      <div class="hiw-stat st4"><div class="hiw-stat-lbl">Proven before go-live</div><div class="hiw-stat-val">Validated on <span class="hiw-stat-accent">12–24 months of historical claims</span> — you see the model accuracy before a single live claim is scored</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 4 — CLAIMS SCORING QUEUE ══ -->
+<div class="slide" id="s4">
+  <div class="s4-bg"></div>
+  <div class="queue-wrap">
+    <div class="section-label">Live Demo — Pre-Submission Scoring</div>
+    <h2 class="slide-title" style="margin-bottom:12px">Every claim scored before it leaves the building</h2>
+    <div class="queue-frame">
+      <div class="queue-topbar">
+        <div class="queue-brand">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="#c084fc"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          RevCycle AI — Pre-Bill Queue · Morning Batch
+        </div>
+        <div class="queue-meta">
+          <span>Batch: <strong style="color:#fff" id="q-batch-n">0</strong> claims</span>
+          <span id="q-scan-status" style="color:#c084fc">◉ Scoring in progress…</span>
+          <span id="q-time">06/12/2026 · 09:42</span>
+        </div>
+      </div>
+      <div class="scan-bar" style="height:3px;background:rgba(255,255,255,.04)"><div class="scan-line" id="scan-line"></div></div>
+      <div class="claim-table-hdr">
+        <span>Claim ID</span><span>Description</span><span>Payer</span><span>Amount</span><span>CPT</span><span>Status</span><span>AI Risk Score</span>
+      </div>
+      <div class="claim-table-body" id="claim-body"></div>
+      <div class="queue-footer">
+        <div class="qf-stats">
+          <div class="qf-s">Scored: <span id="qf-total" class="green">0</span></div>
+          <div class="qf-s">Low: <span id="qf-low" class="green">0</span></div>
+          <div class="qf-s">Medium: <span id="qf-med" class="yellow">0</span></div>
+          <div class="qf-s">High Risk: <span id="qf-high" class="red">0</span></div>
+          <div class="qf-s">Est. Saved: <span id="qf-saved" style="color:#c084fc;font-weight:700">$0</span></div>
+        </div>
+        <div class="fab-tag">🧵 Fabric + Azure ML · Real-time scoring</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 5 — DENIAL RISK DETAIL ══ -->
+<div class="slide" id="s5">
+  <div class="s5-bg"></div>
+  <div style="position:relative;z-index:2;width:100%;max-width:1060px">
+    <div class="section-label">Demo — High-Risk Claim Drill Down</div>
+    <h2 class="slide-title" style="margin-bottom:12px">Claim #RC-2847 · 87% denial probability · Blue Cross PPO</h2>
+    <div class="detail-wrap">
+      <div class="claim-detail-card">
+        <div class="cdc-topbar">
+          <div class="cdc-title">🚨 HIGH DENIAL RISK<span style="font-size:11px;font-weight:400;color:rgba(255,255,255,.4);margin-left:8px">Intercepted before submission</span></div>
+          <div class="cdc-id">RC-2847</div>
+        </div>
+        <div class="cdc-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+            <div class="cdc-field"><div class="cdc-flbl">Patient</div><div class="cdc-fval">D. Thompson, 61M</div></div>
+            <div class="cdc-field"><div class="cdc-flbl">Payer</div><div class="cdc-fval">Blue Cross PPO</div></div>
+            <div class="cdc-field"><div class="cdc-flbl">Procedure</div><div class="cdc-fval">Total Knee Replacement</div></div>
+            <div class="cdc-field"><div class="cdc-flbl">CPT Code</div><div class="cdc-fval" style="font-family:Consolas,monospace">27447</div></div>
+            <div class="cdc-field"><div class="cdc-flbl">Billed Amount</div><div class="cdc-fval" style="color:#c084fc;font-weight:700">$42,850</div></div>
+            <div class="cdc-field"><div class="cdc-flbl">Admission Date</div><div class="cdc-fval">06/08/2026</div></div>
+          </div>
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:rgba(255,255,255,.3);margin-bottom:8px">AI-Detected Risk Factors</div>
+          <div class="risk-factors">
+            <div class="rf-item">
+              <div class="rf-ico">📋</div>
+              <div><div class="rf-title">Prior Authorization Missing</div><div class="rf-body">CPT 27447 requires pre-auth under BCBS PPO plan 4417. Auth request not found in system. BCBS denies 94% of unauth ortho submissions.</div></div>
+            </div>
+            <div class="rf-item">
+              <div class="rf-ico">🔢</div>
+              <div><div class="rf-title">DX / CPT Alignment Risk</div><div class="rf-body">Primary ICD-10 M17.11 (unilateral OA, right knee) but CPT 27447 billed without laterality modifier -RT. BCBS issued 1,847 modifer denials this year on this code.</div></div>
+            </div>
+            <div class="rf-item">
+              <div class="rf-ico">⏱</div>
+              <div><div class="rf-title">Medical Necessity Documentation</div><div class="rf-body">Conservative therapy documentation &lt;90 days — BCBS policy requires 6-month conservative treatment record for elective joint replacement.</div></div>
+            </div>
+          </div>
+          <div class="prob-bar-wrap">
+            <div class="prob-lbl"><span>Denial Probability</span><span style="color:#f87171;font-weight:700">87%</span></div>
+            <div class="prob-track"><div class="prob-fill" style="--w:87%"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="ai-panel">
+        <div class="ai-rec-card">
+          <div class="ai-rec-lbl">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="#c084fc"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 9l-3 6h6l-3-6z"/></svg>
+            Azure ML — Denial Explanation &amp; Fix Plan
+          </div>
+          <div class="ai-explanation">
+            "This claim will be denied by Blue Cross PPO with high confidence (87%). Three fixable issues were detected: missing prior authorization, a billing modifier omission on CPT 27447, and insufficient conservative therapy documentation. All three are correctable before submission. Estimated recovery: $42,850."
+          </div>
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:rgba(255,255,255,.3);margin-bottom:8px">Prioritized Fix Actions</div>
+          <div class="fix-actions">
+            <div class="fix-item"><div class="fix-n">1</div><div class="fix-txt"><strong style="color:#86efac">Submit Prior Auth immediately</strong> — BCBS portal auth code required. Use CPT 27447-RT, ICD M17.11. Estimated approval: 2 business days.</div></div>
+            <div class="fix-item"><div class="fix-n">2</div><div class="fix-txt"><strong style="color:#86efac">Add modifier -RT to CPT 27447</strong> — laterality modifier missing. 2-minute billing correction in Epic. Eliminates 2nd denial vector.</div></div>
+            <div class="fix-item"><div class="fix-n">3</div><div class="fix-txt"><strong style="color:#86efac">Pull conservative therapy notes</strong> — request PT records from primary care. Upload to clinical documentation before submission. Required under BCBS policy 6.1.4.</div></div>
+          </div>
+        </div>
+        <div style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:10px;padding:14px;display:flex;gap:16px">
+          <div style="text-align:center;flex:1"><div style="font-size:22px;font-weight:800;color:#86efac">$42,850</div><div style="font-size:10px;color:rgba(255,255,255,.38);margin-top:2px">Claim value recovered</div></div>
+          <div style="text-align:center;flex:1"><div style="font-size:22px;font-weight:800;color:#c084fc">3</div><div style="font-size:10px;color:rgba(255,255,255,.38);margin-top:2px">Fixes · ~45 min work</div></div>
+          <div style="text-align:center;flex:1"><div style="font-size:22px;font-weight:800;color:#5aaeff">$236</div><div style="font-size:10px;color:rgba(255,255,255,.38);margin-top:2px">vs $118 rework cost</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 6 — ROOT CAUSE ANALYTICS ══ -->
+<div class="slide" id="s6">
+  <div class="s6-bg"></div>
+  <div class="rca-wrap">
+    <div class="section-label">Power BI + Fabric Analytics</div>
+    <h2 class="slide-title" style="margin-bottom:4px">Root-cause analytics — where to fix the system, not just the claim</h2>
+    <p class="slide-sub" style="margin-bottom:12px">Fabric + Power BI surfaces systemic denial patterns — so you can fix upstream coding, auth, and documentation workflows permanently.</p>
+    <div class="rca-grid">
+      <div class="rca-panel">
+        <div class="rca-panel-lbl">
+          <span>Denial Rate by Payer — Current vs. 90 Days Ago</span>
+          <span class="fab-tag">🧵 Fabric</span>
+        </div>
+        <div class="payer-bars">
+          <div class="pb-row"><div class="pb-lbl">Blue Cross PPO</div><div class="pb-track"><div class="pb-fill" style="--w:82%;background:#f87171"></div></div><div class="pb-val" style="color:#f87171">18.2%</div></div>
+          <div class="pb-row"><div class="pb-lbl">United Healthcare</div><div class="pb-track"><div class="pb-fill" style="--w:74%;background:#fbbf24"></div></div><div class="pb-val" style="color:#fbbf24">16.1%</div></div>
+          <div class="pb-row"><div class="pb-lbl">Aetna Commercial</div><div class="pb-track"><div class="pb-fill" style="--w:60%;background:#fbbf24"></div></div><div class="pb-val" style="color:#fbbf24">13.4%</div></div>
+          <div class="pb-row"><div class="pb-lbl">Medicare Advantage</div><div class="pb-track"><div class="pb-fill" style="--w:52%;background:#86efac"></div></div><div class="pb-val" style="color:#86efac">11.8%</div></div>
+          <div class="pb-row"><div class="pb-lbl">Medicaid</div><div class="pb-track"><div class="pb-fill" style="--w:38%;background:#86efac"></div></div><div class="pb-val" style="color:#86efac">8.6%</div></div>
+        </div>
+      </div>
+      <div class="rca-panel">
+        <div class="rca-panel-lbl"><span>Denial Reasons — Top Causes</span><span class="fab-tag">📊 Power BI</span></div>
+        <div class="donut-wrap">
+          <svg viewBox="0 0 120 120" width="110" height="110">
+            <circle cx="60" cy="60" r="44" fill="none" stroke="rgba(255,255,255,.05)" stroke-width="18"/>
+            <circle cx="60" cy="60" r="44" fill="none" stroke="#f87171" stroke-width="18" stroke-dasharray="276" stroke-dashoffset="276" id="d-arc1" style="transition:stroke-dashoffset 1.2s ease" transform="rotate(-90,60,60)"/>
+            <circle cx="60" cy="60" r="44" fill="none" stroke="#fbbf24" stroke-width="18" stroke-dasharray="276" stroke-dashoffset="276" id="d-arc2" style="transition:stroke-dashoffset 1.2s .3s ease" transform="rotate(-90,60,60)"/>
+            <circle cx="60" cy="60" r="44" fill="none" stroke="#5aaeff" stroke-width="18" stroke-dasharray="276" stroke-dashoffset="276" id="d-arc3" style="transition:stroke-dashoffset 1.2s .6s ease" transform="rotate(-90,60,60)"/>
+            <circle cx="60" cy="60" r="44" fill="none" stroke="#c084fc" stroke-width="18" stroke-dasharray="276" stroke-dashoffset="276" id="d-arc4" style="transition:stroke-dashoffset 1.2s .9s ease" transform="rotate(-90,60,60)"/>
+            <text x="60" y="56" text-anchor="middle" fill="#fff" font-size="14" font-weight="800">~15%</text>
+            <text x="60" y="70" text-anchor="middle" fill="rgba(255,255,255,.38)" font-size="8">Denial Rate</text>
+          </svg>
+          <div class="donut-legend">
+            <div class="dl-item"><div class="dl-dot" style="background:#f87171"></div>Prior Auth Missing — 34%</div>
+            <div class="dl-item"><div class="dl-dot" style="background:#fbbf24"></div>Coding / Modifier Errors — 28%</div>
+            <div class="dl-item"><div class="dl-dot" style="background:#5aaeff"></div>Medical Necessity — 22%</div>
+            <div class="dl-item"><div class="dl-dot" style="background:#c084fc"></div>Timely Filing / Other — 16%</div>
+          </div>
+        </div>
+      </div>
+      <div class="rca-panel">
+        <div class="rca-panel-lbl"><span>Denial Rate Trend — Last 6 Months</span><span style="font-size:10px;color:#86efac">↓ Improving since AI launch</span></div>
+        <svg viewBox="0 0 480 80" width="100%" height="80" style="overflow:visible">
+          <defs><linearGradient id="tgrad" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="rgba(168,85,247,.3)"/><stop offset="100%" stop-color="rgba(168,85,247,0)"/></linearGradient></defs>
+          <!-- grid -->
+          <line x1="0" y1="20" x2="480" y2="20" stroke="rgba(255,255,255,.04)" stroke-width="1"/>
+          <line x1="0" y1="40" x2="480" y2="40" stroke="rgba(255,255,255,.04)" stroke-width="1"/>
+          <line x1="0" y1="60" x2="480" y2="60" stroke="rgba(255,255,255,.04)" stroke-width="1"/>
+          <!-- area fill -->
+          <path d="M0 62 L80 58 L160 54 L240 48 L320 36 L400 28 L480 22 L480 80 L0 80 Z" fill="url(#tgrad)" opacity=".5"/>
+          <!-- line -->
+          <polyline points="0,62 80,58 160,54 240,48 320,36 400,28 480,22" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- dots -->
+          <circle cx="0" cy="62" r="3.5" fill="#a855f7"/><circle cx="80" cy="58" r="3.5" fill="#a855f7"/>
+          <circle cx="160" cy="54" r="3.5" fill="#a855f7"/><circle cx="240" cy="48" r="3.5" fill="#a855f7"/>
+          <circle cx="320" cy="36" r="3.5" fill="#a855f7"/><circle cx="400" cy="28" r="3.5" fill="#a855f7"/>
+          <circle cx="480" cy="22" r="3.5" fill="#86efac"/>
+          <!-- AI launch line -->
+          <line x1="240" y1="0" x2="240" y2="80" stroke="rgba(168,85,247,.35)" stroke-width="1" stroke-dasharray="4 3"/>
+          <text x="243" y="12" fill="#c084fc" font-size="8">AI Launched</text>
+          <!-- labels -->
+          <text x="0" y="76" fill="rgba(255,255,255,.28)" font-size="9">Jan</text>
+          <text x="75" y="76" fill="rgba(255,255,255,.28)" font-size="9">Feb</text>
+          <text x="155" y="76" fill="rgba(255,255,255,.28)" font-size="9">Mar</text>
+          <text x="235" y="76" fill="rgba(255,255,255,.28)" font-size="9">Apr</text>
+          <text x="315" y="76" fill="rgba(255,255,255,.28)" font-size="9">May</text>
+          <text x="395" y="76" fill="rgba(255,255,255,.28)" font-size="9">Jun</text>
+          <!-- values -->
+          <text x="0" y="56" fill="rgba(255,255,255,.35)" font-size="8">12.1%</text>
+          <text x="456" y="17" fill="#86efac" font-size="8">6.4%</text>
+        </svg>
+      </div>
+      <div class="rca-panel">
+        <div class="rca-panel-lbl"><span>Top Denial-Generating Departments</span><span class="fab-tag">🧵 Fabric</span></div>
+        <div class="tc-table">
+          <div class="tc-hdr"><span style="flex:1">Department</span><span style="width:50px;text-align:right">Vol</span><span style="width:40px;text-align:right">Rate</span><span style="width:70px;text-align:right">Cost/Mo</span></div>
+          <div class="tc-row"><div class="tc-dept">Orthopedics</div><div class="tc-vol">847</div><div class="tc-rate" style="color:#f87171">21%</div><div class="tc-cost" style="color:#fca5a5">$182K</div></div>
+          <div class="tc-row"><div class="tc-dept">Cardiovascular</div><div class="tc-vol">612</div><div class="tc-rate" style="color:#fbbf24">17%</div><div class="tc-cost" style="color:#fbbf24">$141K</div></div>
+          <div class="tc-row"><div class="tc-dept">Behavioral Health</div><div class="tc-vol">534</div><div class="tc-rate" style="color:#fbbf24">16%</div><div class="tc-cost" style="color:#fbbf24">$98K</div></div>
+          <div class="tc-row"><div class="tc-dept">Oncology</div><div class="tc-vol">381</div><div class="tc-rate" style="color:#86efac">11%</div><div class="tc-cost" style="color:#86efac">$87K</div></div>
+          <div class="tc-row"><div class="tc-dept">Emergency</div><div class="tc-vol">2140</div><div class="tc-rate" style="color:#86efac">8%</div><div class="tc-cost" style="color:#86efac">$72K</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 7 — BUSINESS IMPACT ══ -->
+<div class="slide" id="s7">
+  <div class="s7-bg"></div>
+  <div style="position:relative;z-index:2;width:100%;max-width:860px">
+    <div class="section-label">Business Value</div>
+    <h2 class="slide-title" style="margin-bottom:4px">What a few points of denial reduction is worth</h2>
+    <p class="slide-sub">For a 500-bed health system with $800M in annual claims, a 4-point denial rate reduction (from ~15% to ~11%) delivers material financial impact.</p>
+    <div class="bi-grid">
+      <div class="bi-card st1" style="--bca:#c084fc">
+        <div class="bi-val" style="color:#c084fc">$<span class="cnt7" data-t="5">0</span><span class="bi-unit">.4M</span></div>
+        <div class="bi-lbl">Annual Net Collections Improvement</div>
+        <div class="bi-sub">4-point denial rate reduction × $800M annual claims = recovered revenue previously written off or stuck in rework.</div>
+      </div>
+      <div class="bi-card st2" style="--bca:#86efac">
+        <div class="bi-val" style="color:#86efac"><span class="cnt7" data-t="67">0</span><span class="bi-unit">%</span></div>
+        <div class="bi-lbl">Reduction in Rework Volume</div>
+        <div class="bi-sub">Claims fixed before submission never enter the denial-rework cycle. At ~$57 per rework (HFMA/Premier 2025), intercepting 3,000 claims/month = ~$205K in avoided labor annually.</div>
+      </div>
+      <div class="bi-card st3" style="--bca:#5aaeff">
+        <div class="bi-val" style="color:#5aaeff"><span class="cnt7" data-t="4">0</span><span class="bi-unit"> pts</span></div>
+        <div class="bi-lbl">Denial Rate Reduction</div>
+        <div class="bi-sub">From ~15% to ~11% initial denial rate — consistent with published outcomes from ML-powered pre-bill scoring deployments at peer institutions.</div>
+      </div>
+      <div class="bi-card st4" style="--bca:#fbbf24">
+        <div class="bi-val" style="color:#fbbf24"><span class="cnt7" data-t="18">0</span><span class="bi-unit"> days</span></div>
+        <div class="bi-lbl">Reduction in Days in AR</div>
+        <div class="bi-sub">Fewer denials = faster clean claim payment. Reducing days in AR by 18 days on $800M AR base improves cash position by ~$39M on any given day.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 8 — ARCHITECTURE ═════ -->
+<div class="slide" id="s8">
+  <div class="s8-bg"></div>
+  <div class="arch-wrap">
+    <div class="section-label">Architecture</div>
+    <h2 class="slide-title">Microsoft Fabric + Databricks + Azure ML + Power BI</h2>
+    <p class="slide-sub">Purpose-built revenue cycle intelligence stack — plugs into your existing billing platform and EHR.</p>
+    <div class="arch-flow">
+      <div class="arch-node st1">
+        <span class="arch-ico">🏥</span>
+        <div class="arch-name">Source Systems</div>
+        <div class="arch-svc" style="color:rgba(255,255,255,.38)">Epic · Cerner · 3M · Waystar · Payer portals</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node arch-fab st2">
+        <div class="xb xb-fab">Fabric</div>
+        <span class="arch-ico">🧵</span>
+        <div class="arch-name">Data Pipelines</div>
+        <div class="arch-svc">Claims ingestion · Payer rules · Real-time EDI feeds</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node arch-db st3">
+        <div class="xb xb-db">Databricks</div>
+        <span class="arch-ico">🧱</span>
+        <div class="arch-name">Feature Store</div>
+        <div class="arch-svc">200+ claim features · Payer policy library · Historical patterns</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node arch-az st4">
+        <div class="xb xb-az">Azure</div>
+        <span class="arch-ico">🤖</span>
+        <div class="arch-name">Azure ML</div>
+        <div class="arch-svc">XGBoost denial model · Explainability · Per-payer scoring</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node arch-pbi st5">
+        <div class="xb xb-pbi">Power BI</div>
+        <span class="arch-ico">📊</span>
+        <div class="arch-name">Analytics Layer</div>
+        <div class="arch-svc">Root-cause dashboards · CFO view · Payer benchmarks</div>
+      </div>
+    </div>
+    <div class="arch-tiles">
+      <div class="arch-tile"><div class="arch-tile-lbl">Integration</div><div class="arch-tile-txt">Pre-bill queue scores surface in Epic Resolute, Waystar, nThrive, or any billing platform via API — no new system to log into</div></div>
+      <div class="arch-tile"><div class="arch-tile-lbl">Assessment First</div><div class="arch-tile-txt">Start with 12–24 months of historical claims. Prove model accuracy on known outcomes before any live scoring. No risk to go-live decision.</div></div>
+      <div class="arch-tile"><div class="arch-tile-lbl">Compliance</div><div class="arch-tile-txt">PHI handled under BAA in your Azure tenant · HIPAA-eligible · SOC 2 · Full audit trail on every scored claim and model decision</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 9 — DISCOVERY ════════ -->
+<div class="slide" id="s9">
+  <div class="s9-bg"></div>
+  <div class="d9-wrap" style="position:relative;z-index:2">
+    <div class="section-label">Sales Discovery</div>
+    <h2 class="slide-title">The questions that open the deal</h2>
+    <p class="slide-sub">Lead with the CFO's number. Every question anchors to financial impact.</p>
+    <div class="d9-qs">
+      <div class="d9-q" id="dq1"><div class="d9-qn">Q1</div><div><div class="d9-qt">"What is your current initial denial rate — and what does it cost your team to rework a single denied claim?"</div><div class="d9-qw">→ Establishes the baseline. Industry avg is ~15% initial denial rate / ~$57 per rework (HFMA/Premier 2025). Multiply by volume and the number becomes undeniable.</div></div></div>
+      <div class="d9-q" id="dq2"><div class="d9-qn">Q2</div><div><div class="d9-qt">"Which payers and denial reason codes are driving the most loss — and do you know that answer today without pulling a report?"</div><div class="d9-qw">→ Most teams don't. Fabric analytics positions as the visibility they're missing — surfaces systemic patterns vs. one-off rework.</div></div></div>
+      <div class="d9-q" id="dq3"><div class="d9-qn">Q3</div><div><div class="d9-qt">"How far upstream can you intervene today — and does your pre-bill review team have the data they need to catch at-risk claims?"</div><div class="d9-qw">→ Exposes whether the workflow exists. If pre-bill review is manual and gut-feel based, AI scoring is the missing layer.</div></div></div>
+      <div class="d9-q" id="dq4"><div class="d9-qn">Q4</div><div><div class="d9-qt">"What would a 3–4 point reduction in your denial rate be worth annually — and is that a number your CFO has on their dashboard?"</div><div class="d9-qw">→ Anchors the ROI. For most systems it's $3–7M annually. Once the CFO hears that number, the conversation changes.</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 10 — CTA ═════════════ -->
+<div class="slide" id="s10">
+  <div class="s10-bg"></div>
+  <div class="cta-wrap" style="position:relative;z-index:2">
+    <div class="badge" style="margin-bottom:22px"><div class="badge-dot"></div>Recommended Starting Motion</div>
+    <h1 class="cta-h">Start with a<br><em>Claims Assessment</em></h1>
+    <p class="cta-sub">Bring 12–24 months of historical claims. We'll run the model, show you your denial patterns, and prove accuracy on known outcomes — before you commit to anything.</p>
+    <div class="cta-btns">
+      <button class="btn-pri">📊 Schedule Claims Assessment</button>
+      <button class="btn-sec">💰 Request Denial ROI Model</button>
+    </div>
+    <div class="assess-row">
+      <div class="ar-item"><div class="ar-val">2–3 wks</div><div class="ar-lbl">Assessment turnaround</div></div>
+      <div class="ar-item"><div class="ar-val">12–24mo</div><div class="ar-lbl">Historical claims needed</div></div>
+      <div class="ar-item"><div class="ar-val">$0</div><div class="ar-lbl">Assessment cost</div></div>
+      <div class="ar-item"><div class="ar-val">ROI first</div><div class="ar-lbl">See value before you commit</div></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /deck -->
+
+<div class="deck-nav">
+  <button class="nav-btn" id="prev-btn" disabled>←</button>
+  <div class="dots" id="dots"></div>
+  <button class="nav-btn" id="next-btn">→</button>
+</div>
+<div class="slide-ctr" id="ctr">1 / 10</div>
+<div class="key-hint"><span class="k">←</span><span class="k">→</span>&nbsp;or click</div>
+
+<script>
+const TOTAL=10;let cur=1;
+const dotsEl=document.getElementById('dots');
+for(let i=1;i<=TOTAL;i++){const d=document.createElement('div');d.className='dot'+(i===1?' active':'');d.addEventListener('click',e=>{e.stopPropagation();goTo(i)});dotsEl.appendChild(d)}
+function slide(n){return document.getElementById('s'+n)}
+function goTo(n){
+  if(n<1||n>TOTAL||n===cur)return;
+  const p=slide(cur);p.classList.remove('active');p.classList.add('exit');setTimeout(()=>p.classList.remove('exit'),500);
+  cur=n;slide(cur).classList.add('active');
+  dotsEl.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i+1===cur));
+  document.getElementById('ctr').textContent=cur+' / '+TOTAL;
+  document.getElementById('prev-btn').disabled=cur===1;
+  document.getElementById('next-btn').disabled=cur===TOTAL;
+  onActivate(cur);
+}
+document.getElementById('prev-btn').addEventListener('click',e=>{e.stopPropagation();goTo(cur-1)});
+document.getElementById('next-btn').addEventListener('click',e=>{e.stopPropagation();goTo(cur+1)});
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();goTo(cur+1)}if(e.key==='ArrowLeft'){e.preventDefault();goTo(cur-1)}});
+document.getElementById('deck').addEventListener('click',e=>{if(!e.target.closest('.deck-nav')&&!e.target.closest('button')&&!e.target.closest('.dot'))goTo(cur+1)});
+
+/* ── Slide 4: Claims queue animation ── */
+const CLAIMS=[
+  {id:'RC-2841',desc:'Hip Replacement (Bilateral)',payer:'United Healthcare',amt:'$38,200',cpt:'27130',status:'Pre-bill',risk:'high',delay:0},
+  {id:'RC-2842',desc:'Cardiac Catheterization',payer:'Aetna Commercial',amt:'$12,450',cpt:'93458',status:'Pre-bill',risk:'med',delay:400},
+  {id:'RC-2843',desc:'Annual Wellness Visit',payer:'Medicare Adv.',amt:'$310',cpt:'G0439',status:'Pre-bill',risk:'low',delay:800},
+  {id:'RC-2844',desc:'Colonoscopy — Diagnostic',payer:'Blue Cross PPO',amt:'$2,840',cpt:'45378',status:'Pre-bill',risk:'low',delay:1200},
+  {id:'RC-2845',desc:'Spinal Fusion — Cervical',payer:'United Healthcare',amt:'$67,100',cpt:'22551',status:'Pre-bill',risk:'high',delay:1600},
+  {id:'RC-2846',desc:'MRI Brain w/ Contrast',payer:'Aetna Commercial',amt:'$3,200',cpt:'70553',status:'Pre-bill',risk:'med',delay:2000},
+  {id:'RC-2847',desc:'Total Knee Replacement',payer:'Blue Cross PPO',amt:'$42,850',cpt:'27447',status:'Pre-bill',risk:'high',delay:2400},
+  {id:'RC-2848',desc:'Chemotherapy Administration',payer:'Medicare Adv.',amt:'$8,900',cpt:'96413',status:'Pre-bill',risk:'low',delay:2800},
+  {id:'RC-2849',desc:'Inpatient Psych — 7 Days',payer:'Blue Cross PPO',amt:'$14,200',cpt:'90837',status:'Pre-bill',risk:'med',delay:3200},
+  {id:'RC-2850',desc:'TAVR Procedure',payer:'Medicare Adv.',amt:'$89,400',cpt:'33361',status:'Pre-bill',risk:'high',delay:3600},
+];
+const RISK_LABELS={high:'HIGH 87%',med:'MED 44%',low:'LOW 8%'};
+const RISK_CLASSES={high:'risk-high',med:'risk-med',low:'risk-low'};
+let claimTimers=[];
+function runQueue(){
+  clearQueue();
+  const body=document.getElementById('claim-body');
+  let low=0,med=0,high=0,total=0;
+  const scanEl=document.getElementById('scan-line');
+  if(scanEl)scanEl.style.display='block';
+  CLAIMS.forEach((c,i)=>{
+    const t=setTimeout(()=>{
+      const row=document.createElement('div');
+      row.className='claim-row';
+      row.style.animationDelay='0s';
+      row.innerHTML=`<div class="cr-id">${c.id}</div><div class="cr-desc">${c.desc}</div><div class="cr-payer">${c.payer}</div><div class="cr-amt">${c.amt}</div><div class="cr-cpt">${c.cpt}</div><div class="cr-status">${c.status}</div><div><span class="risk-badge ${RISK_CLASSES[c.risk]}">${RISK_LABELS[c.risk]}</span></div>`;
+      body.appendChild(row);
+      total++;
+      if(c.risk==='low')low++;
+      else if(c.risk==='med')med++;
+      else{high++;document.getElementById('qf-saved').textContent='$'+Math.round(high*42000/1000)+'K';}
+      document.getElementById('q-batch-n').textContent=total;
+      document.getElementById('qf-total').textContent=total;
+      document.getElementById('qf-low').textContent=low;
+      document.getElementById('qf-med').textContent=med;
+      document.getElementById('qf-high').textContent=high;
+      if(i===CLAIMS.length-1){const s=document.getElementById('q-scan-status');if(s){s.textContent='✓ Scoring complete';s.style.color='#86efac';}}
+    },c.delay);
+    claimTimers.push(t);
+  });
+}
+function clearQueue(){
+  claimTimers.forEach(t=>clearTimeout(t));claimTimers=[];
+  const body=document.getElementById('claim-body');if(body)body.innerHTML='';
+  ['q-batch-n','qf-total','qf-low','qf-med','qf-high'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='0'});
+  const saved=document.getElementById('qf-saved');if(saved)saved.textContent='$0';
+  const s=document.getElementById('q-scan-status');if(s){s.textContent='◉ Scoring in progress…';s.style.color='#c084fc';}
+}
+
+/* ── Slide 6: donut arcs ── */
+function runDonut(){
+  // circumference = 276
+  // prior auth 34% → offset = 276*(1-.34)=182
+  const arc1=document.getElementById('d-arc1');
+  const arc2=document.getElementById('d-arc2');
+  const arc3=document.getElementById('d-arc3');
+  const arc4=document.getElementById('d-arc4');
+  const total=276;
+  // segment 1: 34% starts at 0
+  if(arc1){arc1.style.strokeDashoffset=total*(1-.34);arc1.setAttribute('stroke-dashoffset',total*(1-.34));arc1.setAttribute('transform','rotate(-90,60,60)')}
+  // segment 2: 28% starts after 34%
+  if(arc2){const start=.34;const len=.28;arc2.style.strokeDashoffset=total*(1-len);arc2.setAttribute('stroke-dashoffset',total*(1-len));arc2.setAttribute('transform',`rotate(${-90+start*360},60,60)`)}
+  // segment 3: 22%
+  if(arc3){const start=.62;const len=.22;arc3.style.strokeDashoffset=total*(1-len);arc3.setAttribute('stroke-dashoffset',total*(1-len));arc3.setAttribute('transform',`rotate(${-90+start*360},60,60)`)}
+  // segment 4: 16%
+  if(arc4){const start=.84;const len=.16;arc4.style.strokeDashoffset=total*(1-len);arc4.setAttribute('stroke-dashoffset',total*(1-len));arc4.setAttribute('transform',`rotate(${-90+start*360},60,60)`)}
+}
+function clearDonut(){
+  ['d-arc1','d-arc2','d-arc3','d-arc4'].forEach(id=>{const e=document.getElementById(id);if(e){e.style.strokeDashoffset=276;e.setAttribute('stroke-dashoffset',276)}})
+}
+
+/* ── Counter animation ── */
+function animateCounters(sel){
+  document.querySelectorAll(sel).forEach(el=>{
+    const target=+el.dataset.t,start=performance.now(),dur=1300;
+    (function tick(now){const p=Math.min((now-start)/dur,1);el.textContent=Math.floor((1-Math.pow(1-p,3))*target);if(p<1)requestAnimationFrame(tick)})(start);
+  });
+}
+
+/* ── Discovery ── */
+function runDisc9(){['dq1','dq2','dq3','dq4'].forEach((id,i)=>{setTimeout(()=>{const e=document.getElementById(id);if(e)e.classList.add('show')},150+i*260)})}
+function clearDisc9(){['dq1','dq2','dq3','dq4'].forEach(id=>{const e=document.getElementById(id);if(e)e.classList.remove('show')})}
+
+function onActivate(n){
+  if(n===4)setTimeout(runQueue,300);else clearQueue();
+  if(n===6)setTimeout(runDonut,500);else clearDonut();
+  if(n===7)setTimeout(()=>animateCounters('.cnt7'),400);
+  if(n===9)setTimeout(runDisc9,200);else clearDisc9();
+}
+onActivate(1);
+</script>
+</body>
+</html>
