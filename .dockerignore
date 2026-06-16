@@ -1,0 +1,13 @@
+.git
+.gitignore
+.dockerignore
+Dockerfile
+README.md
+.playwright-mcp
+tools
+node_modules
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+*.log

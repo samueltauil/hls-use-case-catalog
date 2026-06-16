@@ -19,6 +19,23 @@ npx --yes http-server -p 8080 -c-1
 # then open http://localhost:8080
 ```
 
+### Run with Docker
+
+A minimal `Dockerfile` packages the site behind nginx on port 80.
+
+```powershell
+# Build
+docker build -t hls-use-case-catalog .
+
+# Run (host port 8080 -> container 80)
+docker run --rm -p 8080:80 --name hls-use-case-catalog hls-use-case-catalog
+
+# Open
+Start-Process http://localhost:8080
+```
+
+Stop with `Ctrl+C`. To run detached: add `-d` and stop with `docker stop hls-use-case-catalog`.
+
 ## Pages
 
 | Page | Scope |
