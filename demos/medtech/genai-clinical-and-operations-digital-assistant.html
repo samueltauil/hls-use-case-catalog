@@ -1,0 +1,804 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Asterline Assist - clinical and operations workbench</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.attest span small, .scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* ------------------------------------------------------------ workbench */
+body {
+  --on-accent: #ffffff;
+  --page-max: 1460px;
+}
+.appbar { min-height: 58px; }
+.brand-mark {
+  width: 28px; height: 28px; display: grid; place-items: center;
+  border: 1px solid currentColor; border-radius: 6px; font-size: 15px; font-weight: 700;
+}
+.page { max-width: var(--page-max); margin: 0 auto; padding: 24px 24px 32px; }
+.page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; margin-bottom: 18px; }
+.eyebrow { margin: 0 0 4px; color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: .01em; }
+.page-head h1 { margin: 0; font-size: clamp(22px, 2.4vw, 30px); line-height: 1.18; font-weight: 650; letter-spacing: -.02em; }
+.page-head p { max-width: 68ch; margin: 7px 0 0; color: var(--muted); }
+.page-head .btn { flex: none; }
+.workspace { display: grid; grid-template-columns: minmax(260px, .74fr) minmax(420px, 1.6fr) minmax(260px, .86fr); gap: 14px; align-items: start; }
+.queue-card, .assistant-card, .context-card { min-width: 0; }
+.queue-tools { display: flex; flex-wrap: wrap; gap: 7px; padding: 11px 14px; border-bottom: 1px solid var(--line-soft); }
+.queue-list { display: grid; gap: 0; }
+.queue-item {
+  display: block; width: 100%; padding: 13px 14px; border: 0; border-bottom: 1px solid var(--line-soft);
+  background: var(--surface); color: var(--ink); text-align: left; cursor: pointer;
+}
+.queue-item:last-child { border-bottom: 0; }
+.queue-item:hover { background: var(--surface-2); }
+.queue-item[aria-current="true"] { background: var(--accent-soft); box-shadow: inset 3px 0 var(--accent); }
+.queue-item-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 9px; }
+.queue-item h3 { margin: 0; font-size: 14px; line-height: 1.3; }
+.queue-item p { margin: 7px 0 0; color: var(--muted); font-size: 13px; line-height: 1.4; }
+.queue-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 10px; color: var(--muted); font-size: 11.5px; }
+.queue-meta .mono { color: var(--ink-soft); }
+.assistant-card { overflow: hidden; }
+.assistant-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 15px 16px; border-bottom: 1px solid var(--line-soft); }
+.assistant-head h2 { margin: 0; font-size: 16px; }
+.assistant-head p { margin: 3px 0 0; color: var(--muted); font-size: 12.5px; }
+.assistant-state { flex: none; }
+.assistant-body { padding: 15px 16px; display: grid; gap: 13px; }
+.request-banner { padding: 12px; border: 1px solid var(--accent-line); border-radius: var(--radius); background: var(--accent-soft); }
+.request-banner h3 { margin: 0; font-size: 14px; }
+.request-banner p { margin: 5px 0 0; color: var(--ink-soft); font-size: 13.5px; }
+.request-meta { display: flex; flex-wrap: wrap; gap: 7px 14px; margin-top: 9px; color: var(--muted); font-size: 12px; }
+.conversation { display: grid; gap: 10px; max-height: 314px; overflow: auto; padding-right: 3px; }
+.message { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 9px; align-items: start; }
+.message-avatar { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; background: var(--surface-2); color: var(--muted); font-size: 12px; font-weight: 700; }
+.message.assistant .message-avatar { background: var(--accent); color: var(--on-accent); }
+.message.user .message-avatar { background: var(--ink); color: var(--surface); }
+.message-content { min-width: 0; padding: 9px 11px; border: 1px solid var(--line-soft); border-radius: 3px var(--radius) var(--radius) var(--radius); background: var(--surface-2); }
+.message.user .message-content { background: var(--surface); border-color: var(--line); }
+.message-label { display: block; margin-bottom: 3px; font-size: 11.5px; font-weight: 600; color: var(--muted); }
+.message-content p { margin: 0; font-size: 13.5px; }
+.source-strip { display: grid; gap: 7px; }
+.source-strip h3 { margin: 0; font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.source-item { display: flex; align-items: flex-start; gap: 8px; padding: 8px 9px; border: 1px solid var(--line-soft); background: var(--bg); border-radius: var(--radius); }
+.source-icon { flex: none; width: 22px; height: 22px; display: grid; place-items: center; border: 1px solid var(--accent-line); color: var(--accent-strong); border-radius: 4px; font-size: 11px; font-weight: 700; }
+.source-item strong { display: block; font-size: 12.5px; }
+.source-item small { display: block; margin-top: 1px; color: var(--muted); font-size: 11.5px; }
+.source-item .source-date { margin-left: auto; padding-left: 8px; white-space: nowrap; font-family: var(--mono); font-size: 10.5px; color: var(--muted); }
+.confidence { display: flex; align-items: flex-start; gap: 9px; padding: 9px 11px; background: var(--surface-2); border-left: 3px solid var(--ok); font-size: 12.5px; }
+.confidence strong { font-size: 12.5px; }
+.confidence p { margin: 2px 0 0; color: var(--muted); }
+.draft { display: grid; gap: 6px; }
+.draft label { font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.draft textarea { width: 100%; min-height: 92px; resize: vertical; padding: 9px 10px; border: 1px solid var(--accent-line); border-radius: var(--radius); background: var(--surface); color: var(--ink); font: inherit; font-size: 13.5px; }
+.review-box { display: grid; gap: 11px; padding: 12px; border: 1px solid var(--accent-line); background: var(--accent-soft); border-radius: var(--radius); }
+.review-box h3 { margin: 0; font-size: 14px; }
+.review-box p { margin: 0; font-size: 12.5px; color: var(--ink-soft); }
+.review-check { display: flex; gap: 8px; align-items: flex-start; font-size: 12.5px; }
+.review-check input { width: 17px; height: 17px; margin: 1px 0 0; flex: none; }
+.review-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.exception { display: grid; gap: 10px; padding: 12px; border: 1px solid #e6d08a; background: var(--warn-bg); border-radius: var(--radius); }
+.exception h3 { margin: 0; color: #7a4e08; font-size: 14px; }
+.exception p { margin: 0; color: #7a4e08; font-size: 13px; }
+.escalation { display: grid; gap: 9px; padding: 11px; border: 1px solid #e5b4b7; background: var(--stop-bg); border-radius: var(--radius); }
+.escalation h3 { margin: 0; color: #8b1f25; font-size: 14px; }
+.escalation p { margin: 0; color: #8b1f25; font-size: 12.5px; }
+.escalation select { width: 100%; padding: 8px; border: 1px solid #e5b4b7; border-radius: var(--radius); background: var(--surface); color: var(--ink); font: inherit; font-size: 13px; }
+.context-card .card-body { display: grid; gap: 16px; }
+.context-section { display: grid; gap: 8px; }
+.context-section h3 { margin: 0; font-size: 13px; }
+.context-section p { margin: 0; font-size: 13px; color: var(--ink-soft); }
+.context-section .facts { grid-template-columns: 1fr 1fr; gap: 10px; }
+.context-section .facts dd { font-size: 13px; }
+.audit { border-top: 1px solid var(--line-soft); padding-top: 12px; }
+.audit li { grid-template-columns: 48px minmax(0, 1fr); gap: 8px; }
+.empty-state { padding: 20px 14px; color: var(--muted); font-size: 13px; text-align: center; }
+.working { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); font-size: 12.5px; }
+.working::before { content: ""; width: 9px; height: 9px; border: 2px solid var(--accent-line); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.footer { padding-left: max(18px, calc((100vw - var(--page-max)) / 2 + 24px)); padding-right: max(18px, calc((100vw - var(--page-max)) / 2 + 24px)); }
+
+@media (max-width: 1080px) {
+  .workspace { grid-template-columns: minmax(235px, .7fr) minmax(420px, 1.3fr); }
+  .context-card { grid-column: 1 / -1; }
+  .context-card .card-body { grid-template-columns: 1fr 1fr; align-items: start; }
+  .context-card .audit-section { grid-column: 1 / -1; }
+}
+@media (max-width: 700px) {
+  .page { padding: 18px 14px 26px; }
+  .page-head { align-items: flex-start; flex-direction: column; gap: 12px; }
+  .page-head .btn { width: 100%; justify-content: center; }
+  .workspace { grid-template-columns: 1fr; }
+  .context-card { grid-column: auto; }
+  .context-card .card-body { grid-template-columns: 1fr; }
+  .context-card .audit-section { grid-column: auto; }
+  .assistant-head { padding: 13px 13px; }
+  .assistant-body { padding: 13px; }
+  .conversation { max-height: none; }
+  .source-item .source-date { display: none; }
+  .review-actions .btn { flex: 1 1 180px; justify-content: center; }
+}
+  </style>
+</head>
+<body data-subvertical="medtech">
+  <header class="appbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">A</span>
+      <div><span class="brand-name">Asterline Assist</span><span class="brand-sub">Clinical &amp; operations workbench</span></div>
+    </div>
+    <p class="disclosure">Illustrative demo - synthetic data</p>
+    <p class="who">Signed in as <b>Mara Chen</b> · Operations lead</p>
+  </header>
+
+  <main class="page">
+    <header class="page-head">
+      <div>
+        <p class="eyebrow">Lumen Arc Medical · customer operations · assistant review</p>
+        <h1>Requests ready for a grounded answer</h1>
+        <p>Review scheduling, summary, and balance requests in one place. The assistant drafts; a person decides what leaves the workspace.</p>
+      </div>
+      <button class="btn" type="button" id="resetButton">Reset demo</button>
+    </header>
+
+    <div id="liveRegion" class="sr-only" aria-live="polite"></div>
+    <section class="workspace" aria-label="Assistant workbench">
+      <section class="card queue-card" aria-labelledby="queueTitle">
+        <div class="card-head">
+          <h2 id="queueTitle">Incoming requests</h2>
+          <span class="tag tag-warn" id="queueCount">2 need review</span>
+        </div>
+        <div class="queue-tools" aria-label="Queue filters">
+          <button class="chip" type="button" aria-pressed="true">Needs review</button>
+          <button class="chip" type="button" aria-pressed="false" id="allRequests">All requests</button>
+        </div>
+        <div id="queueList" class="queue-list"></div>
+      </section>
+
+      <section class="card assistant-card" aria-labelledby="assistantTitle">
+        <div class="assistant-head">
+          <div>
+            <h2 id="assistantTitle">Assistant workspace</h2>
+            <p id="assistantSubtitle">Select a request to inspect its grounded context.</p>
+          </div>
+          <span class="tag tag-warn assistant-state" id="stateTag">Ready</span>
+        </div>
+        <div class="assistant-body" id="assistantBody"></div>
+      </section>
+
+      <aside class="card context-card" aria-labelledby="contextTitle">
+        <div class="card-head">
+          <h2 id="contextTitle">Request context</h2>
+          <span class="tag" id="contextType">—</span>
+        </div>
+        <div class="card-body" id="contextBody"></div>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="built"><span>Grounding surfaces</span><span class="svc-chip">Azure AI Foundry</span><span class="svc-chip">Azure AI Search</span><span class="svc-chip">Microsoft Copilot Studio</span></div>
+    <div class="claim"><b>Catalog pattern:</b> grounded conversational assistant for scheduling, summarization, and balance inquiries.</div>
+  </footer>
+
+  <script>
+    const FIXTURES = {
+      organization: "Lumen Arc Medical",
+      operator: { name: "Mara Chen", role: "Operations lead" },
+      sources: {
+        schedule: { name: "Sample scheduling ledger", detail: "Availability and room holds", date: "18 Sep 2026" },
+        account: { name: "Sample account record", detail: "Balance summary · no payment action", date: "17 Sep 2026" },
+        guide: { name: "Approved service guide", detail: "Customer-facing device support", date: "01 Sep 2026" },
+        safety: { name: "Clinical safety routing guide", detail: "Escalation policy · human review", date: "12 Sep 2026" }
+      },
+      requests: [
+        {
+          id: "REQ-2041",
+          kind: "Operations",
+          shortKind: "Scheduling + balance",
+          title: "Move a field training session",
+          received: "09:42",
+          sender: "Nia Patel · Lakeshore Device Center",
+          message: "Could we move our Orion system training to next Tuesday and confirm the remaining balance on our sample service plan?",
+          summary: "Reschedule a customer training session and explain an account balance.",
+          facts: [
+            ["Account", "Lakeshore Device Center"],
+            ["Request type", "Scheduling + balance"],
+            ["Priority", "Standard"],
+            ["PHI detected", "None in sample"]
+          ],
+          sourceKeys: ["schedule", "account", "guide"],
+          draft: "Hi Nia — I found a Tuesday training opening at 10:30 AM at the Lakeshore center. The sample service-plan balance is $1,240, with no payment action taken here. Would you like me to place the time on hold for your confirmation?",
+          confidence: "High for the scheduling and balance summary",
+          confidenceDetail: "The draft is supported by the sample scheduling ledger, account record, and approved service guide. It does not make a clinical recommendation.",
+          audit: [
+            ["09:42", "Nia Patel submitted request"],
+            ["09:43", "Assistant matched approved sources"]
+          ]
+        },
+        {
+          id: "REQ-2047",
+          kind: "Safety review",
+          shortKind: "Clinical-use question",
+          title: "Question about changing device settings",
+          received: "09:51",
+          sender: "Evan Brooks · Harborview Lab",
+          message: "The device reading looks different today. Can we change the infusion setting before the clinician reviews it?",
+          summary: "A customer asks for a consequential clinical-use instruction.",
+          facts: [
+            ["Account", "Harborview Lab"],
+            ["Request type", "Clinical-use question"],
+            ["Priority", "Safety review"],
+            ["PHI detected", "None in sample"]
+          ],
+          sourceKeys: ["guide", "safety"],
+          draft: "",
+          confidence: "Not suitable for automated answering",
+          confidenceDetail: "The approved sources do not authorize a setting change. Keep the device unchanged and route the question to the named clinical safety contact.",
+          audit: [
+            ["09:51", "Evan Brooks submitted request"],
+            ["09:52", "Assistant identified safety boundary"]
+          ]
+        }
+      ]
+    };
+
+    const state = { selectedId: "REQ-2041", phase: "ready", escalated: false, approved: false };
+    const root = document;
+    const queueList = root.querySelector("#queueList");
+    const assistantBody = root.querySelector("#assistantBody");
+    const contextBody = root.querySelector("#contextBody");
+    const stateTag = root.querySelector("#stateTag");
+    const contextType = root.querySelector("#contextType");
+    const assistantSubtitle = root.querySelector("#assistantSubtitle");
+    const liveRegion = root.querySelector("#liveRegion");
+
+    function make(tag, className, text) {
+      const el = document.createElement(tag);
+      if (className) el.className = className;
+      if (text !== undefined) el.textContent = text;
+      return el;
+    }
+
+    function button(label, className, handler) {
+      const el = make("button", "btn" + (className ? " " + className : ""), label);
+      el.type = "button";
+      el.addEventListener("click", handler);
+      return el;
+    }
+
+    function sourceRow(source) {
+      const row = make("div", "source-item");
+      row.append(make("span", "source-icon", "S"));
+      const copy = make("div");
+      copy.append(make("strong", null, source.name));
+      copy.append(make("small", null, source.detail));
+      row.append(copy);
+      row.append(make("span", "source-date", source.date));
+      return row;
+    }
+
+    function addAuditItem(list, time, text, human) {
+      const item = make("li");
+      item.append(make("time", null, time));
+      const copy = make("span");
+      const actor = make("span", "actor " + (human ? "is-human" : "is-system"), human ? "Mara Chen" : "Assistant");
+      copy.append(actor, document.createTextNode(" " + text));
+      item.append(copy);
+      list.append(item);
+    }
+
+    function selectedRequest() {
+      return FIXTURES.requests.find((request) => request.id === state.selectedId) || FIXTURES.requests[0];
+    }
+
+    function setStatus(text) {
+      liveRegion.textContent = text;
+    }
+
+    function renderQueue() {
+      queueList.replaceChildren();
+      FIXTURES.requests.forEach((request) => {
+        const item = make("button", "queue-item");
+        item.type = "button";
+        item.setAttribute("aria-current", request.id === state.selectedId ? "true" : "false");
+        const head = make("div", "queue-item-head");
+        head.append(make("h3", null, request.title));
+        head.append(make("span", "tag " + (request.kind === "Safety review" ? "tag-stop" : "tag-warn"), request.kind));
+        item.append(head);
+        item.append(make("p", null, request.message));
+        const meta = make("div", "queue-meta");
+        meta.append(make("span", "mono", request.id), make("span", null, request.received), make("span", null, request.shortKind));
+        item.append(meta);
+        item.addEventListener("click", () => {
+          state.selectedId = request.id;
+          state.phase = "ready";
+          state.escalated = false;
+          state.approved = false;
+          render();
+          setStatus("Selected " + request.id + ".");
+        });
+        queueList.append(item);
+      });
+    }
+
+    function renderContext(request) {
+      contextType.textContent = request.shortKind;
+      contextBody.replaceChildren();
+
+      const overview = make("section", "context-section");
+      overview.append(make("h3", null, "Request summary"));
+      overview.append(make("p", null, request.summary));
+      contextBody.append(overview);
+
+      const details = make("section", "context-section");
+      details.append(make("h3", null, "Known context"));
+      const facts = make("dl", "facts");
+      request.facts.forEach(([term, value]) => {
+        facts.append(make("div", null, undefined));
+        const last = facts.lastElementChild;
+        last.append(make("dt", null, term), make("dd", null, value));
+      });
+      details.append(facts);
+      contextBody.append(details);
+
+      const auditSection = make("section", "context-section audit-section");
+      auditSection.append(make("h3", null, "Audit trail"));
+      const audit = make("ol", "audit");
+      request.audit.forEach(([time, text]) => addAuditItem(audit, time, text, false));
+      if (state.approved) addAuditItem(audit, "10:01", "queued reply after human review", true);
+      if (state.escalated) addAuditItem(audit, "10:02", "safety escalation created", true);
+      auditSection.append(audit);
+      contextBody.append(auditSection);
+    }
+
+    function renderSources(request) {
+      const strip = make("section", "source-strip");
+      strip.append(make("h3", null, "Grounding used for this request"));
+      request.sourceKeys.forEach((key) => strip.append(sourceRow(FIXTURES.sources[key])));
+      return strip;
+    }
+
+    function renderMessages(request) {
+      const conversation = make("div", "conversation");
+      const userMessage = make("div", "message user");
+      userMessage.append(make("span", "message-avatar", "N"));
+      const userCopy = make("div", "message-content");
+      userCopy.append(make("span", "message-label", request.sender));
+      userCopy.append(make("p", null, request.message));
+      userMessage.append(userCopy);
+      conversation.append(userMessage);
+
+      const assistantMessage = make("div", "message assistant");
+      assistantMessage.append(make("span", "message-avatar", "A"));
+      const assistantCopy = make("div", "message-content");
+      assistantCopy.append(make("span", "message-label", "Asterline Assist"));
+      assistantCopy.append(make("p", null, state.phase === "ready" ? "I will use only the approved sample sources shown below. Review the result before it is queued." : state.phase === "working" ? "Reviewing the request against the approved sample sources…" : request.kind === "Safety review" ? "This request crosses a clinical safety boundary. I will not recommend a device-setting change." : "I found a supported operational path. The draft below remains subject to your review."));
+      assistantMessage.append(assistantCopy);
+      conversation.append(assistantMessage);
+      return conversation;
+    }
+
+    function renderAssistant(request) {
+      assistantBody.replaceChildren();
+      const banner = make("section", "request-banner");
+      banner.append(make("h3", null, request.title));
+      banner.append(make("p", null, request.message));
+      const meta = make("div", "request-meta");
+      meta.append(make("span", "mono", request.id), make("span", null, "Received " + request.received), make("span", null, request.sender));
+      banner.append(meta);
+      assistantBody.append(banner);
+
+      if (state.phase !== "working") assistantBody.append(renderMessages(request));
+      if (state.phase === "working") {
+        const working = make("p", "working", "Checking approved sample sources");
+        assistantBody.append(working);
+      }
+
+      if (state.phase === "ready") {
+        assistantBody.append(renderSources(request));
+        const actions = make("div", "actions");
+        actions.append(button(request.kind === "Safety review" ? "Assess with safety guardrails" : "Generate grounded draft", "btn-primary", () => beginAssessment(request)));
+        assistantBody.append(actions);
+        const rule = make("div", "rule");
+        rule.append(make("span", null, "Review boundary: "));
+        rule.append(make("span", null, request.kind === "Safety review" ? "no clinical setting changes or medical guidance are generated." : "the assistant can draft an operational reply, not a final commitment."));
+        assistantBody.append(rule);
+      }
+
+      if (state.phase === "result" && request.kind !== "Safety review") {
+        assistantBody.append(renderSources(request));
+        const confidence = make("div", "confidence");
+        const confidenceCopy = make("div");
+        confidenceCopy.append(make("strong", null, request.confidence));
+        confidenceCopy.append(make("p", null, request.confidenceDetail));
+        confidence.append(make("span", "tag tag-ok", "Grounded"));
+        confidence.append(confidenceCopy);
+        assistantBody.append(confidence);
+        const draft = make("div", "draft");
+        draft.append(make("label", null, "Generated reply · editable before review"));
+        const textarea = document.createElement("textarea");
+        textarea.id = "replyDraft";
+        textarea.value = request.draft;
+        textarea.setAttribute("aria-label", "Generated reply, editable before review");
+        draft.append(textarea);
+        assistantBody.append(draft);
+        const actions = make("div", "actions");
+        actions.append(button("Review and prepare reply", "btn-primary", () => {
+          state.phase = "review";
+          render();
+          setStatus("Draft ready for human review.");
+        }));
+        actions.append(button("Start over", "", reset));
+        assistantBody.append(actions);
+      }
+
+      if (state.phase === "review" && request.kind !== "Safety review") {
+        assistantBody.append(renderSources(request));
+        const review = make("section", "review-box");
+        review.append(make("h3", null, "Human review required"));
+        review.append(make("p", null, "Confirm the source context and edit the draft if needed. Queueing is simulated and reversible; no customer message is sent."));
+        const label = make("label", "review-check");
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.id = "reviewAttestation";
+        label.append(checkbox, make("span", null, "I reviewed the sources and this reply does not provide clinical guidance."));
+        review.append(label);
+        const actions = make("div", "review-actions");
+        const approve = button("Queue approved reply", "btn-primary", () => {
+          if (!checkbox.checked) {
+            setStatus("Review attestation is required before queueing.");
+            checkbox.focus();
+            return;
+          }
+          state.approved = true;
+          state.phase = "complete";
+          render();
+          setStatus("Reply queued after human review. No message was sent.");
+        });
+        actions.append(approve);
+        actions.append(button("Escalate instead", "", () => {
+          state.phase = "escalation";
+          render();
+          setStatus("Reply diverted to human escalation.");
+        }));
+        review.append(actions);
+        assistantBody.append(review);
+      }
+
+      if (state.phase === "complete" && request.kind !== "Safety review") {
+        assistantBody.append(renderSources(request));
+        const notice = make("div", "notice notice-ok");
+        const copy = make("div");
+        copy.append(make("strong", null, "Reply queued for customer-success review."));
+        copy.append(make("span", "notice-note", "Mara Chen approved the grounded draft. This demo does not send messages or change an account."));
+        notice.append(copy);
+        assistantBody.append(notice);
+        assistantBody.append(button("Reset demo", "", reset));
+      }
+
+      if (request.kind === "Safety review" && ["result", "escalation", "complete"].includes(state.phase)) {
+        assistantBody.append(renderSources(request));
+        const exception = make("section", "exception");
+        exception.append(make("h3", null, "Safety boundary reached"));
+        exception.append(make("p", null, request.confidenceDetail));
+        exception.append(make("p", null, "The assistant will not recommend a setting change, infer a diagnosis, or tell the customer to proceed."));
+        if (state.phase === "result") {
+          exception.append(button("Create safety escalation", "btn-primary", () => {
+            state.phase = "escalation";
+            render();
+            setStatus("Safety escalation form opened.");
+          }));
+        }
+        assistantBody.append(exception);
+      }
+
+      if (state.phase === "escalation") {
+        const escalation = make("section", "escalation");
+        escalation.append(make("h3", null, "Route to clinical safety review"));
+        escalation.append(make("p", null, "This creates a review task for a human safety owner. It does not alter device settings or provide medical advice."));
+        const select = document.createElement("select");
+        select.id = "escalationReason";
+        select.setAttribute("aria-label", "Escalation reason");
+        [["setting", "Requested device-setting change"], ["signal", "Unexpected reading needs review"], ["other", "Other safety concern"]].forEach(([value, label]) => {
+          const option = document.createElement("option");
+          option.value = value;
+          option.textContent = label;
+          select.append(option);
+        });
+        escalation.append(select);
+        const actions = make("div", "actions");
+        actions.append(button("Create review task", "btn-primary", () => {
+          state.escalated = true;
+          state.phase = "complete";
+          render();
+          setStatus("Clinical safety review task created for human follow-up.");
+        }));
+        actions.append(button("Cancel", "", () => {
+          state.phase = "result";
+          render();
+        }));
+        escalation.append(actions);
+        assistantBody.append(escalation);
+      }
+
+      if (state.phase === "complete" && request.kind === "Safety review") {
+        const notice = make("div", "notice notice-stop");
+        const copy = make("div");
+        copy.append(make("strong", null, "Clinical safety review task created."));
+        copy.append(make("span", "notice-note", "Owner: Clinical Safety Desk · status: awaiting human follow-up · device remains unchanged."));
+        notice.append(copy);
+        assistantBody.append(notice);
+        assistantBody.append(button("Reset demo", "", reset));
+      }
+    }
+
+    function beginAssessment(request) {
+      state.phase = "working";
+      render();
+      setStatus("Reviewing " + request.id + " against approved sample sources.");
+      window.setTimeout(() => {
+        state.phase = "result";
+        render();
+        setStatus(request.kind === "Safety review" ? "Safety boundary identified. Escalation is available." : "Grounded draft generated and ready for review.");
+      }, 650);
+    }
+
+    function reset() {
+      state.selectedId = "REQ-2041";
+      state.phase = "ready";
+      state.escalated = false;
+      state.approved = false;
+      render();
+      setStatus("Demo reset.");
+    }
+
+    function render() {
+      const request = selectedRequest();
+      renderQueue();
+      renderAssistant(request);
+      renderContext(request);
+      assistantSubtitle.textContent = request.kind === "Safety review" ? "Safety review is required before any response." : "Grounded operational assistance with human review.";
+      stateTag.textContent = state.phase === "working" ? "Working" : state.phase === "complete" ? "Complete" : state.phase === "escalation" ? "Escalation" : state.phase === "review" ? "Review" : state.phase === "result" ? "Draft ready" : "Ready";
+      stateTag.className = "tag assistant-state " + (state.phase === "complete" ? (request.kind === "Safety review" ? "tag-stop" : "tag-ok") : state.phase === "escalation" || request.kind === "Safety review" ? "tag-warn" : "tag-warn");
+    }
+
+    root.querySelector("#resetButton").addEventListener("click", reset);
+    root.querySelector("#allRequests").addEventListener("click", () => {
+      root.querySelector("#allRequests").setAttribute("aria-pressed", "true");
+      setStatus("All synthetic requests are shown.");
+    });
+    render();
+  </script>
+</body>
+</html>
