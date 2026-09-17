@@ -1,0 +1,847 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Northstar Migration Factory - illustrative demo</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--surface-2); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.attest span small, .scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* ------------------------------------------------------------- demo layout */
+body {
+  --on-accent: #ffffff;
+  --canvas: var(--bg);
+  --accent-deep: var(--accent-strong);
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(245px, 300px) minmax(0, 1fr);
+  min-height: calc(100vh - 62px);
+  background: var(--line);
+  gap: 1px;
+}
+.rail, .content { min-width: 0; }
+.rail { background: var(--surface-2); }
+.content { background: var(--canvas); padding: 22px clamp(16px, 3vw, 36px) 28px; }
+.rail-heading {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  padding: 18px 16px 10px;
+}
+.rail-heading h2 { margin: 0; font-size: 13px; color: var(--ink-soft); }
+.rail-heading span { color: var(--muted); font-size: 12px; }
+.queue { display: grid; gap: 9px; list-style: none; margin: 0; padding: 0 12px 17px; }
+.queue-item {
+  width: 100%; display: grid; gap: 6px; padding: 11px 12px; cursor: pointer;
+  border: 1px solid var(--line); border-left: 4px solid var(--line);
+  border-radius: var(--radius); background: var(--surface); color: var(--ink); text-align: left;
+}
+.queue-item:hover { border-color: var(--muted-soft); }
+.queue-item[aria-current="true"] { border-color: var(--accent); border-left-color: var(--accent); background: var(--accent-soft); }
+.queue-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.queue-id { color: var(--muted); font: 11.5px var(--mono); }
+.queue-title { font-size: 14px; font-weight: 650; line-height: 1.35; }
+.queue-meta { color: var(--muted); font-size: 12.5px; }
+.queue-state {
+  display: inline-flex; width: max-content; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); color: var(--muted); background: var(--surface-2);
+  font-size: 11.5px; font-weight: 650;
+}
+.queue-state.ready { color: var(--ok); border-color: var(--ok); background: var(--ok-bg); }
+.queue-state.attention { color: var(--warn); border-color: var(--warn); background: var(--warn-bg); }
+.rail-note { margin: 0 16px; padding: 14px 0; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; }
+.rail-note strong { color: var(--ink-soft); }
+
+.context-line {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 7px 12px;
+  margin-bottom: 7px; color: var(--muted); font-size: 12.5px;
+}
+.context-line .dot { color: var(--accent); font-size: 18px; line-height: 0; }
+.page-title { margin: 0; font-size: clamp(21px, 2.7vw, 30px); line-height: 1.2; letter-spacing: -.01em; }
+.page-lede { max-width: 78ch; margin: 8px 0 15px; color: var(--ink-soft); }
+.title-row { display: flex; flex-wrap: wrap; align-items: center; gap: 9px 12px; }
+.state {
+  display: inline-flex; align-items: center; width: max-content; padding: 3px 9px;
+  border: 1px solid var(--line); border-radius: 999px; color: var(--muted);
+  background: var(--surface); font-size: 12px; font-weight: 650;
+}
+.state.ready { color: var(--ok); border-color: var(--ok); background: var(--ok-bg); }
+.state.working { color: var(--accent-strong); border-color: var(--accent); background: var(--accent-soft); }
+.state.exception { color: var(--warn); border-color: var(--warn); background: var(--warn-bg); }
+.state.approved { color: var(--accent-strong); border-color: var(--accent); background: var(--accent-soft); }
+
+.decision-grid, .lower-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, .82fr); gap: 14px; align-items: start; }
+.decision-grid { margin-top: 14px; }
+.lower-grid { margin-top: 14px; }
+.decision-card { min-height: 230px; }
+.fact-kicker { margin: 0 0 3px; color: var(--muted); font-size: 12px; }
+.fact-value { margin: 0; font-size: 15px; font-weight: 600; }
+.fact-value + .fact-kicker { margin-top: 12px; }
+.scope-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 13px 0 0; }
+.scope-pill {
+  padding: 4px 8px; border: 1px solid var(--accent-line); border-radius: 4px;
+  color: var(--ink-soft); background: var(--accent-soft); font-size: 12px;
+}
+.sample-note { color: var(--muted); font-size: 12px; }
+.action-copy { margin: 0 0 14px; color: var(--ink-soft); }
+.action-copy strong { color: var(--ink); }
+.action-card .actions { margin-bottom: 8px; }
+.action-card { border-color: var(--muted-soft); }
+.exception-box { margin-top: 12px; }
+
+.result-panel { margin-top: 14px; }
+.result-summary {
+  display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(220px, .75fr);
+  gap: 18px; align-items: start;
+}
+.result-summary h3 { margin: 0 0 5px; font-size: 18px; }
+.result-summary p { margin: 0; color: var(--ink-soft); }
+.step-list {
+  display: grid; gap: 9px; list-style: none; margin: 0; padding: 0;
+  border-left: 2px solid var(--accent-line);
+}
+.step-list li { position: relative; padding-left: 17px; font-size: 13px; }
+.step-list li::before {
+  content: ""; position: absolute; left: -7px; top: 5px; width: 10px; height: 10px;
+  border: 2px solid var(--accent); border-radius: 50%; background: var(--surface);
+}
+.step-list .step-label { display: block; color: var(--muted); font-size: 11.5px; }
+.review-strip {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+  margin-top: 15px; padding: 11px 12px; border: 1px solid var(--accent-line);
+  border-radius: var(--radius); background: var(--accent-soft);
+}
+.review-strip p { color: var(--ink-soft); font-size: 13px; }
+.review-strip strong { color: var(--ink); }
+.evidence-list { display: grid; gap: 10px; list-style: none; margin: 0; padding: 0; }
+.evidence-list li { padding-left: 13px; border-left: 3px solid var(--accent); }
+.evidence-list strong { display: block; font-size: 13.5px; }
+.evidence-list span { display: block; color: var(--muted); font-size: 12.5px; }
+.audit-panel .card-body { padding-bottom: 16px; }
+.footer .claim { text-align: right; }
+
+@media (max-width: 900px) {
+  .workspace { grid-template-columns: minmax(210px, 250px) minmax(0, 1fr); }
+  .decision-grid, .lower-grid, .result-summary { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .workspace { display: block; }
+  .rail { border-bottom: 1px solid var(--line); }
+  .queue { grid-template-columns: repeat(3, minmax(190px, 1fr)); overflow-x: auto; padding-bottom: 13px; }
+  .rail-note { display: none; }
+  .content { padding: 17px 13px 24px; }
+  .footer .claim { text-align: left; }
+}
+@media (max-width: 430px) {
+  .queue { grid-template-columns: repeat(3, minmax(175px, 1fr)); }
+  .appbar { padding-inline: 12px; }
+  .disclosure { order: 3; }
+  .who { width: 100%; }
+  .card-body { padding: 13px; }
+  .review-strip { align-items: flex-start; }
+}
+  </style>
+</head>
+<body data-subvertical="medtech">
+  <header class="appbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">MF</span>
+      <span>
+        <span class="brand-name">Northstar migration factory</span>
+        <span class="brand-sub">Cloud estate assessment workbench</span>
+      </span>
+    </div>
+    <p class="disclosure"><span aria-hidden="true">●</span> Illustrative demo - synthetic data</p>
+    <p class="who"><b>Mira Chen</b> · VP Infrastructure · Fabletide Medical Systems (fictional)</p>
+  </header>
+
+  <main class="workspace">
+    <aside class="rail" aria-labelledby="queue-heading">
+      <div class="rail-heading">
+        <h2 id="queue-heading">Assessment queue</h2>
+        <span>3 sample waves</span>
+      </div>
+      <nav aria-label="Sample migration waves">
+        <ul class="queue" id="waveQueue"></ul>
+      </nav>
+      <p class="rail-note"><strong>Operator cue</strong><br>Confirm identity and service dependencies before a wave moves to planning. Sample queue values are not customer measurements.</p>
+    </aside>
+
+    <section class="content" aria-labelledby="pageTitle">
+      <div class="context-line">
+        <span>Migration factory</span><span class="dot" aria-hidden="true">·</span>
+        <span id="contextId">MF-042</span><span class="dot" aria-hidden="true">·</span>
+        <span>Assessment</span>
+      </div>
+      <div class="title-row">
+        <h1 class="page-title" id="pageTitle">Wave 01 · shared services and identity</h1>
+        <span class="state ready" id="workflowState">Ready for assessment</span>
+      </div>
+      <p class="page-lede" id="pageLede">Prepare a structured review of the AWS estate before a human approves a phased migration wave for planning.</p>
+
+      <div class="decision-grid">
+        <section class="card" aria-labelledby="scopeHeading">
+          <div class="card-head">
+            <h2 id="scopeHeading">Source estate</h2>
+            <span class="card-note">Sample inventory</span>
+          </div>
+          <div class="card-body">
+            <dl class="facts">
+              <div><dt>Source platform</dt><dd id="sourcePlatform">AWS</dd></div>
+              <div><dt>Wave owner</dt><dd id="waveOwner">Cloud platform team</dd></div>
+              <div><dt>Sample workload count</dt><dd id="workloadCount">18 workloads</dd></div>
+              <div><dt>Dependency groups</dt><dd id="dependencyCount">7 mapped groups</dd></div>
+            </dl>
+            <div class="scope-list" id="scopeList" aria-label="Target workload categories"></div>
+            <p class="sample-note">Operational values above are fictional sample data for this screen.</p>
+          </div>
+        </section>
+
+        <section class="card action-card" aria-labelledby="actionHeading">
+          <div class="card-head">
+            <h2 id="actionHeading">Next safe action</h2>
+            <span class="card-note">Human review stays in control</span>
+          </div>
+          <div class="card-body">
+            <p class="action-copy" id="actionCopy"><strong>Run the sample assessment</strong> to surface dependency evidence and a proposed planning wave. This does not execute a migration.</p>
+            <div class="actions">
+              <button class="btn btn-primary" id="runAssessment" type="button">Run readiness assessment</button>
+              <button class="btn" id="escalateGap" type="button" hidden>Escalate mapping gap</button>
+              <button class="btn-link" id="resetDemo" type="button">Reset workbench</button>
+            </div>
+            <p class="status-line" id="liveStatus" aria-live="polite">No assessment has run.</p>
+            <div class="exception-box notice notice-warn" id="exceptionNotice" hidden role="status">
+              <span aria-hidden="true">!</span>
+              <div><strong>Dependency mapping incomplete.</strong><span class="notice-note" id="exceptionText"></span></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <section class="card result-panel" id="resultPanel" aria-labelledby="resultHeading" hidden>
+        <div class="card-head">
+          <h2 id="resultHeading">Assessment output</h2>
+          <span class="card-note">Generated sample recommendation</span>
+        </div>
+        <div class="card-body">
+          <div class="result-summary">
+            <div>
+              <h3 id="resultTitle">Candidate for Wave 01 planning review</h3>
+              <p id="resultSummary">The sample inventory can move to planning review after the operator checks the mapped identity and services dependencies.</p>
+              <div class="review-strip">
+                <p><strong>Decision gate:</strong> <span id="reviewState">Review required - not approved</span></p>
+                <button class="btn btn-primary" id="reviewProposal" type="button">Review proposed wave</button>
+              </div>
+            </div>
+            <ol class="step-list" aria-label="Sample migration factory stages">
+              <li><span class="step-label">Completed</span>Inventory and source grouping</li>
+              <li><span class="step-label">Completed</span>Dependency evidence check</li>
+              <li><span class="step-label">Pending human gate</span>Approve for planning review</li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <div class="lower-grid">
+        <section class="card" aria-labelledby="evidenceHeading">
+          <div class="card-head">
+            <h2 id="evidenceHeading">Evidence to inspect</h2>
+            <span class="card-note">Named sample sources</span>
+          </div>
+          <div class="card-body">
+            <ul class="evidence-list" id="evidenceList"></ul>
+          </div>
+        </section>
+        <section class="card audit-panel" aria-labelledby="auditHeading">
+          <div class="card-head">
+            <h2 id="auditHeading">Review trail</h2>
+            <span class="card-note">Local demo state</span>
+          </div>
+          <div class="card-body">
+            <ul class="audit" id="auditTrail"></ul>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="built"><span>Workload labels</span><span class="svc-chip">Azure Kubernetes Service (AKS)</span><span class="svc-chip">Storage &amp; File Systems (Files/Blob/ADLS/Disk)</span><span class="svc-chip">Linux (+RedHat)</span><span class="svc-chip">Networking (+ExpressRoute, Network Security)</span><span class="svc-chip">Operations &amp; Governance</span></div>
+    <p class="claim"><b>Catalog value direction:</b> Cloud TCO down, estate consolidated, operational and security governance simplified, foundation set for enterprise AI.</p>
+  </footer>
+
+  <dialog id="reviewDialog" aria-labelledby="dialogTitle">
+    <div class="dlg-head">
+      <div>
+        <h2 id="dialogTitle">Review proposed migration wave</h2>
+        <span class="dlg-sub">A human approves planning review; no migration is executed.</span>
+      </div>
+      <button class="btn" id="closeDialog" type="button" aria-label="Close review dialog">Close</button>
+    </div>
+    <div class="dlg-body">
+      <dl class="meta-grid">
+        <div><dt>Source</dt><dd id="dialogSource">AWS sample inventory</dd></div>
+        <div><dt>Evidence date</dt><dd>17 Sep 2026 (sample)</dd></div>
+        <div><dt>Assessment status</dt><dd>Generated - review required</dd></div>
+        <div><dt>Confidence</dt><dd>Review required; no score shown</dd></div>
+      </dl>
+      <div class="rule"><span aria-hidden="true">i</span><span>Check the named evidence and dependency notes before recording a planning decision. Escalate if ownership or identity mapping is unclear.</span></div>
+      <label class="attest"><input id="reviewAttestation" type="checkbox"><span>I reviewed the sample inventory and dependency evidence.<small>This acknowledgement represents Mira Chen's human review in the demo.</small></span></label>
+      <p class="dlg-error" id="dialogError" aria-live="polite"></p>
+    </div>
+    <div class="dlg-foot">
+      <button class="btn" id="cancelReview" type="button">Keep in review</button>
+      <button class="btn btn-primary" id="approveReview" type="button" disabled>Approve for planning review</button>
+    </div>
+  </dialog>
+
+  <script>
+    const DEMO_FIXTURES = {
+      operator: {
+        name: "Mira Chen",
+        role: "VP Infrastructure",
+        organization: "Fabletide Medical Systems (fictional)"
+      },
+      workloads: [
+        "Azure Kubernetes Service (AKS)",
+        "Storage & File Systems (Files/Blob/ADLS/Disk)",
+        "Linux (+RedHat)",
+        "Networking (+ExpressRoute, Network Security)",
+        "Operations & Governance"
+      ],
+      waves: [
+        {
+          id: "wave-01",
+          code: "MF-042",
+          label: "Wave 01 · shared services and identity",
+          queueMeta: "18 workloads · 7 groups",
+          state: "Ready",
+          owner: "Cloud platform team",
+          sampleWorkloads: "18 workloads",
+          dependencies: "7 mapped groups",
+          lede: "Prepare a structured review of the AWS estate before a human approves a phased migration wave for planning.",
+          evidence: [
+            ["Inventory manifest", "AWS-FLEET-042 · 18 fictional workload records"],
+            ["Identity dependency map", "IDM-SAMPLE-07 · 7 mapped groups"],
+            ["Migration factory intake", "Assessment · confirmed input from catalog"]
+          ],
+          result: {
+            title: "Candidate for Wave 01 planning review",
+            summary: "The sample inventory can move to planning review after the operator checks the mapped identity and services dependencies."
+          }
+        },
+        {
+          id: "wave-02",
+          code: "MF-043",
+          label: "Wave 02 · fleet services dependency gap",
+          queueMeta: "11 workloads · mapping needed",
+          state: "Needs mapping",
+          owner: "Fleet services team",
+          sampleWorkloads: "11 workloads",
+          dependencies: "3 mapped groups; 1 unresolved",
+          lede: "Resolve an ownership and identity dependency gap before this sample wave can enter assessment.",
+          exception: "Sample dependency DEP-SAMPLE-19 has no confirmed owner. The wave stays out of planning until the Cloud Platform team reviews it.",
+          evidence: [
+            ["Fleet service register", "AWS-FLEET-043 · 11 fictional workload records"],
+            ["Unresolved dependency", "DEP-SAMPLE-19 · owner not confirmed"],
+            ["Escalation route", "Cloud Platform team · sample queue"]
+          ]
+        },
+        {
+          id: "wave-03",
+          code: "MF-044",
+          label: "Wave 03 · application workloads",
+          queueMeta: "24 workloads · not started",
+          state: "Not started",
+          owner: "Application platform team",
+          sampleWorkloads: "24 workloads",
+          dependencies: "0 assessed groups",
+          lede: "Start a repeatable sample assessment when the application workload inventory is ready for the migration factory.",
+          evidence: [
+            ["Application inventory", "AWS-FLEET-044 · 24 fictional workload records"],
+            ["Dependency map", "Not started for this sample wave"],
+            ["Migration factory intake", "Assessment · sample queue item"]
+          ],
+          result: {
+            title: "Candidate for Wave 03 planning review",
+            summary: "The sample application inventory is ready for a repeatable evidence check; planning still requires human review."
+          }
+        }
+      ]
+    };
+
+    const elements = {
+      queue: document.getElementById("waveQueue"),
+      contextId: document.getElementById("contextId"),
+      pageTitle: document.getElementById("pageTitle"),
+      pageLede: document.getElementById("pageLede"),
+      workflowState: document.getElementById("workflowState"),
+      sourcePlatform: document.getElementById("sourcePlatform"),
+      waveOwner: document.getElementById("waveOwner"),
+      workloadCount: document.getElementById("workloadCount"),
+      dependencyCount: document.getElementById("dependencyCount"),
+      scopeList: document.getElementById("scopeList"),
+      actionCopy: document.getElementById("actionCopy"),
+      runAssessment: document.getElementById("runAssessment"),
+      escalateGap: document.getElementById("escalateGap"),
+      resetDemo: document.getElementById("resetDemo"),
+      liveStatus: document.getElementById("liveStatus"),
+      exceptionNotice: document.getElementById("exceptionNotice"),
+      exceptionText: document.getElementById("exceptionText"),
+      resultPanel: document.getElementById("resultPanel"),
+      resultTitle: document.getElementById("resultTitle"),
+      resultSummary: document.getElementById("resultSummary"),
+      reviewProposal: document.getElementById("reviewProposal"),
+      reviewState: document.getElementById("reviewState"),
+      evidenceList: document.getElementById("evidenceList"),
+      auditTrail: document.getElementById("auditTrail"),
+      reviewDialog: document.getElementById("reviewDialog"),
+      closeDialog: document.getElementById("closeDialog"),
+      cancelReview: document.getElementById("cancelReview"),
+      approveReview: document.getElementById("approveReview"),
+      reviewAttestation: document.getElementById("reviewAttestation"),
+      dialogError: document.getElementById("dialogError"),
+      dialogSource: document.getElementById("dialogSource")
+    };
+
+    let selectedWaveId = DEMO_FIXTURES.waves[0].id;
+    let assessmentTimer = null;
+    let auditEntries = [];
+
+    function selectedWave() {
+      return DEMO_FIXTURES.waves.find((wave) => wave.id === selectedWaveId);
+    }
+
+    function setText(element, value) {
+      element.textContent = value;
+    }
+
+    function renderQueue() {
+      elements.queue.replaceChildren();
+      DEMO_FIXTURES.waves.forEach((wave) => {
+        const item = document.createElement("li");
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "queue-item";
+        button.setAttribute("aria-current", wave.id === selectedWaveId ? "true" : "false");
+        button.addEventListener("click", () => selectWave(wave.id));
+
+        const top = document.createElement("span");
+        top.className = "queue-top";
+        const code = document.createElement("span");
+        code.className = "queue-id";
+        setText(code, wave.code);
+        const state = document.createElement("span");
+        state.className = "queue-state " + (wave.state === "Needs mapping" ? "attention" : wave.state === "Ready" ? "ready" : "");
+        setText(state, wave.state);
+        top.append(code, state);
+
+        const title = document.createElement("span");
+        title.className = "queue-title";
+        setText(title, wave.label);
+        const meta = document.createElement("span");
+        meta.className = "queue-meta";
+        setText(meta, wave.queueMeta);
+        button.append(top, title, meta);
+        item.append(button);
+        elements.queue.append(item);
+      });
+    }
+
+    function renderEvidence(wave) {
+      elements.evidenceList.replaceChildren();
+      wave.evidence.forEach(([title, detail]) => {
+        const item = document.createElement("li");
+        const strong = document.createElement("strong");
+        const span = document.createElement("span");
+        setText(strong, title);
+        setText(span, detail);
+        item.append(strong, span);
+        elements.evidenceList.append(item);
+      });
+    }
+
+    function renderAudit() {
+      elements.auditTrail.replaceChildren();
+      auditEntries.forEach((entry) => {
+        const item = document.createElement("li");
+        const time = document.createElement("time");
+        const detail = document.createElement("span");
+        const actor = document.createElement("span");
+        time.dateTime = entry.dateTime;
+        setText(time, entry.time);
+        actor.className = "actor " + (entry.actorType === "human" ? "is-human" : "is-system");
+        setText(actor, entry.actor);
+        detail.append(actor, document.createTextNode(" " + entry.message));
+        item.append(time, detail);
+        elements.auditTrail.append(item);
+      });
+    }
+
+    function addAudit(actor, actorType, message) {
+      auditEntries.unshift({ time: "12:11", dateTime: "2026-09-17T12:11:00-04:00", actor, actorType, message });
+      renderAudit();
+    }
+
+    function resetPanels() {
+      window.clearTimeout(assessmentTimer);
+      elements.resultPanel.hidden = true;
+      elements.exceptionNotice.hidden = true;
+      elements.runAssessment.hidden = false;
+      elements.escalateGap.hidden = true;
+      elements.runAssessment.disabled = false;
+      elements.runAssessment.textContent = "Run readiness assessment";
+      elements.reviewState.textContent = "Review required - not approved";
+      elements.reviewProposal.disabled = false;
+      elements.liveStatus.textContent = "No assessment has run.";
+      elements.workflowState.className = "state ready";
+      elements.workflowState.textContent = "Ready for assessment";
+      auditEntries = [];
+      renderAudit();
+    }
+
+    function selectWave(id) {
+      selectedWaveId = id;
+      const wave = selectedWave();
+      resetPanels();
+      setText(elements.contextId, wave.code);
+      setText(elements.pageTitle, wave.label);
+      setText(elements.pageLede, wave.lede);
+      setText(elements.waveOwner, wave.owner);
+      setText(elements.workloadCount, wave.sampleWorkloads);
+      setText(elements.dependencyCount, wave.dependencies);
+      renderEvidence(wave);
+      if (wave.exception) {
+        elements.runAssessment.hidden = true;
+        elements.escalateGap.hidden = false;
+        elements.exceptionNotice.hidden = false;
+        setText(elements.exceptionText, wave.exception);
+        elements.workflowState.className = "state exception";
+        elements.workflowState.textContent = "Needs mapping";
+        elements.actionCopy.innerHTML = "<strong>Resolve the sample gap</strong> before the wave can enter assessment. Escalation records a reversible review handoff.";
+        elements.liveStatus.textContent = "Assessment blocked by an unresolved dependency.";
+      } else {
+        elements.actionCopy.innerHTML = "<strong>Run the sample assessment</strong> to surface dependency evidence and a proposed planning wave. This does not execute a migration.";
+      }
+      renderQueue();
+    }
+
+    function renderAssessmentOutput(wave) {
+      setText(elements.resultTitle, wave.result.title);
+      setText(elements.resultSummary, wave.result.summary);
+      elements.resultPanel.hidden = false;
+      elements.reviewProposal.focus();
+    }
+
+    function runAssessment() {
+      const wave = selectedWave();
+      if (wave.exception || elements.runAssessment.disabled) return;
+      elements.runAssessment.disabled = true;
+      elements.runAssessment.textContent = "Assessing sample inventory...";
+      elements.workflowState.className = "state working";
+      elements.workflowState.textContent = "Assessment in progress";
+      elements.liveStatus.textContent = "Checking sample inventory and dependency evidence...";
+      addAudit("System", "system", "started the sample assessment.");
+      assessmentTimer = window.setTimeout(() => {
+        elements.runAssessment.disabled = false;
+        elements.runAssessment.textContent = "Re-run assessment";
+        elements.workflowState.className = "state ready";
+        elements.workflowState.textContent = "Ready for human review";
+        elements.liveStatus.textContent = "Assessment complete. Review the proposal before planning.";
+        renderAssessmentOutput(wave);
+        addAudit("System", "system", "generated a planning review proposal.");
+      }, 850);
+    }
+
+    function escalateGap() {
+      const wave = selectedWave();
+      if (!wave.exception) return;
+      elements.escalateGap.disabled = true;
+      elements.workflowState.className = "state approved";
+      elements.workflowState.textContent = "Escalated for mapping";
+      elements.liveStatus.textContent = "Mapping gap escalated to the Cloud Platform team.";
+      elements.exceptionNotice.className = "exception-box notice notice-ok";
+      elements.exceptionNotice.querySelector("strong").textContent = "Escalation recorded.";
+      elements.exceptionText.textContent = "The sample wave remains blocked until a human confirms ownership for DEP-SAMPLE-19.";
+      addAudit("Mira Chen", "human", "escalated the dependency gap for mapping review.");
+    }
+
+    function openReview() {
+      elements.dialogError.textContent = "";
+      elements.reviewAttestation.checked = false;
+      elements.approveReview.disabled = true;
+      elements.dialogSource.textContent = selectedWave().code + " AWS sample inventory";
+      if (typeof elements.reviewDialog.showModal === "function") {
+        elements.reviewDialog.showModal();
+      } else {
+        elements.reviewDialog.setAttribute("open", "");
+      }
+      elements.reviewAttestation.focus();
+    }
+
+    function closeReview() {
+      if (typeof elements.reviewDialog.close === "function") elements.reviewDialog.close();
+      else elements.reviewDialog.removeAttribute("open");
+    }
+
+    function approveReview() {
+      if (!elements.reviewAttestation.checked) {
+        elements.dialogError.textContent = "Check the human review acknowledgement before approving.";
+        return;
+      }
+      closeReview();
+      elements.reviewState.textContent = "Approved for planning review by Mira Chen";
+      elements.reviewProposal.disabled = true;
+      elements.reviewProposal.textContent = "Planning review approved";
+      elements.workflowState.className = "state approved";
+      elements.workflowState.textContent = "Approved for planning";
+      elements.liveStatus.textContent = "Planning review recorded. Migration execution remains out of scope.";
+      addAudit("Mira Chen", "human", "approved the sample wave for planning review.");
+    }
+
+    elements.runAssessment.addEventListener("click", runAssessment);
+    elements.escalateGap.addEventListener("click", escalateGap);
+    elements.resetDemo.addEventListener("click", () => selectWave(DEMO_FIXTURES.waves[0].id));
+    elements.reviewProposal.addEventListener("click", openReview);
+    elements.closeDialog.addEventListener("click", closeReview);
+    elements.cancelReview.addEventListener("click", closeReview);
+    elements.reviewAttestation.addEventListener("change", () => {
+      elements.approveReview.disabled = !elements.reviewAttestation.checked;
+    });
+    elements.approveReview.addEventListener("click", approveReview);
+    elements.reviewDialog.addEventListener("click", (event) => {
+      if (event.target === elements.reviewDialog) closeReview();
+    });
+
+    renderQueue();
+    selectWave(selectedWaveId);
+  </script>
+</body>
+</html>
