@@ -1,0 +1,720 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Epic estate architecture workshop - illustrative demo</title>
+  <style>
+    /* HLS demo shell - shared visual identity for every self-contained demo. */
+    :root {
+      --ms-blue: #0078d4;
+      --ms-blue-dark: #005a9e;
+      --ms-blue-darker: #004578;
+      --ms-blue-light: #c7e0f4;
+      --ms-blue-tint: #eff6fc;
+      --ink: #201f1e;
+      --ink-soft: #3b3a39;
+      --muted: #605e5c;
+      --muted-soft: #8a8886;
+      --line: #e1dfdd;
+      --line-soft: #edebe9;
+      --bg: #faf9f8;
+      --surface: #ffffff;
+      --surface-2: #f3f2f1;
+      --ok: #107c10;
+      --ok-bg: #dff6dd;
+      --warn: #97620a;
+      --warn-bg: #fff4ce;
+      --stop: #a4262c;
+      --stop-bg: #fde7e9;
+      --accent: var(--ms-blue);
+      --accent-strong: var(--ms-blue-darker);
+      --accent-soft: var(--ms-blue-tint);
+      --accent-line: var(--ms-blue-light);
+      --radius: 8px;
+      --radius-lg: 12px;
+      --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+      --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+      --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+      --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+    }
+
+    body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+    body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+    body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+    body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    [hidden] { display: none !important; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 15px/1.5 var(--font);
+      -webkit-text-size-adjust: 100%;
+    }
+    :where(button, input, select, textarea, [tabindex]):focus-visible {
+      outline: 2px solid var(--accent-strong);
+      outline-offset: 2px;
+    }
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+    }
+    .mono { font-family: var(--mono); }
+    .appbar {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+      padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+      border-bottom: 3px solid var(--accent);
+      position: sticky; top: 0; z-index: 30;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+    .brand-mark { color: var(--accent); flex: none; font-weight: 700; }
+    .brand-name { font-weight: 600; }
+    .brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+    .disclosure {
+      display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+      padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+      background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+    }
+    .who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+    .who b { color: var(--surface); font-weight: 600; }
+    .btn {
+      font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+      min-height: 38px;
+    }
+    .btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+    .btn:disabled { cursor: not-allowed; opacity: .55; }
+    .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+    .btn-link {
+      font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+      border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+    }
+    .btn-link:hover { border-bottom-color: var(--accent); }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+    .card-head {
+      display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+      padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+    }
+    .card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+    .card-note { font-size: 12.5px; color: var(--muted); }
+    .card-body { padding: 14px 15px; }
+    .tag {
+      display: inline-flex; align-items: center; gap: 5px; flex: none;
+      font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+      border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+    }
+    .tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+    .tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+    .tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+    .st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+    .st-ok { color: var(--ok); }
+    .st-warn { color: var(--warn); }
+    .st-stop { color: var(--stop); }
+    .st-idle { color: var(--muted); }
+    .notice {
+      display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+      padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+      background: var(--surface-2); color: var(--ink-soft);
+    }
+    .notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+    .notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+    .notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+    .notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+    .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 11px 16px; margin: 0; }
+    .facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+    .facts dd { margin: 0; font-size: 14px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 9px; }
+    .status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+    .audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+    .audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+    .audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+    .audit .actor { font-weight: 600; }
+    .audit .actor.is-system { color: var(--muted); }
+    .audit .actor.is-human { color: var(--accent-strong); }
+    dialog {
+      border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+      background: var(--surface); color: var(--ink);
+      width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+    }
+    dialog::backdrop { background: rgba(32, 31, 30, .45); }
+    .dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+    .dlg-head h2 { margin: 0; font-size: 16px; }
+    .dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+    .dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+    .dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+    .dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+    .field { display: grid; gap: 5px; }
+    .field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+    .field textarea {
+      font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+      border-radius: var(--radius); color: var(--ink); background: var(--surface); resize: vertical; min-height: 82px;
+    }
+    .attest {
+      display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+      padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+    }
+    .attest input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+    .footer {
+      display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+      padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+      color: var(--muted); font-size: 12.5px;
+    }
+    .built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+    .claim { margin-left: auto; max-width: 56ch; }
+    .claim b { color: var(--ink); font-weight: 600; }
+    .brand-mark { color: var(--accent-line); }
+    @media (max-width: 700px) {
+      .who { text-align: left; }
+      .claim { margin-left: 0; }
+      .appbar { gap: 8px 12px; padding: 8px 14px; }
+      .brand-sub { display: none; }
+      .brand-name { font-size: 14.5px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+    }
+
+    /* Demo-specific layout and state styles. */
+    body {
+      --on-accent: #ffffff;
+      --canvas: var(--bg);
+      --line-strong: var(--line);
+    }
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(235px, 275px) minmax(0, 1fr);
+      min-height: calc(100vh - 62px);
+      gap: 1px;
+      background: var(--line);
+    }
+    .sidebar, .main { min-width: 0; }
+    .sidebar { padding: 16px 13px; background: var(--surface); }
+    .sidebar h2, .section-title { margin: 0; font-size: 13px; font-weight: 700; }
+    .sidebar h2 { color: var(--muted); }
+    .queue { display: grid; gap: 8px; margin-top: 10px; }
+    .queue-item {
+      width: 100%; padding: 10px 11px; color: var(--ink); text-align: left;
+      background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--line);
+      border-radius: var(--radius); cursor: pointer;
+    }
+    .queue-item:hover { border-color: var(--muted-soft); }
+    .queue-item[aria-current="true"] { border-color: var(--accent); border-left-color: var(--accent); background: var(--accent-soft); }
+    .queue-item strong { display: block; font-size: 13.5px; }
+    .queue-item span { display: block; margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .sidebar-block { margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--line); }
+    .sidebar-block h3 { margin: 0 0 9px; font-size: 12px; color: var(--muted); }
+    .stakeholders { display: grid; gap: 7px; margin: 0; }
+    .stakeholders div { display: grid; gap: 1px; }
+    .stakeholders dt { color: var(--muted); font-size: 11.5px; }
+    .stakeholders dd { margin: 0; font-size: 12.5px; }
+    .catalog-note { margin: 19px 0 0; padding: 9px 10px; color: var(--muted); background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius); font-size: 12px; }
+    .main { padding: 17px 19px 27px; background: var(--canvas); }
+    .main-header { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px 18px; margin-bottom: 14px; }
+    .eyebrow { margin: 0 0 4px; color: var(--accent-strong); font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+    h1 { margin: 0; max-width: 25ch; font-size: clamp(21px, 2.3vw, 28px); line-height: 1.18; letter-spacing: -.02em; }
+    .lede { max-width: 72ch; margin: 6px 0 0; color: var(--muted); font-size: 13.5px; }
+    .header-status { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; padding-top: 4px; }
+    .review-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(245px, .65fr); gap: 14px; align-items: start; }
+    .stack { display: grid; gap: 14px; }
+    .packet-title { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .packet-title h2 { margin: 0; font-size: 18px; line-height: 1.25; }
+    .packet-id { color: var(--muted); font-family: var(--mono); font-size: 12px; }
+    .subhead { margin: 17px 0 8px; font-size: 13px; font-weight: 700; }
+    .dependency-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    .dependency-table th { padding: 7px 8px; color: var(--muted); text-align: left; font-size: 11.5px; font-weight: 600; border-bottom: 1px solid var(--line); }
+    .dependency-table td { padding: 8px; vertical-align: top; border-bottom: 1px solid var(--line-soft); }
+    .dependency-table tr:last-child td { border-bottom: 0; }
+    .dependency-table td:first-child { font-weight: 600; }
+    .dependency-table small { display: block; color: var(--muted); font-size: 11.5px; }
+    .source-line { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 12px; color: var(--muted); font-size: 12px; }
+    .source-line a { color: var(--accent-strong); }
+    .gate-copy { margin: 0 0 12px; color: var(--muted); font-size: 13px; }
+    .checklist { display: grid; gap: 8px; margin: 0 0 13px; padding: 0; list-style: none; }
+    .check-row { display: grid; grid-template-columns: 21px minmax(0, 1fr) auto; gap: 8px; align-items: start; padding: 8px 9px; border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--bg); font-size: 13px; }
+    .check-icon { width: 19px; height: 19px; display: grid; place-items: center; border-radius: 50%; background: var(--surface-2); color: var(--muted); font-size: 12px; font-weight: 700; }
+    .check-icon.ok { background: var(--ok-bg); color: var(--ok); }
+    .check-icon.warn { background: var(--warn-bg); color: var(--warn); }
+    .check-detail { display: block; color: var(--muted); font-size: 11.5px; }
+    .result-panel { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+    .result-panel h3 { margin: 0 0 5px; font-size: 14px; }
+    .result-panel p { margin: 0 0 10px; font-size: 13px; }
+    .rail-list { display: grid; gap: 9px; margin: 0; padding: 0; list-style: none; }
+    .rail-list li { display: grid; grid-template-columns: 9px minmax(0, 1fr); gap: 8px; align-items: start; font-size: 13px; }
+    .rail-list li::before { content: ""; width: 8px; height: 8px; margin-top: 6px; border-radius: 50%; background: var(--muted-soft); }
+    .rail-list li.done::before { background: var(--ok); }
+    .rail-list li.active::before { background: var(--accent); }
+    .rail-list small { display: block; color: var(--muted); font-size: 11.5px; }
+    .workload-links { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+    .workload-links li { display: flex; justify-content: space-between; gap: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line-soft); font-size: 12.5px; }
+    .workload-links li:last-child { padding-bottom: 0; border-bottom: 0; }
+    .workload-links a { color: var(--accent-strong); font-size: 12px; white-space: nowrap; }
+    .exception-panel { margin-top: 12px; }
+    .exception-panel p { margin: 0 0 10px; }
+    .audit-wrap { margin-top: 14px; }
+    .audit-wrap .card-body { padding-top: 11px; padding-bottom: 11px; }
+    @media (max-width: 900px) {
+      .review-grid { grid-template-columns: 1fr; }
+      .sidebar { padding-bottom: 10px; }
+      .workspace { grid-template-columns: 215px minmax(0, 1fr); }
+    }
+    @media (max-width: 650px) {
+      .workspace { display: block; min-height: auto; }
+      .sidebar { border-bottom: 1px solid var(--line); }
+      .queue { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .sidebar-block, .catalog-note { display: none; }
+      .main { padding: 15px 13px 22px; }
+      .dependency-table { display: block; overflow-x: auto; }
+      .dependency-table tbody, .dependency-table tr { display: table; width: 100%; table-layout: fixed; }
+      .dependency-table th, .dependency-table td { min-width: 112px; }
+      .dependency-table th:first-child, .dependency-table td:first-child { min-width: 145px; }
+      .dependency-table thead { display: table; width: 100%; table-layout: fixed; }
+      .packet-title h2 { font-size: 17px; }
+      .footer { padding: 11px 13px; }
+    }
+    @media (max-width: 390px) {
+      .queue { grid-template-columns: 1fr; }
+      .dependency-table { font-size: 12px; }
+      .check-row { grid-template-columns: 21px minmax(0, 1fr); }
+      .check-row .tag { grid-column: 2; justify-self: start; }
+    }
+  </style>
+</head>
+<body data-subvertical="medtech">
+  <header class="appbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">AZ</span>
+      <div>
+        <span class="brand-name">Estate architecture workspace</span>
+        <span class="brand-sub">MedTech infrastructure planning</span>
+      </div>
+    </div>
+    <p class="disclosure"><span aria-hidden="true">i</span> Illustrative demo - synthetic data</p>
+    <p class="who">Signed in as <b>Mara Chen</b><br><span>Epic Hosting Lead · Auralis Medical Group</span></p>
+  </header>
+
+  <main class="workspace">
+    <aside class="sidebar" aria-labelledby="queue-title">
+      <h2 id="queue-title">Architecture packets</h2>
+      <div class="queue">
+        <button class="queue-item" type="button" aria-current="true" id="packet-current">
+          <strong>Epic estate foundation</strong>
+          <span>SYN-EPIC-042 · 4 workloads</span>
+          <span class="tag tag-warn" id="queue-status">Needs review</span>
+        </button>
+        <button class="queue-item" type="button" aria-current="false" id="packet-secondary">
+          <strong>Imaging archive adjunct</strong>
+          <span>SYN-IMG-017 · 2 workloads</span>
+          <span class="tag">Draft intake</span>
+        </button>
+      </div>
+
+      <section class="sidebar-block" aria-labelledby="workshop-title">
+        <h3 id="workshop-title">Workshop context</h3>
+        <dl class="stakeholders">
+          <div><dt>Journey stage</dt><dd>Data, AI &amp; Platform Foundation</dd></div>
+          <div><dt>Starting motion</dt><dd>Architecture Workshop</dd></div>
+          <div><dt>Primary buyer</dt><dd>CIO / VP Infrastructure</dd></div>
+        </dl>
+      </section>
+
+      <section class="sidebar-block" aria-labelledby="people-title">
+        <h3 id="people-title">Review participants</h3>
+        <dl class="stakeholders">
+          <div><dt>Architecture owner</dt><dd>Mara Chen</dd></div>
+          <div><dt>Security reviewer</dt><dd>Jon Bell</dd></div>
+          <div><dt>Application owner</dt><dd>Priya Nair</dd></div>
+          <div><dt>DR design owner</dt><dd>Owen Hale</dd></div>
+        </dl>
+      </section>
+
+      <p class="catalog-note">This workspace shapes the next design conversation. It does not approve a production migration or replace Epic, security, or DR review.</p>
+    </aside>
+
+    <section class="main" aria-labelledby="page-title">
+      <header class="main-header">
+        <div>
+          <p class="eyebrow">Architecture workshop / decision workspace</p>
+          <h1 id="page-title">Epic estate foundation review</h1>
+          <p class="lede">Bring the EHR estate and surrounding applications into one reviewable migration packet before the team designs the target foundation.</p>
+        </div>
+        <div class="header-status"><span class="tag tag-warn" id="packet-status">Needs review</span><span class="packet-id">SYN-EPIC-042</span><button class="btn btn-primary" type="button" id="run-review">Run readiness review</button></div>
+      </header>
+
+      <div class="review-grid">
+        <div class="stack">
+          <article class="card" aria-labelledby="estate-title">
+            <div class="card-head">
+              <div class="packet-title"><h2 id="estate-title">Auralis Medical Group estate map</h2><span class="tag">Sample packet</span></div>
+              <span class="card-note">Captured 17 Sep 2026 · fictional</span>
+            </div>
+            <div class="card-body">
+              <dl class="facts">
+                <div><dt>Current estate</dt><dd>Self-hosted Epic + surrounding apps</dd></div>
+                <div><dt>Workshop target</dt><dd>Epic on Azure foundation</dd></div>
+                <div><dt>Review owner</dt><dd>Mara Chen · Epic Hosting Lead</dd></div>
+                <div><dt>Business intent</dt><dd>Control, scalability, and resilience</dd></div>
+              </dl>
+
+              <h3 class="subhead">Dependency set to carry with Epic</h3>
+              <table class="dependency-table">
+                <caption class="sr-only">Fictional dependency inventory for the Epic estate packet</caption>
+                <thead><tr><th>Workload</th><th>Role in packet</th><th>Sample review signal</th></tr></thead>
+                <tbody>
+                  <tr><td>Epic on Azure (EoA)<small>Core EHR workload</small></td><td>Anchor workload</td><td><span class="st st-ok">Ready to inspect</span></td></tr>
+                  <tr><td>Windows<small>Supporting servers</small></td><td>Surrounding app base</td><td><span class="st st-ok">Inventory present</span></td></tr>
+                  <tr><td>SQL Server on Azure VMs<small>SQL On-prem -&gt; Azure SQL VM (IaaS)</small></td><td>Data dependency</td><td><span class="st st-ok">Owner named</span></td></tr>
+                  <tr><td>Integration bridge<small>Fictional surrounding application</small></td><td>Cutover dependency</td><td><span class="st st-warn">Sequence to confirm</span></td></tr>
+                </tbody>
+              </table>
+              <div class="source-line">
+                <span>Source: workshop intake / synthetic operational sample</span>
+                <span>Grounding: Confirmed input</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="card" aria-labelledby="gate-title">
+            <div class="card-head">
+              <h2 id="gate-title">Readiness gate</h2>
+              <span class="card-note">Human review required before design handoff</span>
+            </div>
+            <div class="card-body">
+              <p class="gate-copy">Run the packet check to surface what the workshop team can carry forward and where evidence is still needed. This is a deterministic sample review, not a production assessment.</p>
+              <ul class="checklist" id="checklist">
+                <li class="check-row"><span class="check-icon" aria-hidden="true">-</span><span>Epic hosting complexity<small class="check-detail">Reference architecture checkpoint</small></span><span class="tag">Pending</span></li>
+                <li class="check-row"><span class="check-icon" aria-hidden="true">-</span><span>Surrounding application sequence<small class="check-detail">Dependency and owner review</small></span><span class="tag">Pending</span></li>
+                <li class="check-row"><span class="check-icon" aria-hidden="true">-</span><span>DR confidence<small class="check-detail">BCDR design and testing evidence</small></span><span class="tag">Pending</span></li>
+              </ul>
+              <div class="actions"><button class="btn" type="button" id="reset-review" hidden>Reset review</button></div>
+              <p class="status-line" id="live-status" aria-live="polite"></p>
+
+              <section class="result-panel" id="result-panel" hidden aria-labelledby="result-title">
+                <h3 id="result-title">Sample review complete</h3>
+                <p id="result-copy">Two packet checks are ready for discussion. DR evidence remains a deliberate human checkpoint.</p>
+                <div class="notice notice-warn">
+                  <span aria-hidden="true">!</span>
+                  <div><strong>Do not infer DR readiness.</strong><span class="notice-note">Use the evidence request or review the packet with the DR design owner.</span></div>
+                </div>
+                <div class="actions" style="margin-top: 11px">
+                  <button class="btn btn-primary" type="button" id="advance-review">Review and advance</button>
+                  <button class="btn" type="button" id="request-evidence">Request DR evidence</button>
+                </div>
+              </section>
+
+              <section class="exception-panel notice notice-stop" id="exception-panel" hidden aria-labelledby="exception-title">
+                <span aria-hidden="true">!</span>
+                <div>
+                  <strong id="exception-title">DR evidence gap recorded</strong>
+                  <p id="exception-copy">The packet is held until the DR design owner supplies a BCDR design and testing note. No migration decision was made.</p>
+                  <div class="actions">
+                    <button class="btn btn-primary" type="button" id="escalate">Escalate to DR design owner</button>
+                    <button class="btn" type="button" id="return-to-gate">Return to readiness gate</button>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </article>
+
+          <article class="card audit-wrap" aria-labelledby="audit-title">
+            <div class="card-head"><h2 id="audit-title">Review trail</h2><span class="card-note">Sample audit context</span></div>
+            <div class="card-body">
+              <ol class="audit" id="audit-list">
+                <li><time>09:41</time><span><span class="actor is-system">Workspace</span> packet opened for architecture workshop</span></li>
+              </ol>
+            </div>
+          </article>
+        </div>
+
+        <aside class="stack" aria-label="Architecture context">
+          <article class="card">
+            <div class="card-head"><h2>Workshop checkpoints</h2><span class="card-note">Sample state</span></div>
+            <div class="card-body">
+              <ul class="rail-list">
+                <li class="active"><span><strong>Confirm estate shape</strong><small>Epic and surrounding applications in scope</small></span></li>
+                <li id="checkpoint-architecture"><span><strong>Shape target foundation</strong><small>Validated Epic-on-Azure reference architecture</small></span></li>
+                <li id="checkpoint-bcdr"><span><strong>Prove DR approach</strong><small>BCDR design and testing conversation</small></span></li>
+                <li id="checkpoint-handoff"><span><strong>Prepare design handoff</strong><small>Human-owned rationale and escalation route</small></span></li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="card">
+            <div class="card-head"><h2>Catalog workloads</h2><span class="card-note">Canonical references</span></div>
+            <div class="card-body">
+              <ul class="workload-links">
+                <li><span>Epic on Azure (EoA)</span><a href="https://learn.microsoft.com/industry/healthcare/" target="_blank" rel="noreferrer">Learn</a></li>
+                <li><span>Windows</span><a href="https://learn.microsoft.com/azure/virtual-machines/windows/" target="_blank" rel="noreferrer">Learn</a></li>
+                <li><span>SQL Server on Azure VMs</span><a href="https://learn.microsoft.com/azure/azure-sql/virtual-machines/" target="_blank" rel="noreferrer">Learn</a></li>
+                <li><span>Defender for Cloud</span><a href="https://learn.microsoft.com/azure/defender-for-cloud/" target="_blank" rel="noreferrer">Learn</a></li>
+                <li><span>Azure BCDR</span><a href="https://learn.microsoft.com/azure/reliability/concept-business-continuity-high-availability-disaster-recovery" target="_blank" rel="noreferrer">Learn</a></li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="card">
+            <div class="card-head"><h2>Conversation prompts</h2><span class="card-note">From catalog</span></div>
+            <div class="card-body">
+              <ul class="rail-list">
+                <li><span>What is driving the move to self-host Epic in Azure?</span></li>
+                <li><span>Which surrounding applications must move with Epic?</span></li>
+                <li><span>What are your availability and DR requirements?</span></li>
+              </ul>
+            </div>
+          </article>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="built"><span>Catalog workloads:</span><span class="svc-chip">Epic on Azure</span><span class="svc-chip">Windows</span><span class="svc-chip">SQL Server on Azure VMs</span><span class="svc-chip">Defender for Cloud</span><span class="svc-chip">Azure BCDR</span></div>
+    <div class="claim"><b>Catalog value:</b> infrastructure cost and DR times down, scalability and resilience up, with control over the Epic estate.</div>
+  </footer>
+
+  <dialog id="review-dialog" aria-labelledby="dialog-title">
+    <form id="review-form" method="dialog">
+      <div class="dlg-head">
+        <div><h2 id="dialog-title">Human review: advance packet</h2><span class="dlg-sub">SYN-EPIC-042 · architecture workshop</span></div>
+        <button class="btn" type="button" id="close-dialog">Close</button>
+      </div>
+      <div class="dlg-body">
+        <div class="notice notice-warn"><span aria-hidden="true">!</span><div><strong>DR remains unresolved.</strong><span class="notice-note">Advancing records a design-review handoff only. It does not approve a migration, a cutover, or a production configuration.</span></div></div>
+        <label class="attest"><input type="checkbox" id="review-attestation"> <span>I reviewed the packet evidence and understand that the DR checkpoint still needs the DR design owner.</span></label>
+        <div class="field"><label for="review-rationale">Rationale for design-review handoff</label><textarea id="review-rationale" placeholder="Example: estate shape and application owners are ready for the next architecture conversation; DR evidence is explicitly assigned to Owen Hale." required></textarea></div>
+        <p class="dlg-error" id="dialog-error" aria-live="polite"></p>
+      </div>
+      <div class="dlg-foot">
+        <button class="btn" type="button" id="cancel-dialog">Cancel</button>
+        <button class="btn btn-primary" type="submit">Record handoff</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+    const fixture = {
+      packetId: "SYN-EPIC-042",
+      owner: "Mara Chen",
+      drOwner: "Owen Hale",
+      reviewTime: "09:47"
+    };
+
+    const state = {
+      phase: "ready",
+      audit: [{ time: "09:41", actor: "Workspace", kind: "system", text: "packet opened for architecture workshop" }]
+    };
+
+    const elements = {
+      status: document.getElementById("packet-status"),
+      queueStatus: document.getElementById("queue-status"),
+      run: document.getElementById("run-review"),
+      reset: document.getElementById("reset-review"),
+      live: document.getElementById("live-status"),
+      checklist: document.getElementById("checklist"),
+      result: document.getElementById("result-panel"),
+      exception: document.getElementById("exception-panel"),
+      advance: document.getElementById("advance-review"),
+      evidence: document.getElementById("request-evidence"),
+      escalate: document.getElementById("escalate"),
+      returnToGate: document.getElementById("return-to-gate"),
+      audit: document.getElementById("audit-list"),
+      dialog: document.getElementById("review-dialog"),
+      form: document.getElementById("review-form"),
+      closeDialog: document.getElementById("close-dialog"),
+      cancelDialog: document.getElementById("cancel-dialog"),
+      attestation: document.getElementById("review-attestation"),
+      rationale: document.getElementById("review-rationale"),
+      dialogError: document.getElementById("dialog-error"),
+      checkpointArchitecture: document.getElementById("checkpoint-architecture"),
+      checkpointBcdr: document.getElementById("checkpoint-bcdr"),
+      checkpointHandoff: document.getElementById("checkpoint-handoff")
+    };
+
+    function addAudit(actor, kind, text) {
+      state.audit.push({ time: fixture.reviewTime, actor, kind, text });
+      elements.audit.replaceChildren();
+      state.audit.forEach((entry) => {
+        const item = document.createElement("li");
+        const time = document.createElement("time");
+        const detail = document.createElement("span");
+        const actor = document.createElement("span");
+        time.textContent = entry.time;
+        actor.className = "actor " + (entry.kind === "human" ? "is-human" : "is-system");
+        actor.textContent = entry.actor;
+        detail.append(actor, " ", entry.text);
+        item.append(time, detail);
+        elements.audit.append(item);
+      });
+    }
+
+    function setStatus(text, className) {
+      elements.status.textContent = text;
+      elements.status.className = "tag " + className;
+      elements.queueStatus.textContent = text;
+      elements.queueStatus.className = "tag " + className;
+    }
+
+    function renderChecklist(mode) {
+      const rows = [
+        { title: "Epic hosting complexity", detail: "Reference architecture checkpoint", status: mode === "ready" ? "Pending" : "Ready to discuss", icon: mode === "ready" ? "-" : "✓", type: mode === "ready" ? "" : "ok" },
+        { title: "Surrounding application sequence", detail: "Dependency and owner review", status: mode === "ready" ? "Pending" : "Ready to discuss", icon: mode === "ready" ? "-" : "✓", type: mode === "ready" ? "" : "ok" },
+        { title: "DR confidence", detail: "BCDR design and testing evidence", status: mode === "ready" ? "Pending" : "Evidence needed", icon: mode === "ready" ? "-" : "!", type: mode === "ready" ? "" : "warn" }
+      ];
+      elements.checklist.replaceChildren();
+      rows.forEach((row) => {
+        const item = document.createElement("li");
+        item.className = "check-row";
+        const icon = document.createElement("span");
+        const text = document.createElement("span");
+        const detail = document.createElement("small");
+        const tag = document.createElement("span");
+        icon.className = "check-icon " + row.type;
+        icon.setAttribute("aria-hidden", "true");
+        icon.textContent = row.icon;
+        detail.className = "check-detail";
+        detail.textContent = row.detail;
+        text.textContent = row.title;
+        text.append(detail);
+        tag.className = "tag " + (row.type === "ok" ? "tag-ok" : row.type === "warn" ? "tag-warn" : "");
+        tag.textContent = row.status;
+        item.append(icon, text, tag);
+        elements.checklist.append(item);
+      });
+    }
+
+    function setPhase(next) {
+      state.phase = next;
+      const reviewed = next !== "ready";
+      const actionLabels = {
+        ready: "Run readiness review",
+        working: "Reviewing...",
+        result: "Review complete",
+        exception: "DR evidence held",
+        advanced: "Design review queued"
+      };
+      elements.run.textContent = actionLabels[next];
+      elements.result.hidden = !reviewed || next === "exception";
+      elements.exception.hidden = next !== "exception";
+      elements.run.disabled = next === "working" || next === "result" || next === "advanced" || next === "exception";
+      elements.reset.hidden = !reviewed;
+      elements.advance.disabled = next !== "result";
+      elements.evidence.disabled = next !== "result";
+      elements.checkpointArchitecture.classList.toggle("done", reviewed);
+      elements.checkpointBcdr.classList.toggle("active", next === "result" || next === "exception");
+      elements.checkpointHandoff.classList.toggle("done", next === "advanced");
+      if (next === "ready") {
+        setStatus("Needs review", "tag-warn");
+        renderChecklist("ready");
+        elements.live.textContent = "";
+        elements.checkpointArchitecture.classList.remove("done");
+        elements.checkpointBcdr.classList.remove("active");
+        elements.checkpointHandoff.classList.remove("done");
+      } else if (next === "working") {
+        setStatus("Reviewing...", "tag");
+        elements.live.textContent = "Checking packet evidence...";
+      } else if (next === "result") {
+        setStatus("Review complete", "tag-warn");
+        renderChecklist("result");
+        elements.live.textContent = "Review complete. One evidence checkpoint needs a human decision.";
+      } else if (next === "exception") {
+        setStatus("Held for DR evidence", "tag-stop");
+        renderChecklist("result");
+        elements.live.textContent = "Packet held. DR evidence request is ready to escalate.";
+      } else if (next === "advanced") {
+        setStatus("Design review queued", "tag-ok");
+        renderChecklist("result");
+        elements.live.textContent = "Handoff recorded by " + fixture.owner + ". DR evidence remains assigned to " + fixture.drOwner + ".";
+      }
+    }
+
+    function openReviewDialog() {
+      elements.dialogError.textContent = "";
+      if (typeof elements.dialog.showModal === "function") {
+        elements.dialog.showModal();
+      } else {
+        elements.dialog.setAttribute("open", "");
+      }
+      elements.attestation.focus();
+    }
+
+    function closeReviewDialog() {
+      if (typeof elements.dialog.close === "function") {
+        elements.dialog.close();
+      } else {
+        elements.dialog.removeAttribute("open");
+      }
+    }
+
+    elements.run.addEventListener("click", () => {
+      if (state.phase !== "ready") return;
+      setPhase("working");
+      window.setTimeout(() => {
+        if (state.phase !== "working") return;
+        addAudit("Readiness review", "system", "sample packet check completed with DR evidence flagged");
+        setPhase("result");
+      }, 700);
+    });
+
+    elements.reset.addEventListener("click", () => {
+      addAudit("Workspace", "system", "review reset for replay");
+      setPhase("ready");
+    });
+
+    elements.advance.addEventListener("click", openReviewDialog);
+    elements.closeDialog.addEventListener("click", closeReviewDialog);
+    elements.cancelDialog.addEventListener("click", closeReviewDialog);
+
+    elements.form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      if (!elements.attestation.checked) {
+        elements.dialogError.textContent = "Confirm that you reviewed the evidence before recording the handoff.";
+        elements.attestation.focus();
+        return;
+      }
+      if (!elements.rationale.value.trim()) {
+        elements.dialogError.textContent = "Add a rationale so the next reviewer can understand this handoff.";
+        elements.rationale.focus();
+        return;
+      }
+      closeReviewDialog();
+      addAudit(fixture.owner, "human", "recorded design-review handoff with rationale");
+      setPhase("advanced");
+    });
+
+    elements.evidence.addEventListener("click", () => {
+      if (state.phase !== "result") return;
+      addAudit("Workspace", "system", "requested BCDR design and testing evidence");
+      setPhase("exception");
+    });
+
+    elements.escalate.addEventListener("click", () => {
+      addAudit(fixture.owner, "human", "escalated DR evidence request to " + fixture.drOwner);
+      document.getElementById("exception-copy").textContent = "Escalation recorded for " + fixture.drOwner + ". The packet remains held; no migration decision was made.";
+      elements.escalate.disabled = true;
+      elements.live.textContent = "Escalation recorded and packet remains held.";
+    });
+
+    elements.returnToGate.addEventListener("click", () => {
+      setPhase("result");
+      elements.live.textContent = "Returned to the readiness result without changing the packet.";
+    });
+
+    document.getElementById("packet-secondary").addEventListener("click", () => {
+      elements.live.textContent = "This fictional packet is an intake placeholder; select the Epic estate foundation packet to continue.";
+      document.getElementById("packet-secondary").setAttribute("aria-current", "true");
+      document.getElementById("packet-current").setAttribute("aria-current", "false");
+    });
+
+    document.getElementById("packet-current").addEventListener("click", () => {
+      document.getElementById("packet-current").setAttribute("aria-current", "true");
+      document.getElementById("packet-secondary").setAttribute("aria-current", "false");
+      elements.live.textContent = state.phase === "ready" ? "" : "Epic estate foundation packet selected.";
+    });
+  </script>
+</body>
+</html>
