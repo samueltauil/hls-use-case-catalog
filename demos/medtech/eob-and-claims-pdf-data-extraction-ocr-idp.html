@@ -1,0 +1,796 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Asterion Intake - EOB extraction review</title>
+<style>
+/* =========================================================================
+   HLS demo shell - shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+[hidden] { display: none !important; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.mono { font-family: var(--mono); }
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+.attest {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* Demo layout */
+body {
+  --on-accent: #fff;
+  --panel: var(--surface-2);
+  --accent-deep: var(--accent-strong);
+}
+.appbar svg { width: 20px; height: 20px; }
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(235px, 285px) minmax(0, 1fr);
+  min-height: calc(100vh - 61px);
+  background: var(--line);
+  gap: 1px;
+}
+.queue-pane, .review-pane { min-width: 0; background: var(--bg); }
+.queue-pane { padding: 15px 12px; }
+.review-pane { padding: 16px clamp(14px, 2.3vw, 28px) 28px; }
+.queue-heading, .review-heading {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+}
+.queue-heading h1, .review-heading h1 { margin: 0; font-size: 15px; font-weight: 650; }
+.queue-heading p, .review-heading p { margin: 2px 0 0; color: var(--muted); font-size: 12.5px; }
+.queue-heading { padding: 2px 3px 12px; }
+.queue-list { display: grid; gap: 8px; list-style: none; margin: 0; padding: 0; }
+.queue-item {
+  width: 100%; padding: 11px 11px 10px; text-align: left; font: inherit; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--line);
+  border-radius: var(--radius); cursor: pointer; display: grid; gap: 5px;
+}
+.queue-item:hover { border-color: var(--muted-soft); }
+.queue-item[aria-current="true"] { border-color: var(--accent); border-left-color: var(--accent); background: var(--accent-soft); }
+.queue-item .item-top { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.queue-item strong { font-size: 13.5px; line-height: 1.3; }
+.queue-item small { color: var(--muted); font-size: 12px; }
+.queue-item .item-note { font-size: 12px; color: var(--warn); }
+.queue-divider { border: 0; border-top: 1px solid var(--line); margin: 16px 3px; }
+.queue-context { padding: 0 3px; }
+.queue-context h2 { margin: 0 0 7px; font-size: 12.5px; color: var(--muted); }
+.queue-context p { margin: 0 0 9px; font-size: 12.5px; }
+.review-heading { margin-bottom: 15px; }
+.review-heading h1 { font-size: clamp(18px, 2vw, 22px); line-height: 1.25; }
+.review-heading .heading-meta { display: grid; justify-items: end; gap: 5px; }
+.object-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 7px 12px; margin-bottom: 13px; }
+.object-bar .mono { color: var(--muted); font-size: 12.5px; }
+.object-bar .tag { margin-left: auto; }
+.review-grid {
+  display: grid; grid-template-columns: minmax(260px, .88fr) minmax(330px, 1.12fr);
+  gap: 14px; align-items: start;
+}
+.source-card, .fields-card, .audit-card { min-width: 0; }
+.source-label { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.source-lines { margin: 0; padding: 0; list-style: none; counter-reset: source-line; }
+.source-lines li {
+  display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 8px;
+  padding: 3px 0; color: var(--ink-soft); font: 12px/1.55 var(--mono);
+}
+.source-lines li::before {
+  counter-increment: source-line; content: counter(source-line);
+  color: var(--muted-soft); text-align: right; user-select: none;
+}
+.source-lines li.is-focus { background: var(--warn-bg); color: var(--ink); margin: 0 -8px; padding-left: 8px; padding-right: 8px; }
+.source-foot { margin-top: 11px; padding-top: 10px; border-top: 1px solid var(--line-soft); color: var(--muted); font-size: 12px; }
+.field-list { display: grid; gap: 0; margin: 0; }
+.field-row {
+  display: grid; grid-template-columns: minmax(120px, .8fr) minmax(130px, 1fr) auto;
+  gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line-soft);
+}
+.field-row:last-child { border-bottom: 0; }
+.field-name { font-size: 12.5px; color: var(--muted); }
+.field-value { font-size: 13.5px; font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+.field-value.is-replaced { color: var(--ok); }
+.field-action { justify-self: end; }
+.field-action .btn-link { font-size: 12px; white-space: nowrap; }
+.confidence {
+  display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600;
+  padding: 2px 7px; border-radius: 999px; white-space: nowrap;
+}
+.confidence-high { color: var(--ok); background: var(--ok-bg); }
+.confidence-medium { color: var(--warn); background: var(--warn-bg); }
+.confidence-low { color: var(--stop); background: var(--stop-bg); }
+.review-focus {
+  border: 1px solid var(--warn); border-radius: var(--radius); background: var(--warn-bg);
+  padding: 11px 12px; margin: 13px 0 0;
+}
+.review-focus h3 { margin: 0 0 3px; font-size: 14px; }
+.review-focus p { margin: 0; color: var(--ink-soft); font-size: 13px; }
+.review-focus .focus-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.review-focus .btn { min-height: 34px; padding: 6px 10px; font-size: 13px; }
+.state-notice { margin: 0 0 14px; }
+.audit-card { margin-top: 14px; }
+.audit-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.audit-list li { display: grid; grid-template-columns: 62px minmax(0, 1fr); gap: 9px; font-size: 12.5px; }
+.audit-list time { font: 11px var(--mono); color: var(--muted); }
+.audit-list span { color: var(--ink-soft); }
+.audit-list .human { color: var(--accent-strong); font-weight: 600; }
+.review-actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 14px; }
+.review-actions .btn-primary { min-width: 170px; justify-content: center; }
+.empty-state { padding: 18px 0 3px; color: var(--muted); font-size: 13px; }
+.loading-mark { display: inline-block; width: 10px; height: 10px; margin-right: 5px; border: 2px solid var(--accent-line); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (max-width: 950px) {
+  .workspace { grid-template-columns: 210px minmax(0, 1fr); }
+  .review-grid { grid-template-columns: 1fr; }
+  .source-card { order: 2; }
+  .fields-card { order: 1; }
+}
+@media (max-width: 700px) {
+  .workspace { display: block; min-height: 0; }
+  .queue-pane { border-bottom: 1px solid var(--line); padding: 12px 14px; }
+  .queue-list { grid-template-columns: repeat(3, minmax(150px, 1fr)); overflow-x: auto; padding-bottom: 2px; }
+  .queue-context, .queue-divider { display: none; }
+  .review-pane { padding: 14px; }
+  .review-heading { align-items: flex-start; }
+  .review-heading .heading-meta { justify-items: start; }
+  .object-bar .tag { margin-left: 0; }
+  .field-row { grid-template-columns: minmax(100px, .8fr) minmax(115px, 1fr); }
+  .field-row > .confidence { grid-column: 1; }
+  .field-action { grid-column: 2; grid-row: 3; justify-self: start; }
+}
+@media (max-width: 430px) {
+  .queue-list { grid-template-columns: repeat(3, 170px); }
+  .review-heading { display: block; }
+  .review-heading .heading-meta { margin-top: 8px; }
+  .field-row { grid-template-columns: 1fr; gap: 3px; }
+  .field-row > .confidence, .field-action { grid-column: 1; grid-row: auto; justify-self: start; }
+}
+</style>
+</head>
+<body data-subvertical="medtech">
+<header class="appbar">
+  <div class="brand">
+    <svg class="brand-mark" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6.5 12 3l8 3.5v11L12 21l-8-3.5v-11Z"/><path d="m4 6.5 8 4 8-4M12 10.5V21"/></svg>
+    <div><span class="brand-name">Asterion Intake</span><span class="brand-sub">Operations review workspace</span></div>
+  </div>
+  <p class="disclosure"><span aria-hidden="true">●</span> Illustrative demo - synthetic data</p>
+  <p class="who">Signed in as <b>Riley Chen</b> · Operations Manager</p>
+</header>
+
+<main class="workspace">
+  <aside class="queue-pane" aria-label="Document review queue">
+    <div class="queue-heading">
+      <div><h1>Extraction queue</h1><p>Claims intake · sample worklist</p></div>
+      <span class="tag" id="queueCount">3 sample</span>
+    </div>
+    <ul class="queue-list" id="queueList"></ul>
+    <hr class="queue-divider">
+    <div class="queue-context">
+      <h2>Review policy</h2>
+      <p>Low-confidence fields stay in human review until evidence is checked. Nothing is sent downstream automatically.</p>
+      <span class="tag tag-warn">Human review required</span>
+    </div>
+  </aside>
+
+  <section class="review-pane" aria-labelledby="screenTitle">
+    <div class="review-heading">
+      <div><h1 id="screenTitle">EOB extraction review</h1><p id="screenContext">Review structured fields before the sample claim enters the next workflow.</p></div>
+      <div class="heading-meta"><span class="tag" id="stateTag">Needs review</span><button class="btn-link" id="resetButton" type="button">Reset sample</button></div>
+    </div>
+    <div id="stateNotice" class="notice notice-warn state-notice" role="status" aria-live="polite">
+      <span aria-hidden="true">!</span><div><strong>One field needs your attention.</strong><span class="notice-note">Compare the suggested allowed amount with the highlighted source line, then choose a review outcome.</span></div>
+    </div>
+    <div class="object-bar">
+      <strong id="documentTitle">EOB - Remittance packet</strong>
+      <span class="mono" id="documentId">EOB-SAMPLE-2048</span>
+      <span class="tag" id="documentType">Explanation of benefits</span>
+    </div>
+
+    <div class="review-grid">
+      <article class="card source-card" aria-labelledby="sourceHeading">
+        <div class="card-head">
+          <div class="source-label"><h2 id="sourceHeading">Source document</h2><span class="card-note">PDF text layer · sample</span></div>
+          <button class="btn-link" id="toggleSourceButton" type="button" aria-expanded="true">Collapse</button>
+        </div>
+        <div class="card-body" id="sourceBody">
+          <div class="evidence evidence-mono" id="sourceMeta">asterion-demo.local/inbound/EOB-SAMPLE-2048.pdf</div>
+          <ol class="source-lines" id="sourceLines"></ol>
+          <p class="source-foot">Evidence is shown for review only. The source is fictional and contains no production member or patient data.</p>
+        </div>
+      </article>
+
+      <article class="card fields-card" aria-labelledby="fieldsHeading">
+        <div class="card-head"><h2 id="fieldsHeading">Structured fields</h2><span class="card-note" id="fieldSummary">System extraction · review pending</span></div>
+        <div class="card-body">
+          <dl class="field-list" id="fieldList"></dl>
+          <div class="review-focus" id="reviewFocus">
+            <h3>Review: Allowed amount</h3>
+            <p id="reviewExplanation">The source line and suggested value differ. Inspect the evidence before deciding whether the value can proceed.</p>
+            <div class="focus-actions">
+              <button class="btn btn-primary" id="acceptButton" type="button">Accept suggested value</button>
+              <button class="btn" id="escalateButton" type="button">Keep source value &amp; escalate</button>
+            </div>
+          </div>
+          <div class="review-actions">
+            <button class="btn btn-primary" id="approveButton" type="button">Approve for downstream</button>
+            <button class="btn" id="rerunButton" type="button">Re-run extraction</button>
+          </div>
+          <p class="status-line" id="actionStatus" aria-live="polite"></p>
+        </div>
+      </article>
+    </div>
+
+    <article class="card audit-card" aria-labelledby="auditHeading">
+      <div class="card-head"><h2 id="auditHeading">Review trail</h2><span class="card-note">Visible accountability record</span></div>
+      <div class="card-body"><ol class="audit-list" id="auditList"></ol></div>
+    </article>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="built"><span>Illustrative processing path:</span><span class="svc-chip">Azure AI Vision</span><span class="svc-chip">Azure OpenAI in Azure AI Foundry Models</span><span class="svc-chip">Azure Logic Apps</span><span class="svc-chip">Azure Functions</span></div>
+  <div class="claim"><b>Catalog value:</b> manual data-entry effort down 50-80%; processing speed up and extraction error rate reduced.</div>
+</footer>
+
+<dialog id="approvalDialog" aria-labelledby="approvalHeading">
+  <form method="dialog" id="approvalForm">
+    <div class="dlg-head"><div><h2 id="approvalHeading">Approve extracted fields</h2><span class="dlg-sub">Riley Chen · human review checkpoint</span></div><button class="btn" value="cancel" type="submit" aria-label="Close approval dialog">Close</button></div>
+    <div class="dlg-body">
+      <p class="notice notice-warn" id="approvalWarning"><span aria-hidden="true">!</span><span>Approval records your review decision. The sample action remains reversible and does not call a downstream system.</span></p>
+      <dl class="meta-grid"><div><dt>Document</dt><dd id="dialogDocument">EOB-SAMPLE-2048</dd></div><div><dt>Review state</dt><dd id="dialogState">Suggested value accepted</dd></div><div><dt>Source evidence</dt><dd>Lines 8-9 in sample PDF text</dd></div></dl>
+      <label class="attest"><input id="attestCheckbox" type="checkbox"><span>I reviewed the source evidence and approve these extracted fields for the next simulated workflow step.</span></label>
+      <div class="field"><label for="rationale">Review rationale <span aria-hidden="true">(required)</span></label><textarea id="rationale" required>Compared the allowed amount with the source evidence; the accepted value is ready for simulated downstream review.</textarea></div>
+      <p class="dlg-error" id="dialogError" role="alert"></p>
+    </div>
+    <div class="dlg-foot"><button class="btn" value="cancel" type="submit">Cancel</button><button class="btn btn-primary" id="confirmApproval" value="approve" type="submit">Record approval</button></div>
+  </form>
+</dialog>
+
+<script>
+  const DEMO_DATA = {
+    user: { name: "Riley Chen", role: "Operations Manager" },
+    documents: [
+      {
+        id: "EOB-SAMPLE-2048",
+        title: "EOB - Remittance packet",
+        type: "Explanation of benefits",
+        date: "2026-08-18",
+        queueNote: "1 field flagged",
+        source: [
+          "EXPLANATION OF BENEFITS - SAMPLE",
+          "Issuer: Northstar Benefit Exchange (fictional)",
+          "Reference: EOB-SAMPLE-2048   Service date: 2026-08-14",
+          "Covered party reference: SYN-MBR-4821",
+          "Rendering organization: Meridian Ortho Works (fictional)",
+          "Billed amount: $1,420.00",
+          "Plan paid: $936.00",
+          "Allowed amount: $1,184.00",
+          "Member responsibility: $248.00",
+          "This sample document is for extraction review only."
+        ],
+        fields: [
+          { key: "reference", label: "Document reference", value: "EOB-SAMPLE-2048", confidence: "high", line: 3 },
+          { key: "serviceDate", label: "Service date", value: "2026-08-14", confidence: "high", line: 3 },
+          { key: "coveredParty", label: "Covered party reference", value: "SYN-MBR-4821", confidence: "high", line: 4 },
+          { key: "organization", label: "Rendering organization", value: "Meridian Ortho Works", confidence: "medium", line: 5 },
+          { key: "billed", label: "Billed amount", value: "$1,420.00", confidence: "high", line: 6 },
+          { key: "planPaid", label: "Plan paid", value: "$936.00", confidence: "high", line: 7 },
+          { key: "allowed", label: "Allowed amount", value: "$1,148.00", suggested: "$1,148.00", sourceValue: "$1,184.00", confidence: "low", line: 8 },
+          { key: "responsibility", label: "Member responsibility", value: "$248.00", confidence: "medium", line: 9 }
+        ]
+      },
+      {
+        id: "EOB-SAMPLE-2051",
+        title: "EOB - Facility statement",
+        type: "Explanation of benefits",
+        date: "2026-08-19",
+        queueNote: "Ready to review",
+        source: [
+          "EXPLANATION OF BENEFITS - SAMPLE",
+          "Issuer: Northstar Benefit Exchange (fictional)",
+          "Reference: EOB-SAMPLE-2051   Service date: 2026-08-15",
+          "Covered party reference: SYN-MBR-4908",
+          "Rendering organization: Harborline Device Clinic (fictional)",
+          "Billed amount: $860.00",
+          "Plan paid: $688.00",
+          "Allowed amount: $824.00",
+          "Member responsibility: $172.00",
+          "This sample document is for extraction review only."
+        ],
+        fields: [
+          { key: "reference", label: "Document reference", value: "EOB-SAMPLE-2051", confidence: "high", line: 3 },
+          { key: "serviceDate", label: "Service date", value: "2026-08-15", confidence: "high", line: 3 },
+          { key: "coveredParty", label: "Covered party reference", value: "SYN-MBR-4908", confidence: "high", line: 4 },
+          { key: "organization", label: "Rendering organization", value: "Harborline Device Clinic", confidence: "high", line: 5 },
+          { key: "billed", label: "Billed amount", value: "$860.00", confidence: "high", line: 6 },
+          { key: "planPaid", label: "Plan paid", value: "$688.00", confidence: "high", line: 7 },
+          { key: "allowed", label: "Allowed amount", value: "$824.00", confidence: "medium", line: 8 },
+          { key: "responsibility", label: "Member responsibility", value: "$172.00", confidence: "medium", line: 9 }
+        ]
+      },
+      {
+        id: "CLAIM-SAMPLE-9017",
+        title: "Claim - intake packet",
+        type: "Claims document",
+        date: "2026-08-20",
+        queueNote: "Needs source check",
+        source: [
+          "CLAIMS INTAKE PACKET - SAMPLE",
+          "Issuer: Northstar Benefit Exchange (fictional)",
+          "Reference: CLAIM-SAMPLE-9017   Service date: 2026-08-16",
+          "Covered party reference: SYN-MBR-4932",
+          "Rendering organization: Pinewell Mobility Lab (fictional)",
+          "Billed amount: $2,110.00",
+          "Plan paid: pending source confirmation",
+          "Allowed amount: not found in source",
+          "Member responsibility: pending source confirmation",
+          "This sample document is for extraction review only."
+        ],
+        fields: [
+          { key: "reference", label: "Document reference", value: "CLAIM-SAMPLE-9017", confidence: "high", line: 3 },
+          { key: "serviceDate", label: "Service date", value: "2026-08-16", confidence: "high", line: 3 },
+          { key: "coveredParty", label: "Covered party reference", value: "SYN-MBR-4932", confidence: "high", line: 4 },
+          { key: "organization", label: "Rendering organization", value: "Pinewell Mobility Lab", confidence: "medium", line: 5 },
+          { key: "billed", label: "Billed amount", value: "$2,110.00", confidence: "high", line: 6 },
+          { key: "planPaid", label: "Plan paid", value: "Not found", confidence: "low", line: 7 },
+          { key: "allowed", label: "Allowed amount", value: "Not found", confidence: "low", line: 8 },
+          { key: "responsibility", label: "Member responsibility", value: "Not found", confidence: "low", line: 9 }
+        ]
+      }
+    ]
+  };
+
+  const state = { selected: 0, review: "pending", sourceOpen: true, working: false, audit: [] };
+  const $ = (id) => document.getElementById(id);
+  const selectedDocument = () => DEMO_DATA.documents[state.selected];
+  const confidenceLabel = (value) => value === "high" ? "High confidence" : value === "medium" ? "Review suggested" : "Low confidence";
+  const confidenceClass = (value) => "confidence-" + value;
+
+  function addAudit(actor, message) {
+    state.audit.push({ time: state.audit.length ? "now" : "08:42", actor, message });
+    renderAudit();
+  }
+
+  function renderQueue() {
+    const list = $("queueList");
+    list.textContent = "";
+    DEMO_DATA.documents.forEach((doc, index) => {
+      const item = document.createElement("li");
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "queue-item";
+      button.setAttribute("aria-current", String(index === state.selected));
+      button.dataset.index = String(index);
+      const top = document.createElement("span");
+      top.className = "item-top";
+      const title = document.createElement("strong");
+      title.textContent = doc.title;
+      const tag = document.createElement("span");
+      tag.className = "tag " + (index === 0 ? "tag-warn" : "");
+      tag.textContent = index === 0 ? "Review" : "Sample";
+      top.append(title, tag);
+      const ref = document.createElement("small");
+      ref.textContent = doc.id + " · " + doc.date;
+      const note = document.createElement("span");
+      note.className = "item-note";
+      note.textContent = doc.queueNote;
+      button.append(top, ref, note);
+      item.append(button);
+      list.append(item);
+    });
+    $("queueCount").textContent = DEMO_DATA.documents.length + " sample";
+  }
+
+  function renderSource(doc) {
+    $("sourceMeta").textContent = "asterion-demo.local/inbound/" + doc.id + ".pdf";
+    const lines = $("sourceLines");
+    lines.textContent = "";
+    doc.source.forEach((text, index) => {
+      const line = document.createElement("li");
+      line.textContent = text;
+      line.dataset.line = String(index + 1);
+      if (state.review === "focus" && index + 1 === 8) line.classList.add("is-focus");
+      lines.append(line);
+    });
+    $("sourceBody").hidden = !state.sourceOpen;
+    $("toggleSourceButton").textContent = state.sourceOpen ? "Collapse" : "Show source";
+    $("toggleSourceButton").setAttribute("aria-expanded", String(state.sourceOpen));
+  }
+
+  function renderFields(doc) {
+    const list = $("fieldList");
+    list.textContent = "";
+    doc.fields.forEach((field) => {
+      const row = document.createElement("div");
+      row.className = "field-row";
+      if (field.key === "allowed" && state.review === "accepted") row.classList.add("is-accepted");
+      const name = document.createElement("dt");
+      name.className = "field-name";
+      name.textContent = field.label;
+      const value = document.createElement("dd");
+      value.className = "field-value";
+      if (field.key === "allowed" && state.review === "accepted") {
+        value.classList.add("is-replaced");
+        value.textContent = field.suggested || field.value;
+      } else if (field.key === "allowed" && state.review === "escalated") {
+        value.textContent = field.sourceValue || field.value;
+      } else {
+        value.textContent = field.value;
+      }
+      const confidence = document.createElement("span");
+      confidence.className = "confidence " + confidenceClass(field.key === "allowed" && state.review === "accepted" ? "high" : field.confidence);
+      confidence.textContent = field.key === "allowed" && state.review === "accepted" ? "Reviewed" : confidenceLabel(field.confidence);
+      const action = document.createElement("span");
+      action.className = "field-action";
+      const evidence = document.createElement("button");
+      evidence.type = "button";
+      evidence.className = "btn-link";
+      evidence.textContent = "View evidence";
+      evidence.dataset.line = String(field.line);
+      evidence.addEventListener("click", () => focusEvidence(field.line));
+      action.append(evidence);
+      row.append(name, value, confidence, action);
+      list.append(row);
+    });
+    $("fieldSummary").textContent = state.review === "accepted" ? "Human reviewed · ready" : state.review === "escalated" ? "Exception recorded" : "System extraction · review pending";
+  }
+
+  function renderAudit() {
+    const list = $("auditList");
+    list.textContent = "";
+    const entries = state.audit.length ? state.audit : [{ time: "08:42", actor: "System", message: "Extraction completed; one field held for human review." }];
+    entries.forEach((entry) => {
+      const item = document.createElement("li");
+      const time = document.createElement("time");
+      time.textContent = entry.time;
+      const message = document.createElement("span");
+      message.textContent = entry.message;
+      if (entry.actor === "Riley Chen") message.className = "human";
+      message.prepend(entry.actor + ": ");
+      item.append(time, message);
+      list.append(item);
+    });
+  }
+
+  function updateStateNotice() {
+    const notice = $("stateNotice");
+    const tag = $("stateTag");
+    const reviewFocus = $("reviewFocus");
+    $("approveButton").disabled = state.review !== "accepted";
+    $("acceptButton").disabled = state.review !== "pending" || selectedDocument().fields.every((field) => field.key !== "allowed" || field.confidence !== "low");
+    $("escalateButton").disabled = state.review !== "pending";
+    reviewFocus.hidden = state.review !== "pending";
+    if (state.working) {
+      notice.className = "notice notice-warn state-notice";
+      notice.innerHTML = '<span class="loading-mark" aria-hidden="true"></span><div><strong>Re-running extraction...</strong><span class="notice-note">The sample pipeline is processing the source text. No network request is made.</span></div>';
+      tag.className = "tag tag-warn";
+      tag.textContent = "Processing";
+    } else if (state.review === "accepted") {
+      notice.className = "notice notice-ok state-notice";
+      notice.innerHTML = '<span aria-hidden="true">✓</span><div><strong>Field reviewed and ready for approval.</strong><span class="notice-note">The suggested amount is marked as reviewed; a human still needs to approve the downstream handoff.</span></div>';
+      tag.className = "tag tag-ok";
+      tag.textContent = "Ready for approval";
+    } else if (state.review === "escalated") {
+      notice.className = "notice notice-stop state-notice";
+      notice.innerHTML = '<span aria-hidden="true">!</span><div><strong>Exception routed for follow-up.</strong><span class="notice-note">The source value remains visible and this document is held outside the simulated downstream workflow.</span></div>';
+      tag.className = "tag tag-stop";
+      tag.textContent = "Exception held";
+    } else {
+      notice.className = "notice notice-warn state-notice";
+      notice.innerHTML = '<span aria-hidden="true">!</span><div><strong>One field needs your attention.</strong><span class="notice-note">Compare the suggested allowed amount with the highlighted source line, then choose a review outcome.</span></div>';
+      tag.className = "tag tag-warn";
+      tag.textContent = "Needs review";
+    }
+  }
+
+  function render() {
+    const doc = selectedDocument();
+    $("screenTitle").textContent = doc.type === "Claims document" ? "Claims extraction review" : "EOB extraction review";
+    $("screenContext").textContent = "Review structured fields before the sample claim enters the next workflow.";
+    $("documentTitle").textContent = doc.title;
+    $("documentId").textContent = doc.id;
+    $("documentType").textContent = doc.type;
+    renderQueue();
+    renderSource(doc);
+    renderFields(doc);
+    updateStateNotice();
+    renderAudit();
+  }
+
+  function focusEvidence(lineNumber) {
+    state.sourceOpen = true;
+    renderSource(selectedDocument());
+    document.querySelectorAll(".source-lines li").forEach((line) => line.classList.toggle("is-focus", line.dataset.line === String(lineNumber)));
+    $("sourceHeading").focus({ preventScroll: true });
+    $("actionStatus").textContent = "Showing source line " + lineNumber + " for review.";
+  }
+
+  function chooseDocument(index) {
+    state.selected = index;
+    state.review = index === 0 ? "pending" : "escalated";
+    state.audit = [];
+    state.sourceOpen = true;
+    $("actionStatus").textContent = "";
+    render();
+  }
+
+  function acceptSuggestion() {
+    state.review = "accepted";
+    addAudit("Riley Chen", "Accepted the suggested allowed amount after checking source evidence.");
+    $("actionStatus").textContent = "Suggested value accepted. Review rationale is ready for the approval checkpoint.";
+    render();
+  }
+
+  function escalateException() {
+    state.review = "escalated";
+    addAudit("Riley Chen", "Kept the source value and routed the document to the exception queue.");
+    $("actionStatus").textContent = "Exception recorded. The source value remains in the structured field.";
+    render();
+  }
+
+  function resetSample() {
+    state.selected = 0;
+    state.review = "pending";
+    state.audit = [];
+    state.working = false;
+    state.sourceOpen = true;
+    $("actionStatus").textContent = "Sample reset. The review path is ready to replay.";
+    render();
+  }
+
+  function rerunExtraction() {
+    if (state.working) return;
+    state.working = true;
+    state.review = "pending";
+    $("actionStatus").textContent = "Extraction is processing the sample source.";
+    render();
+    window.setTimeout(() => {
+      state.working = false;
+      state.audit = [];
+      addAudit("System", "Extraction completed; one field held for human review.");
+      $("actionStatus").textContent = "Extraction complete. Review the flagged field before approval.";
+      render();
+    }, 650);
+  }
+
+  $("queueList").addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-index]");
+    if (button) chooseDocument(Number(button.dataset.index));
+  });
+  $("acceptButton").addEventListener("click", acceptSuggestion);
+  $("escalateButton").addEventListener("click", escalateException);
+  $("resetButton").addEventListener("click", resetSample);
+  $("rerunButton").addEventListener("click", rerunExtraction);
+  $("toggleSourceButton").addEventListener("click", () => {
+    state.sourceOpen = !state.sourceOpen;
+    renderSource(selectedDocument());
+  });
+
+  const dialog = $("approvalDialog");
+  $("approveButton").addEventListener("click", () => {
+    $("dialogDocument").textContent = selectedDocument().id;
+    $("dialogState").textContent = "Suggested value accepted";
+    $("attestCheckbox").checked = false;
+    $("dialogError").textContent = "";
+    $("approvalDialog").showModal();
+  });
+  $("approvalForm").addEventListener("submit", (event) => {
+    if (event.submitter?.value !== "approve") return;
+    if (!$("attestCheckbox").checked || !$("rationale").value.trim()) {
+      event.preventDefault();
+      $("dialogError").textContent = "Check the review attestation and provide a rationale before recording approval.";
+      return;
+    }
+    event.preventDefault();
+    dialog.close();
+    state.review = "approved";
+    addAudit("Riley Chen", "Approved the reviewed fields for the next simulated workflow step.");
+    $("stateTag").className = "tag tag-ok";
+    $("stateTag").textContent = "Approved";
+    $("stateNotice").className = "notice notice-ok state-notice";
+    $("stateNotice").innerHTML = '<span aria-hidden="true">✓</span><div><strong>Human approval recorded.</strong><span class="notice-note">The sample extraction is ready for a reversible downstream handoff.</span></div>';
+    $("reviewFocus").hidden = true;
+    $("approveButton").disabled = true;
+    $("actionStatus").textContent = "Approval recorded for this sample. Reset to replay the review.";
+    renderFields(selectedDocument());
+  });
+  dialog.addEventListener("click", (event) => {
+    if (event.target === dialog) dialog.close();
+  });
+
+  render();
+</script>
+</body>
+</html>
