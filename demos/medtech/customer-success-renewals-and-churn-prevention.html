@@ -1,0 +1,876 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Medtrax Revenue Intelligence — renewal and churn prevention</title>
+  <style>
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.attest span small, .scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+body {
+  --on-accent: #ffffff;
+  --page-max: 1460px;
+}
+.appbar { min-height: 58px; }
+.brand-mark {
+  width: 28px; height: 28px; display: grid; place-items: center;
+  border: 1px solid currentColor; border-radius: 6px; font-size: 15px; font-weight: 700;
+}
+.page { max-width: var(--page-max); margin: 0 auto; padding: 24px 24px 32px; }
+.page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; margin-bottom: 18px; }
+.eyebrow { margin: 0 0 4px; color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: .01em; }
+.page-head h1 { margin: 0; font-size: clamp(22px, 2.4vw, 30px); line-height: 1.18; font-weight: 650; letter-spacing: -.02em; }
+.page-head p { max-width: 68ch; margin: 7px 0 0; color: var(--muted); }
+.page-head .btn { flex: none; }
+.workspace { display: grid; grid-template-columns: minmax(260px, .78fr) minmax(420px, 1.5fr) minmax(260px, .86fr); gap: 14px; align-items: start; }
+.queue-card, .assistant-card, .context-card { min-width: 0; }
+.queue-tools { display: flex; flex-wrap: wrap; gap: 7px; padding: 11px 14px; border-bottom: 1px solid var(--line-soft); }
+.queue-list { display: grid; gap: 0; }
+.account-row {
+  display: block; width: 100%; border: 0; border-bottom: 1px solid var(--line-soft); background: var(--surface);
+  padding: 12px 14px; text-align: left; cursor: pointer; color: var(--ink);
+}
+.account-row:hover { background: var(--surface-2); }
+.account-row.is-selected { background: var(--accent-soft); border-left: 3px solid var(--accent); padding-left: 11px; }
+.account-row-head, .account-row-meta { display: flex; justify-content: space-between; gap: 10px; }
+.account-row-head strong { font-size: 14px; display: block; }
+.account-row-meta { margin-top: 5px; color: var(--muted); font-size: 12px; }
+.account-row small { font-size: 12px; }
+.account-row .tag { font-size: 10.5px; }
+
+.account-header {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px;
+}
+.account-header h3 {
+  margin: 0; font-size: clamp(18px, 1.6vw, 24px); line-height: 1.2;
+}
+.account-meta { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+.metric-grid {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; 
+}
+.metric-box {
+  background: var(--surface-2); border: 1px solid var(--line-soft); border-radius: var(--radius);
+  padding: 10px 10px 9px; min-height: 76px;
+}
+.metric-box span { display: block; color: var(--muted); font-size: 12px; }
+.metric-box strong { display: block; margin-top: 5px; font-size: clamp(22px, 1.7vw, 28px); line-height: 1.1; }
+.metric-box small { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; }
+.signal-box { display: grid; gap: 10px; margin-top: 16px; }
+.signal-row { display: grid; gap: 6px; }
+.signal-label { display: flex; justify-content: space-between; gap: 8px; font-size: 12.5px; color: var(--muted); }
+.signal-track { height: 9px; border-radius: 999px; background: var(--line-soft); overflow: hidden; }
+.signal-track span { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-strong)); border-radius: inherit; }
+.summary-box {
+  margin-top: 16px; padding: 12px 13px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.summary-box h4 { margin: 0 0 8px; font-size: 13px; }
+.summary-box p { margin: 0; color: var(--ink-soft); }
+.evidence-list { display: grid; gap: 10px; margin-top: 16px; }
+.evidence-item {
+  display: grid; grid-template-columns: 18px 1fr; gap: 8px; font-size: 13px; color: var(--ink-soft);
+  padding: 10px 11px; border: 1px solid var(--line-soft); background: var(--surface-2); border-radius: var(--radius);
+}
+.evidence-item::before {
+  content: "•"; font-size: 18px; color: var(--accent-strong); margin-top: -3px; display: block;
+}
+.context-card .card-body { display: grid; gap: 12px; }
+.notice-wrap { display: grid; gap: 8px; }
+.notice strong { color: inherit; }
+.fact-list { display: grid; gap: 9px; }
+.action-primary { width: 100%; }
+.secondary-action { width: 100%; }
+.audit { margin-top: 8px; }
+.audit .audit-item { display: grid; grid-template-columns: 62px minmax(0, 1fr); }
+.audit-item .event { color: var(--ink-soft); }
+.audit-item .actor { color: var(--accent-strong); }
+
+@media (max-width: 1160px) {
+  .workspace { grid-template-columns: 1fr; }
+  .page-head { flex-direction: column; align-items: flex-start; }
+}
+@media (max-width: 560px) {
+  .page { padding: 18px 14px 24px; }
+  .metric-grid { grid-template-columns: 1fr; }
+  .account-row-head, .account-row-meta { flex-wrap: wrap; }
+}
+</style>
+</head>
+<body data-subvertical="medtech">
+  <header class="appbar" aria-label="Application header">
+    <div class="brand">
+      <div class="brand-mark">M</div>
+      <div>
+        <span class="brand-name">Medtrax Revenue Intelligence</span>
+        <span class="brand-sub">Customer Success workspace</span>
+      </div>
+    </div>
+    <div class="disclosure">Illustrative demo - synthetic data</div>
+    <p class="who"><b>Alicia Morgan</b> • Customer Success Manager</p>
+  </header>
+
+  <main class="page">
+    <header class="page-head">
+      <div>
+        <p class="eyebrow">Commercial, Service &amp; Customer Success</p>
+        <h1>Renewal and churn prevention</h1>
+        <p>Prioritize accounts where product usage, service sentiment, and renewal intent are telling you the relationship is at risk before the next contract window.</p>
+      </div>
+      <button type="button" class="btn btn-primary" id="primaryAction">Prepare renewal play</button>
+    </header>
+
+    <div class="workspace">
+      <aside class="card queue-card" aria-labelledby="queue-title">
+        <div class="card-head">
+          <h2 id="queue-title">Renewal queue</h2>
+          <span class="card-note">At-risk accounts</span>
+        </div>
+        <div class="queue-tools" aria-label="Filters">
+          <button type="button" class="chip" aria-pressed="true">High risk</button>
+          <button type="button" class="chip" aria-pressed="false">Renewing soon</button>
+          <button type="button" class="chip" aria-pressed="false">Expansion</button>
+        </div>
+        <div class="queue-list" id="accountList" aria-live="polite"></div>
+      </aside>
+
+      <section class="card assistant-card" aria-labelledby="health-title">
+        <div class="card-head">
+          <h2 id="health-title">Account health</h2>
+          <span class="tag tag-warn" id="riskBadge">High risk</span>
+        </div>
+        <div class="card-body">
+          <div class="account-header">
+            <div>
+              <h3 id="customerName">Apex Spine &amp; Orthopedics</h3>
+              <p class="account-meta" id="accountMeta">Large IDN • Renewal in 23 days</p>
+            </div>
+            <div class="st st-warn" id="statusPill">Needs attention</div>
+          </div>
+
+          <div class="metric-grid" aria-label="Account score metrics">
+            <div class="metric-box">
+              <span>Health score</span>
+              <strong id="healthScore">68</strong>
+              <small>out of 100</small>
+            </div>
+            <div class="metric-box">
+              <span>Confidence</span>
+              <strong id="confidenceScore">84%</strong>
+              <small>risk model quality</small>
+            </div>
+            <div class="metric-box">
+              <span>ARR at risk</span>
+              <strong id="arrValue">$1.8M</strong>
+              <small>contract value</small>
+            </div>
+          </div>
+
+          <div class="signal-box" aria-label="Health signals">
+            <div class="signal-row">
+              <div class="signal-label"><span>Usage intensity</span><strong id="usageLabel">71%</strong></div>
+              <div class="signal-track"><span id="usageBar" style="width:71%"></span></div>
+            </div>
+            <div class="signal-row">
+              <div class="signal-label"><span>Adoption score</span><strong id="adoptionLabel">64%</strong></div>
+              <div class="signal-track"><span id="adoptionBar" style="width:64%"></span></div>
+            </div>
+            <div class="signal-row">
+              <div class="signal-label"><span>Renewal intent</span><strong id="intentLabel">72%</strong></div>
+              <div class="signal-track"><span id="intentBar" style="width:72%"></span></div>
+            </div>
+          </div>
+
+          <div class="summary-box">
+            <h4>Customer health narrative</h4>
+            <p id="healthNarrative">Surgical planning and device telemetry usage dropped after the PACS migration, but early renewal intent remains positive if a customer-facing action is coordinated in the next 14 days.</p>
+          </div>
+
+          <div class="evidence-list" id="evidenceList" aria-label="Evidence list"></div>
+        </div>
+      </section>
+
+      <aside class="card context-card" aria-labelledby="recommendation-title">
+        <div class="card-head">
+          <h2 id="recommendation-title">Recommended action</h2>
+          <span class="card-note" id="nextWindow">Next 14 days</span>
+        </div>
+        <div class="card-body">
+          <div class="notice-wrap">
+            <div class="notice notice-warn" id="noticeBox" role="status" aria-live="polite">
+              <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 3.75a8.25 8.25 0 1 0 0 16.5 8.25 8.25 0 0 0 0-16.5Zm0 4.5v4.5M12 15.75h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <div>
+                <strong id="noticeTitle">Review required before renewal commitment</strong>
+                <span class="notice-note" id="noticeDetail">A customer success manager should validate the drop in OR usage and the revision risk before sending a formal renewal proposal.</span>
+              </div>
+            </div>
+          </div>
+
+          <dl class="facts" aria-label="Key facts">
+            <div>
+              <dt>Next best step</dt>
+              <dd id="bestStep">Schedule a save-the-renewal call</dd>
+            </div>
+            <div>
+              <dt>Owner</dt>
+              <dd id="ownerName">Alicia Morgan</dd>
+            </div>
+            <div>
+              <dt>Grounding</dt>
+              <dd id="groundingLabel">Usage + CRM + support</dd>
+            </div>
+            <div>
+              <dt>Last refresh</dt>
+              <dd id="refreshLabel">14:20 UTC</dd>
+            </div>
+          </dl>
+
+          <div class="actions">
+            <button type="button" class="btn btn-primary action-primary" id="reviewAction">Prepare renewal play</button>
+            <button type="button" class="btn secondary-action" id="escalateAction">Escalate to Renewals Lead</button>
+            <button type="button" class="btn btn-link" id="resetAction">Reset</button>
+          </div>
+
+          <p class="status-line" id="statusLine" aria-live="polite">Ready to review the next account in the queue.</p>
+
+          <ul class="audit" id="auditList" aria-label="Recent review history"></ul>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="footer" aria-label="Footer">
+    <div class="built">
+      <span>Built with</span>
+      <span class="svc-chip">Microsoft Fabric</span>
+      <span class="svc-chip">Power BI</span>
+      <span class="svc-chip">Azure Machine Learning</span>
+    </div>
+    <div class="claim"><b>Customer success claim:</b> Renewal risk is estimated from synthetic operational signals and must be reviewed by a human owner before a customer commitment.</div>
+  </footer>
+
+  <dialog id="reviewDialog" aria-labelledby="dialogTitle">
+    <div class="dlg-head">
+      <div>
+        <h2 id="dialogTitle">Review renewal motion</h2>
+        <span class="dlg-sub" id="dialogSub">Apex Spine &amp; Orthopedics</span>
+      </div>
+      <button type="button" class="btn btn-link" data-close-dialog aria-label="Close review dialog">Close</button>
+    </div>
+    <div class="dlg-body">
+      <div class="rule">
+        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.75a9.25 9.25 0 1 0 0 18.5 9.25 9.25 0 0 0 0-18.5Zm.75 5.75h-1.5v4.5h1.5v-4.5Zm0 6.75h-1.5v1.5h1.5v-1.5Z" fill="currentColor"/></svg>
+        <div id="dialogRule">Confidence 84% • source refreshed 14:20 UTC • human review still required.</div>
+      </div>
+
+      <dl class="meta-grid" aria-label="Decision details">
+        <div>
+          <dt>Account</dt>
+          <dd id="dialogAccount">Apex Spine &amp; Orthopedics</dd>
+        </div>
+        <div>
+          <dt>Renewal date</dt>
+          <dd id="dialogRenewal">23 days</dd>
+        </div>
+        <div>
+          <dt>Health</dt>
+          <dd id="dialogHealth">68 / 100</dd>
+        </div>
+        <div>
+          <dt>Decision owner</dt>
+          <dd>Alicia Morgan</dd>
+        </div>
+      </dl>
+
+      <label class="attest" for="reviewCheckbox">
+        <input id="reviewCheckbox" type="checkbox">
+        <span>
+          I reviewed the customer evidence and the renewal rationale.
+          <small>Approval is still required before issuing a renewal commitment.</small>
+        </span>
+      </label>
+
+      <div class="field">
+        <label for="reviewNotes">Prepared rationale</label>
+        <textarea id="reviewNotes" readonly>Usage telemetry dipped after the PACS migration, but the combined score still supports a save-the-renewal motion if service follow-up is scheduled this week.</textarea>
+      </div>
+    </div>
+    <div class="dlg-foot">
+      <button type="button" class="btn" data-close-dialog>Cancel</button>
+      <button type="button" class="btn btn-primary" id="confirmAction">Route to Renewals Lead</button>
+    </div>
+  </dialog>
+
+  <script>
+    const customers = [
+      {
+        id: 'apex-spine',
+        customer: 'Apex Spine & Orthopedics',
+        segment: 'Large IDN',
+        renewal: '23 days',
+        value: '$1.8M',
+        health: 68,
+        confidence: 84,
+        risk: 'High risk',
+        riskClass: 'tag-warn',
+        status: 'Needs attention',
+        usage: 71,
+        adoption: 64,
+        intent: 72,
+        nextWindow: 'Next 14 days',
+        owner: 'Alicia Morgan',
+        bestStep: 'Schedule a save-the-renewal call',
+        noticeTitle: 'Review required before renewal commitment',
+        noticeDetail: 'A customer success manager should validate the drop in OR usage and the revision risk before sending a formal renewal proposal.',
+        narrative: 'Surgical planning and device telemetry usage dropped after the PACS migration, but early renewal intent remains positive if a customer-facing action is coordinated in the next 14 days.',
+        evidence: [
+          'Usage telemetry from Microsoft Fabric refreshed 14:20 UTC; 11 of 16 ORs are active this week.',
+          'Azure Machine Learning health score confidence is 84% based on service events, product usage, and CRM intent.',
+          'Customer success notes show budget approval pending for a 2-site expansion if the renewal is protected.'
+        ],
+        grounding: 'Usage + CRM + support',
+        lastRefresh: '14:20 UTC',
+        dialogRule: 'Confidence 84% • source refreshed 14:20 UTC • human review still required.',
+        exception: false,
+        audit: [
+          { time: '08:14', actor: 'Alicia Morgan', action: 'Usage drop flagged after PACS migration.' },
+          { time: '09:22', actor: 'Renewals lead', action: 'Renewal intent shows 72% probability of re-signing.' },
+          { time: '12:05', actor: 'System', action: 'Health model refreshed from Fabric and CRM data.' }
+        ]
+      },
+      {
+        id: 'northline-diagnostics',
+        customer: 'Northline Diagnostics',
+        segment: 'Regional network',
+        renewal: '16 days',
+        value: '$940K',
+        health: 52,
+        confidence: 58,
+        risk: 'Review required',
+        riskClass: 'tag-stop',
+        status: 'Escalate',
+        usage: 49,
+        adoption: 46,
+        intent: 61,
+        nextWindow: 'Immediate follow up',
+        owner: 'Alicia Morgan',
+        bestStep: 'Escalate to Renewals Lead for manual review',
+        noticeTitle: 'Manual review required',
+        noticeDetail: 'Telemetry coverage is incomplete and the contract is below the confidence threshold for a renewal commitment.',
+        narrative: 'Two facilities are missing daily device telemetry, and support escalations are compounding the risk profile. A manual validation is necessary before pushing the renewal motion.',
+        evidence: [
+          'Usage coverage is missing from 3 locations; Fabric data quality flagged a 31% gap in device telemetry.',
+          'Azure ML model confidence is 58% because 45% of recent activity is missing from the usage feed.',
+          'Finance has not yet approved an amendment, so the renewal motion needs a sales and service review.'
+        ],
+        grounding: 'Data quality + service + pricing',
+        lastRefresh: '09:40 UTC',
+        dialogRule: 'Confidence 58% • data quality issue detected • manual review required before approval.',
+        exception: true,
+        audit: [
+          { time: '07:40', actor: 'System', action: 'Telemetry gap warning triggered at 3 customer sites.' },
+          { time: '08:10', actor: 'Alicia Morgan', action: 'Contract risk elevated; manual review requested.' },
+          { time: '09:40', actor: 'Renewals lead', action: 'Escalation queued for field validation.' }
+        ]
+      },
+      {
+        id: 'beacon-imaging',
+        customer: 'Beacon Imaging',
+        segment: 'Academic health system',
+        renewal: '39 days',
+        value: '$2.4M',
+        health: 79,
+        confidence: 88,
+        risk: 'Positive',
+        riskClass: 'tag-ok',
+        status: 'Healthy',
+        usage: 82,
+        adoption: 76,
+        intent: 88,
+        nextWindow: 'Quarterly check-in',
+        owner: 'Alicia Morgan',
+        bestStep: 'Protect the renewal and deepen expansion',
+        noticeTitle: 'Healthy renewal profile',
+        noticeDetail: 'Usage is rising, the customer is engaged, and expansion opportunities are being tracked for the next planning cycle.',
+        narrative: 'Beacon Imaging is on track for renewal with strong adoption and low service friction. The next step is to protect the contract and expand use across the radiology network.',
+        evidence: [
+          'Daily device telemetry has improved 18% quarter-over-quarter in Microsoft Fabric.',
+          'Renewal intent is strong with 88% confidence; product usage remains above the network benchmark.',
+          'Expansion opportunity identified for advanced diagnostics modules in the next budget cycle.'
+        ],
+        grounding: 'Usage + product expansion',
+        lastRefresh: '13:05 UTC',
+        dialogRule: 'Confidence 88% • source refreshed 13:05 UTC • ready for standard renewal motion.',
+        exception: false,
+        audit: [
+          { time: '08:00', actor: 'System', action: 'Annual usage benchmark refreshed.' },
+          { time: '09:18', actor: 'Alicia Morgan', action: 'Cross-sell opportunity reviewed with sales enablement.' },
+          { time: '13:05', actor: 'System', action: 'Renewal forecast updated and routed to the account plan.' }
+        ]
+      }
+    ];
+
+    const accountList = document.getElementById('accountList');
+    const riskBadge = document.getElementById('riskBadge');
+    const statusPill = document.getElementById('statusPill');
+    const customerName = document.getElementById('customerName');
+    const accountMeta = document.getElementById('accountMeta');
+    const healthScore = document.getElementById('healthScore');
+    const confidenceScore = document.getElementById('confidenceScore');
+    const arrValue = document.getElementById('arrValue');
+    const usageLabel = document.getElementById('usageLabel');
+    const adoptionLabel = document.getElementById('adoptionLabel');
+    const intentLabel = document.getElementById('intentLabel');
+    const usageBar = document.getElementById('usageBar');
+    const adoptionBar = document.getElementById('adoptionBar');
+    const intentBar = document.getElementById('intentBar');
+    const healthNarrative = document.getElementById('healthNarrative');
+    const evidenceList = document.getElementById('evidenceList');
+    const noticeBox = document.getElementById('noticeBox');
+    const noticeTitle = document.getElementById('noticeTitle');
+    const noticeDetail = document.getElementById('noticeDetail');
+    const bestStep = document.getElementById('bestStep');
+    const ownerName = document.getElementById('ownerName');
+    const groundingLabel = document.getElementById('groundingLabel');
+    const refreshLabel = document.getElementById('refreshLabel');
+    const statusLine = document.getElementById('statusLine');
+    const auditList = document.getElementById('auditList');
+    const dialog = document.getElementById('reviewDialog');
+    const dialogTitle = document.getElementById('dialogTitle');
+    const dialogSub = document.getElementById('dialogSub');
+    const dialogRule = document.getElementById('dialogRule');
+    const dialogAccount = document.getElementById('dialogAccount');
+    const dialogRenewal = document.getElementById('dialogRenewal');
+    const dialogHealth = document.getElementById('dialogHealth');
+    const reviewCheckbox = document.getElementById('reviewCheckbox');
+    const reviewNotes = document.getElementById('reviewNotes');
+    const primaryAction = document.getElementById('primaryAction');
+    const reviewAction = document.getElementById('reviewAction');
+    const escalateAction = document.getElementById('escalateAction');
+    const resetAction = document.getElementById('resetAction');
+    const confirmAction = document.getElementById('confirmAction');
+
+    let selectedId = 'apex-spine';
+    let state = 'ready';
+
+    function getSelectedAccount() {
+      return customers.find((account) => account.id === selectedId) || customers[0];
+    }
+
+    function renderQueue() {
+      accountList.innerHTML = customers.map((account) => `
+        <button type="button" class="account-row ${account.id === selectedId ? 'is-selected' : ''}" data-account-id="${account.id}">
+          <div class="account-row-head">
+            <strong>${account.customer}</strong>
+            <span class="tag ${account.riskClass}">${account.risk}</span>
+          </div>
+          <div class="account-row-meta">
+            <span>Renewal ${account.renewal}</span>
+            <span>Health ${account.health}</span>
+          </div>
+        </button>
+      `).join('');
+
+      accountList.querySelectorAll('[data-account-id]').forEach((button) => {
+        button.addEventListener('click', () => {
+          selectedId = button.dataset.accountId;
+          state = 'ready';
+          renderAll();
+          statusLine.textContent = 'Ready to review the next account in the queue.';
+        });
+      });
+    }
+
+    function renderAudit(account) {
+      auditList.innerHTML = account.audit.map((entry) => `
+        <li class="audit-item">
+          <time>${entry.time}</time>
+          <div>
+            <span class="actor ${entry.actor === 'System' ? 'is-system' : 'is-human'}">${entry.actor}</span>
+            <span class="event"> — ${entry.action}</span>
+          </div>
+        </li>
+      `).join('');
+    }
+
+    function renderAccount() {
+      const account = getSelectedAccount();
+      riskBadge.textContent = account.risk;
+      riskBadge.className = `tag ${account.riskClass}`;
+      statusPill.textContent = account.status;
+      statusPill.className = `st ${account.risk === 'High risk' ? 'st-warn' : account.risk === 'Review required' ? 'st-stop' : 'st-ok'}`;
+      customerName.textContent = account.customer;
+      accountMeta.textContent = `${account.segment} • Renewal in ${account.renewal}`;
+      healthScore.textContent = account.health;
+      confidenceScore.textContent = `${account.confidence}%`;
+      arrValue.textContent = account.value;
+      usageLabel.textContent = `${account.usage}%`;
+      adoptionLabel.textContent = `${account.adoption}%`;
+      intentLabel.textContent = `${account.intent}%`;
+      usageBar.style.width = `${account.usage}%`;
+      adoptionBar.style.width = `${account.adoption}%`;
+      intentBar.style.width = `${account.intent}%`;
+      healthNarrative.textContent = account.narrative;
+      evidenceList.innerHTML = account.evidence.map((item) => `<div class="evidence-item">${item}</div>`).join('');
+      noticeTitle.textContent = account.noticeTitle;
+      noticeDetail.textContent = account.noticeDetail;
+      bestStep.textContent = account.bestStep;
+      ownerName.textContent = account.owner;
+      groundingLabel.textContent = account.grounding;
+      refreshLabel.textContent = account.lastRefresh;
+      document.getElementById('nextWindow').textContent = account.nextWindow;
+      renderAudit(account);
+
+      noticeBox.className = `notice ${account.exception ? 'notice-stop' : account.risk === 'Positive' ? 'notice-ok' : 'notice-warn'}`;
+      dialogRule.textContent = account.dialogRule;
+      dialogAccount.textContent = account.customer;
+      dialogRenewal.textContent = account.renewal;
+      dialogHealth.textContent = `${account.health} / 100`;
+      reviewNotes.value = account.exception
+        ? 'Usage coverage is incomplete, so manual validation is required before sending the renewal recommendation.'
+        : 'Usage telemetry dipped after the PACS migration, but the combined score still supports a save-the-renewal motion if service follow-up is scheduled this week.';
+    }
+
+    function renderButtons() {
+      const isWorking = state === 'working';
+      const account = getSelectedAccount();
+      const allowReview = !isWorking && account.confidence >= 58;
+      primaryAction.disabled = isWorking;
+      reviewAction.disabled = isWorking;
+      confirmAction.disabled = !reviewCheckbox.checked || isWorking;
+      escalateAction.disabled = isWorking;
+      if (account.exception) {
+        primaryAction.textContent = 'Review exception';
+        reviewAction.textContent = 'Review exception';
+      } else {
+        primaryAction.textContent = 'Prepare renewal play';
+        reviewAction.textContent = 'Prepare renewal play';
+      }
+      if (allowReview) {
+        primaryAction.title = 'Open review';
+      }
+    }
+
+    function renderAll() {
+      renderQueue();
+      renderAccount();
+      renderButtons();
+    }
+
+    function openDialogForSelected() {
+      const account = getSelectedAccount();
+      dialogTitle.textContent = account.exception ? 'Manual review required' : 'Review renewal motion';
+      dialogSub.textContent = account.customer;
+      dialogAccount.textContent = account.customer;
+      dialogRenewal.textContent = account.renewal;
+      dialogHealth.textContent = `${account.health} / 100`;
+      reviewCheckbox.checked = false;
+      confirmAction.textContent = account.exception ? 'Escalate to Renewals Lead' : 'Route to Renewals Lead';
+      if (typeof dialog.showModal === 'function') {
+        dialog.showModal();
+      }
+    }
+
+    function simulateReview() {
+      const account = getSelectedAccount();
+      state = 'working';
+      renderButtons();
+      statusLine.textContent = `Preparing the renewal motion for ${account.customer}...`;
+      window.setTimeout(() => {
+        if (account.exception) {
+          state = 'exception';
+          statusLine.textContent = `${account.customer} requires manual data validation before a renewal commitment can be approved.`;
+          openDialogForSelected();
+        } else {
+          state = 'result';
+          statusLine.textContent = `Renewal play drafted for ${account.customer}. Human review is complete and the account is ready to route.`;
+          openDialogForSelected();
+        }
+        renderButtons();
+      }, 700);
+    }
+
+    function applyApprovedDecision() {
+      const account = getSelectedAccount();
+      const approved = !account.exception && reviewCheckbox.checked;
+      if (approved) {
+        state = 'result';
+        statusLine.textContent = `Renewal play approved for ${account.customer}. It is now queued for the renewals lead.`;
+        account.audit.unshift({ time: 'Now', actor: 'Alicia Morgan', action: 'Renewal play approved and routed to the renewals lead.' });
+      } else {
+        state = 'exception';
+        statusLine.textContent = `${account.customer} was escalated for manual review before the renewal commitment is finalized.`;
+        account.audit.unshift({ time: 'Now', actor: 'Alicia Morgan', action: 'Manual review escalated due to low data confidence and service risk.' });
+      }
+      renderAudit(account);
+      renderButtons();
+      dialog.close();
+    }
+
+    primaryAction.addEventListener('click', () => {
+      if (state === 'working') return;
+      simulateReview();
+    });
+
+    reviewAction.addEventListener('click', () => {
+      if (state === 'working') return;
+      simulateReview();
+    });
+
+    escalateAction.addEventListener('click', () => {
+      const account = getSelectedAccount();
+      state = 'exception';
+      account.audit.unshift({ time: 'Now', actor: 'Alicia Morgan', action: 'Escalated to Renewals Lead for manual validation.' });
+      statusLine.textContent = `${account.customer} has been escalated to the renewals lead for a manual validation.`;
+      renderAudit(account);
+      renderButtons();
+      openDialogForSelected();
+    });
+
+    resetAction.addEventListener('click', () => {
+      selectedId = 'apex-spine';
+      state = 'ready';
+      renderAll();
+      statusLine.textContent = 'Ready to review the next account in the queue.';
+      if (dialog.open) dialog.close();
+    });
+
+    reviewCheckbox.addEventListener('change', () => {
+      confirmAction.disabled = !reviewCheckbox.checked || state === 'working';
+    });
+
+    confirmAction.addEventListener('click', () => {
+      applyApprovedDecision();
+    });
+
+    document.querySelectorAll('[data-close-dialog]').forEach((button) => {
+      button.addEventListener('click', () => {
+        if (dialog.open) dialog.close();
+      });
+    });
+
+    renderAll();
+  </script>
+</body>
+</html>
