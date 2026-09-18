@@ -1,0 +1,1110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Northstar MedData Exchange — external data product review</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+
+    body {
+      --surface-ai: #fffaf5;
+      --surface-rail: #f5f4f3;
+      --success: #0b5c0b;
+      --warning: #7a4e08;
+      --danger: #8b1f25;
+      --soft-accent: var(--accent-soft);
+      --soft-line: var(--accent-line);
+    }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: minmax(260px, 300px) minmax(0, 1fr);
+      gap: 1px;
+      background: var(--line);
+      min-height: calc(100vh - 120px);
+    }
+
+    .rail {
+      background: var(--surface-2);
+      min-width: 0;
+    }
+
+    .content {
+      background: var(--bg);
+      min-width: 0;
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+      padding: 14px 15px 10px;
+    }
+
+    .panel-head h2 {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .panel-count {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 6px;
+      padding: 0 15px 10px;
+      flex-wrap: wrap;
+    }
+
+    .request-list {
+      list-style: none;
+      margin: 0;
+      padding: 0 12px 16px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .request-item {
+      margin: 0;
+    }
+
+    .request-btn {
+      width: 100%;
+      text-align: left;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--line);
+      border-radius: var(--radius);
+      padding: 10px 11px;
+      color: var(--ink);
+      cursor: pointer;
+      display: grid;
+      gap: 6px;
+    }
+
+    .request-btn:hover {
+      border-color: var(--muted-soft);
+    }
+
+    .request-btn[aria-current="true"] {
+      border-color: var(--accent);
+      border-left-color: var(--accent);
+    }
+
+    .request-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .request-id {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .request-title {
+      font-weight: 600;
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .request-meta {
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+
+    .case-wrap {
+      padding: 18px 18px 14px;
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .case-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .case-header h1 {
+      margin: 0;
+      font-size: clamp(1.4rem, 2vw, 2rem);
+      line-height: 1.2;
+    }
+
+    .case-id {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .facts {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px 16px;
+      margin: 0;
+    }
+
+    .facts dt {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+
+    .facts dd {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .status-block {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      flex-wrap: wrap;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-size: 11.5px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .status-pill.ok {
+      background: var(--ok-bg);
+      border-color: #a7d9a7;
+      color: var(--ok);
+    }
+
+    .status-pill.warn {
+      background: var(--warn-bg);
+      border-color: #e6d08a;
+      color: var(--warn);
+    }
+
+    .status-pill.stop {
+      background: var(--stop-bg);
+      border-color: #e5b4b7;
+      color: var(--stop);
+    }
+
+    .decision-card .card-head {
+      background: var(--accent-soft);
+    }
+
+    .rule-box {
+      display: flex;
+      gap: 9px;
+      align-items: flex-start;
+      font-size: 12.5px;
+      color: var(--ink-soft);
+      background: var(--surface-2);
+      border: 1px solid var(--line-soft);
+      border-radius: var(--radius);
+      padding: 9px 11px;
+    }
+
+    .rule-box svg {
+      flex: none;
+      margin-top: 1px;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-top: 14px;
+    }
+
+    .notice {
+      display: flex;
+      gap: 9px;
+      align-items: flex-start;
+      font-size: 13px;
+      padding: 10px 12px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      margin-top: 14px;
+    }
+
+    .notice svg {
+      flex: none;
+      margin-top: 2px;
+    }
+
+    .notice.ok {
+      background: var(--ok-bg);
+      border-color: #a7d9a7;
+      color: var(--success);
+    }
+
+    .notice.warn {
+      background: var(--warn-bg);
+      border-color: #e6d08a;
+      color: var(--warning);
+    }
+
+    .notice.stop {
+      background: var(--stop-bg);
+      border-color: #e5b4b7;
+      color: var(--danger);
+    }
+
+    .grid-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 8px;
+    }
+
+    .grid-list li {
+      display: grid;
+      grid-template-columns: 80px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--line-soft);
+    }
+
+    .grid-list li:last-child {
+      border-bottom: 0;
+    }
+
+    .grid-label {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .stack {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .svc { 
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 12px;
+      color: var(--ink);
+    }
+
+    .status-line {
+      min-height: 20px;
+      font-size: 13.5px;
+      color: var(--ink-soft);
+      margin: 0;
+    }
+
+    .dialog-foot {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 9px;
+      padding: 13px 17px;
+      border-top: 1px solid var(--line-soft);
+      background: var(--bg);
+    }
+
+    .dialog-body {
+      padding: 15px 17px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .field {
+      display: grid;
+      gap: 5px;
+    }
+
+    .field label {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .field textarea,
+    .field input {
+      font: inherit;
+      font-size: 14px;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: var(--ink);
+      background: var(--surface);
+    }
+
+    .field textarea {
+      resize: vertical;
+      min-height: 70px;
+    }
+
+    .attest {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      font-size: 14px;
+      padding: 11px 12px;
+      background: var(--bg);
+      border: 1px solid var(--line-soft);
+      border-radius: var(--radius);
+    }
+
+    .attest input {
+      width: 18px;
+      height: 18px;
+      margin: 1px 0 0;
+      flex: none;
+    }
+
+    .empty-state {
+      background: var(--surface);
+      border: 1px dashed var(--line);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 700px) {
+      .app-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .who {
+        text-align: left;
+      }
+
+      .brand-sub {
+        display: none;
+      }
+
+      .claim {
+        margin-left: 0;
+      }
+    }
+  </style>
+</head>
+<body data-subvertical="medtech">
+  <header class="appbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">◈</div>
+      <div>
+        <span class="brand-name">Northstar MedData Exchange</span>
+        <span class="brand-sub">Partner data product review</span>
+      </div>
+    </div>
+    <p class="disclosure">Illustrative demo - synthetic data</p>
+    <p class="who"><b>Maya Chen</b> · Chief Data Officer</p>
+  </header>
+
+  <main class="app-shell">
+    <aside class="rail" aria-label="External data products queue">
+      <div class="panel-head">
+        <h2>External data products</h2>
+        <span class="panel-count" id="queueCount">0 items</span>
+      </div>
+
+      <div class="filter-row" aria-label="Queue filters">
+        <button type="button" class="chip" data-filter="all" aria-pressed="true">All</button>
+        <button type="button" class="chip" data-filter="ready" aria-pressed="false">Ready</button>
+        <button type="button" class="chip" data-filter="hold" aria-pressed="false">Hold</button>
+      </div>
+
+      <ul class="request-list" id="requestList" aria-live="polite"></ul>
+    </aside>
+
+    <section class="content">
+      <div class="case-wrap">
+        <div class="case-header">
+          <h1 id="productTitle">CarePath Commercial Signals</h1>
+          <span class="case-id" id="productId">DP-1642</span>
+          <span class="status-pill ok" id="productState">Ready to share</span>
+        </div>
+
+        <dl class="facts">
+          <div>
+            <dt>Owner</dt>
+            <dd id="ownerValue">Commercial Data</dd>
+          </div>
+          <div>
+            <dt>Partner</dt>
+            <dd id="partnerValue">Apex Care Alliance</dd>
+          </div>
+          <div>
+            <dt>Revenue model</dt>
+            <dd id="revenueValue">Usage + annual access</dd>
+          </div>
+          <div>
+            <dt>Refresh</dt>
+            <dd id="refreshValue">Daily</dd>
+          </div>
+          <div>
+            <dt>Policy status</dt>
+            <dd id="policyValue">Compliance review passed</dd>
+          </div>
+          <div>
+            <dt>Access scope</dt>
+            <dd id="scopeValue">Partner tenant only</dd>
+          </div>
+        </dl>
+
+        <section class="card decision-card">
+          <div class="card-head">
+            <h2>Review decision</h2>
+            <span class="card-note" id="decisionNote">Pending partner approval</span>
+          </div>
+          <div class="card-body">
+            <div class="rule-box">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M8 1.5 13.7 4v4.6c0 2.7-2.2 5.4-5.7 6.8-3.5-1.4-5.7-4.1-5.7-6.8V4L8 1.5Zm2.1 4.2-3.2 3.2L5.4 7.3l-.9.9 2.4 2.4 4.1-4.1-.9-.9Z" fill="currentColor"></path>
+              </svg>
+              <span>Governed sharing stays isolated by tenant, dataset boundary, and approved usage purpose. A named human approver must remain accountable.</span>
+            </div>
+
+            <div class="cta-row">
+              <button type="button" class="btn btn-primary" id="approveBtn">Approve external share</button>
+              <button type="button" class="btn" id="holdBtn">Request policy hold</button>
+            </div>
+
+            <div class="notice warn" id="decisionSummary" aria-live="polite">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13Zm0 3.1c.5 0 .9.4.9.9v2.8a.9.9 0 0 1-1.8 0V5.5c0-.5.4-.9.9-.9Zm0 6.6a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" fill="currentColor"></path>
+              </svg>
+              <div><strong>Status:</strong> External sharing remains under review. Decision log shows compliance checks and partner onboarding details.</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <h2>Product scope and controls</h2>
+            <span class="card-note">Fabric + Purview + Real-Time Intelligence</span>
+          </div>
+          <div class="card-body">
+            <ul class="grid-list">
+              <li>
+                <div class="grid-label">Dataset</div>
+                <div id="datasetValue">CarePath commercial usage aggregates</div>
+              </li>
+              <li>
+                <div class="grid-label">Boundary</div>
+                <div id="boundaryValue">Partner-specific view with customer demo records excluded</div>
+              </li>
+              <li>
+                <div class="grid-label">Services</div>
+                <div class="stack">
+                  <span class="svc">Microsoft Fabric</span>
+                  <span class="svc">Microsoft Purview</span>
+                  <span class="svc">Real-Time Intelligence</span>
+                  <span class="svc">Azure Cosmos DB</span>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <h2>Evidence and access model</h2>
+            <span class="card-note">Sample operational record</span>
+          </div>
+          <div class="card-body">
+            <ul class="grid-list" id="auditList">
+              <li>
+                <div class="grid-label">09:24</div>
+                <div>Governance steward validated partner access scope and confirmed no direct patient identifiers are included.</div>
+              </li>
+              <li>
+                <div class="grid-label">09:48</div>
+                <div>Architecture review confirmed a unified data-product landing zone and monetization controls.</div>
+              </li>
+              <li>
+                <div class="grid-label">10:06</div>
+                <div>Commercial lead requested approval to open a partner test dataset for a 90-day evaluation.</div>
+              </li>
+            </ul>
+            <p class="status-line" id="statusLine" aria-live="polite">Ready for approval. Review owner: Maya Chen.</p>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="built">
+      <span>Built with:</span>
+      <span class="svc-chip">Microsoft Fabric</span>
+      <span class="svc-chip">Microsoft Purview</span>
+      <span class="svc-chip">Real-Time Intelligence</span>
+    </div>
+    <span class="claim"><b>Claim:</b> Governed external sharing enables partner onboarding and monetization with review, traceability, and scoped access.</span>
+  </footer>
+
+  <dialog id="decisionDialog" aria-labelledby="dialogTitle">
+    <div class="dlg-head">
+      <div>
+        <h2 id="dialogTitle">Approve external sharing</h2>
+        <span class="dlg-sub">Human review and escalation remain required.</span>
+      </div>
+    </div>
+    <form id="decisionForm" method="dialog">
+      <div class="dialog-body">
+        <div class="field">
+          <label for="reviewerInput">Reviewer</label>
+          <input id="reviewerInput" type="text" value="Maya Chen" readonly>
+        </div>
+        <div class="field">
+          <label for="rationaleInput">Rationale</label>
+          <textarea id="rationaleInput">Partner uses this dataset for aggregated device-usage trend analysis. No direct patient identifiers or restricted event streams are included. Access is time-bound and scoped to the approved commercial use case.</textarea>
+        </div>
+        <label class="attest">
+          <input type="checkbox" id="attestInput" required>
+          <span>I confirm the review is complete and the dataset boundary, retention window, and escalation path are approved.</span>
+        </label>
+      </div>
+      <div class="dialog-foot">
+        <button type="button" class="btn" id="cancelDialog">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="confirmDecision">Confirm approval</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+    const products = [
+      {
+        id: 'DP-1642',
+        title: 'CarePath Commercial Signals',
+        owner: 'Commercial Data',
+        partner: 'Apex Care Alliance',
+        revenue: 'Usage + annual access',
+        refresh: 'Daily',
+        policy: 'Compliance review passed',
+        scope: 'Partner tenant only',
+        dataset: 'CarePath commercial usage aggregates',
+        boundary: 'Partner-specific view with customer demo records excluded',
+        state: 'ready',
+        statusLabel: 'Ready to share',
+        decisionNote: 'Pending partner approval',
+        summary: 'Status: External sharing remains under review. Decision log shows compliance checks and partner onboarding details.',
+        statusLine: 'Ready for approval. Review owner: Maya Chen.'
+      },
+      {
+        id: 'DP-1881',
+        title: 'Procedure Efficiency Benchmarks',
+        owner: 'Head of Commercial Data',
+        partner: 'Verity Labs',
+        revenue: 'Access fee + reporting add-on',
+        refresh: 'Weekly',
+        policy: 'Hold for residency review',
+        scope: 'Legal review required',
+        dataset: 'Procedure efficiency and site-mix benchmarks',
+        boundary: 'No customer account detail; only de-identified cohort benchmarks',
+        state: 'hold',
+        statusLabel: 'Policy hold',
+        decisionNote: 'Escalation required',
+        summary: 'Status: Hold in place. Legal and data stewardship are reviewing cross-border residency and sales-usage scope for the partner.',
+        statusLine: 'Policy hold is active. Escalation to governance and legal is required before release.'
+      },
+      {
+        id: 'DP-2150',
+        title: 'Device Registry + Outcomes',
+        owner: 'Clinical Insights',
+        partner: 'Northwind Health',
+        revenue: 'Annual data product fee',
+        refresh: 'Hourly',
+        policy: 'Boundary review pending',
+        scope: 'Single partner tenant',
+        dataset: 'Registry completeness and service outcomes',
+        boundary: 'Staged rollout with de-identified event stream and retention controls',
+        state: 'warn',
+        statusLabel: 'Needs review',
+        decisionNote: 'Additional evidence required',
+        summary: 'Status: Waiting for final data boundary confirmation before the commercial handoff is approved.',
+        statusLine: 'Waiting on boundary evidence before external share can be cleared.'
+      }
+    ];
+
+    const state = {
+      filter: 'all',
+      selectedId: 'DP-1642'
+    };
+
+    const requestList = document.getElementById('requestList');
+    const queueCount = document.getElementById('queueCount');
+    const chips = Array.from(document.querySelectorAll('.chip'));
+    const productTitle = document.getElementById('productTitle');
+    const productId = document.getElementById('productId');
+    const productState = document.getElementById('productState');
+    const ownerValue = document.getElementById('ownerValue');
+    const partnerValue = document.getElementById('partnerValue');
+    const revenueValue = document.getElementById('revenueValue');
+    const refreshValue = document.getElementById('refreshValue');
+    const policyValue = document.getElementById('policyValue');
+    const scopeValue = document.getElementById('scopeValue');
+    const datasetValue = document.getElementById('datasetValue');
+    const boundaryValue = document.getElementById('boundaryValue');
+    const decisionNote = document.getElementById('decisionNote');
+    const decisionSummary = document.getElementById('decisionSummary');
+    const statusLine = document.getElementById('statusLine');
+    const approveBtn = document.getElementById('approveBtn');
+    const holdBtn = document.getElementById('holdBtn');
+    const dialog = document.getElementById('decisionDialog');
+    const dialogTitle = document.getElementById('dialogTitle');
+    const decisionForm = document.getElementById('decisionForm');
+    const rationaleInput = document.getElementById('rationaleInput');
+    const confirmDecision = document.getElementById('confirmDecision');
+    const cancelDialog = document.getElementById('cancelDialog');
+
+    function getSelectedProduct() {
+      return products.find(function (product) {
+        return product.id === state.selectedId;
+      }) || products[0];
+    }
+
+    function getStateClass(product) {
+      if (product.state === 'ready') {
+        return 'ok';
+      }
+      if (product.state === 'hold') {
+        return 'stop';
+      }
+      return 'warn';
+    }
+
+    function getNoticeClass(product) {
+      if (product.state === 'ready') {
+        return 'ok';
+      }
+      if (product.state === 'hold') {
+        return 'stop';
+      }
+      return 'warn';
+    }
+
+    function getVisibleProducts() {
+      return products.filter(function (product) {
+        return state.filter === 'all' || product.state === state.filter;
+      });
+    }
+
+    function renderRequests() {
+      const visible = getVisibleProducts();
+      queueCount.textContent = visible.length + ' item' + (visible.length === 1 ? '' : 's');
+      requestList.innerHTML = '';
+
+      if (!visible.length) {
+        const empty = document.createElement('li');
+        empty.className = 'empty-state';
+        empty.textContent = 'No products match this filter. Try All or Ready.';
+        requestList.appendChild(empty);
+        return;
+      }
+
+      visible.forEach(function (product) {
+        const item = document.createElement('li');
+        item.className = 'request-item';
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'request-btn';
+        btn.setAttribute('aria-current', product.id === state.selectedId ? 'true' : 'false');
+        btn.innerHTML = (
+          '<div class="request-top">' +
+          '<span class="request-id">' + product.id + '</span>' +
+          '<span class="status-pill ' + getStateClass(product) + '">' + product.statusLabel + '</span>' +
+          '</div>' +
+          '<div class="request-title">' + product.title + '</div>' +
+          '<div class="request-meta">' + product.partner + ' · ' + product.refresh + '</div>'
+        );
+
+        btn.addEventListener('click', function () {
+          state.selectedId = product.id;
+          render();
+        });
+
+        item.appendChild(btn);
+        requestList.appendChild(item);
+      });
+    }
+
+    function renderSelected() {
+      const selected = getSelectedProduct();
+      state.selectedId = selected.id;
+
+      productTitle.textContent = selected.title;
+      productId.textContent = selected.id;
+      productState.className = 'status-pill ' + getStateClass(selected);
+      productState.textContent = selected.statusLabel;
+      ownerValue.textContent = selected.owner;
+      partnerValue.textContent = selected.partner;
+      revenueValue.textContent = selected.revenue;
+      refreshValue.textContent = selected.refresh;
+      policyValue.textContent = selected.policy;
+      scopeValue.textContent = selected.scope;
+      datasetValue.textContent = selected.dataset;
+      boundaryValue.textContent = selected.boundary;
+      decisionNote.textContent = selected.decisionNote;
+      statusLine.textContent = selected.statusLine;
+
+      decisionSummary.className = 'notice ' + getNoticeClass(selected);
+      decisionSummary.innerHTML = (
+        '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">' +
+        '<path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13Zm0 3.1c.5 0 .9.4.9.9v2.8a.9.9 0 0 1-1.8 0V5.5c0-.5.4-.9.9-.9Zm0 6.6a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" fill="currentColor"></path>' +
+        '</svg>' +
+        '<div><strong>Status:</strong> ' + selected.summary + '</div>'
+      );
+
+      if (selected.state === 'ready') {
+        approveBtn.disabled = true;
+        holdBtn.disabled = false;
+        approveBtn.textContent = 'Approve external share';
+      } else if (selected.state === 'hold') {
+        approveBtn.disabled = false;
+        holdBtn.disabled = true;
+        approveBtn.textContent = 'Reopen approval';
+      } else {
+        approveBtn.disabled = false;
+        holdBtn.disabled = false;
+        approveBtn.textContent = 'Approve external share';
+      }
+    }
+
+    function render() {
+      renderRequests();
+      renderSelected();
+    }
+
+    function openDecision(action) {
+      const selected = getSelectedProduct();
+      const override = action === 'approve';
+
+      dialogTitle.textContent = override ? 'Approve external sharing' : 'Request policy hold';
+      confirmDecision.textContent = override ? 'Confirm approval' : 'Escalate for review';
+      rationaleInput.value = override
+        ? 'Partner uses this dataset for aggregated device-usage trend analysis. No direct patient identifiers or restricted event streams are included. Access is time-bound and scoped to the approved commercial use case.'
+        : 'Customer data residency and shared access scope are not yet aligned with the partner contract. Require legal review, dataset boundary validation, and a signed approval before any external access is granted.';
+
+      document.getElementById('attestInput').checked = false;
+      dialog.dataset.action = action;
+      dialog.showModal();
+    }
+
+    chips.forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        state.filter = chip.dataset.filter;
+        chips.forEach(function (button) {
+          button.setAttribute('aria-pressed', button === chip ? 'true' : 'false');
+        });
+        render();
+      });
+    });
+
+    approveBtn.addEventListener('click', function () {
+      openDecision('approve');
+    });
+
+    holdBtn.addEventListener('click', function () {
+      openDecision('hold');
+    });
+
+    cancelDialog.addEventListener('click', function () {
+      dialog.close();
+    });
+
+    decisionForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+      const selected = getSelectedProduct();
+      const action = dialog.dataset.action || 'approve';
+      const reviewer = document.getElementById('reviewerInput').value.trim() || 'Maya Chen';
+
+      if (action === 'approve') {
+        selected.state = 'ready';
+        selected.statusLabel = 'Ready to share';
+        selected.decisionNote = 'Approved for partner onboarding';
+        selected.summary = 'Status: Approved for external sharing. ' + reviewer + ' confirmed the dataset boundary and review trail before releasing the partner tenant view.';
+        selected.policy = 'Approval recorded';
+        selected.scope = 'Partner tenant only';
+        selected.statusLine = 'Approved. The partner tenant is ready for dataset onboarding with review and audit trail attached.';
+      } else {
+        selected.state = 'hold';
+        selected.statusLabel = 'Policy hold';
+        selected.decisionNote = 'Escalation required';
+        selected.summary = 'Status: Hold in place. ' + reviewer + ' escalated legal and governance review because the partner contract still needs dataset boundary confirmation.';
+        selected.policy = 'Hold for residency review';
+        selected.scope = 'Legal review required';
+        selected.statusLine = 'Policy hold logged. The partner review has been escalated to legal and governance for final clearance.';
+      }
+
+      dialog.close();
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>
