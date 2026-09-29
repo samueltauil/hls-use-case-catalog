@@ -1,0 +1,1231 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Synthetic closed-loop referral review workspace for DemoCare Network.">
+  <title>Referral Management and Patient Leakage Reduction | DemoCare Network</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+/* Keep the synthetic-data boundary visible while the workspace scrolls. */
+.disclosure {
+  position: fixed;
+  right: 18px;
+  bottom: 14px;
+  z-index: 60;
+  background: var(--ink);
+  box-shadow: var(--shadow-1);
+}
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+  .disclosure {
+    right: 10px;
+    bottom: 10px;
+    left: 10px;
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* ---------------------------------------------------------- demo layout */
+body {
+  --content-max: 1660px;
+  --panel-gap: 14px;
+}
+
+.page-shell {
+  width: min(var(--content-max), calc(100% - 36px));
+  margin: 0 auto;
+  padding: 20px 0 24px;
+}
+
+.intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px 26px;
+  align-items: end;
+  margin-bottom: 16px;
+}
+.eyebrow, .section-kicker {
+  margin: 0 0 5px;
+  color: var(--accent-strong);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.intro h1 {
+  max-width: 800px;
+  margin: 0;
+  font-size: clamp(24px, 3vw, 34px);
+  line-height: 1.12;
+  letter-spacing: -.02em;
+}
+.intro-copy {
+  max-width: 780px;
+  margin: 9px 0 0;
+  color: var(--muted);
+}
+.owner-context {
+  min-width: 250px;
+  padding: 11px 14px;
+  border-left: 3px solid var(--accent);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+}
+.owner-context p { margin: 0; }
+.owner-context .context-label { color: var(--muted); font-size: 12px; }
+.owner-context strong { display: block; margin-top: 1px; font-size: 15px; }
+.owner-context .context-tenant { margin-top: 4px; color: var(--muted); font-size: 12.5px; }
+
+.kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.kpi {
+  min-width: 0;
+  padding: 11px 13px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.kpi-label { color: var(--muted); font-size: 12px; }
+.kpi-value { display: block; margin: 1px 0 1px; font-size: 22px; line-height: 1.1; font-weight: 700; }
+.kpi-note { color: var(--muted); font-size: 11.5px; }
+.kpi-accent { border-top: 3px solid var(--accent); padding-top: 9px; }
+
+.control-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.filter-group { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
+.filter-label { color: var(--muted); font-size: 12.5px; font-weight: 600; margin-right: 2px; }
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: min(100%, 260px);
+}
+.search label { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+.search input {
+  min-width: 0;
+  width: 220px;
+  max-width: 100%;
+  padding: 8px 10px;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font: inherit;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(250px, .82fr) minmax(330px, 1.2fr) minmax(300px, .98fr);
+  gap: var(--panel-gap);
+  align-items: start;
+}
+.workspace > .card { min-width: 0; }
+.queue-panel { grid-column: 1; }
+.lifecycle-panel { grid-column: 2; }
+.next-panel { grid-column: 3; }
+
+.queue-body { padding: 0; }
+.queue-list {
+  list-style: none;
+  display: grid;
+  gap: 0;
+  padding: 0;
+  margin: 0;
+}
+.queue-item { border-bottom: 1px solid var(--line-soft); }
+.queue-item:last-child { border-bottom: 0; }
+.queue-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  width: 100%;
+  min-height: 86px;
+  padding: 12px 14px;
+  text-align: left;
+  color: var(--ink);
+  background: var(--surface);
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+}
+.queue-row:hover { background: var(--accent-soft); }
+.queue-row[aria-current="true"] { background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
+.queue-main { min-width: 0; }
+.queue-name { display: block; font-weight: 650; }
+.queue-meta { display: block; margin-top: 2px; color: var(--muted); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.queue-foot { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; margin-top: 7px; }
+.queue-age { color: var(--muted); font-size: 11.5px; }
+.queue-marker { align-self: start; }
+.empty-state { padding: 22px 15px; color: var(--muted); font-size: 13.5px; }
+
+.selected-summary {
+  padding: 14px 15px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.selected-summary h3 { margin: 0; font-size: 18px; }
+.selected-summary .summary-id { display: block; margin-top: 2px; color: var(--muted); font-size: 12px; }
+.summary-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+.summary-facts { margin-top: 13px; }
+
+.timeline {
+  list-style: none;
+  padding: 2px 15px 4px;
+  margin: 0;
+}
+.timeline-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 11px;
+  padding: 10px 0 12px;
+}
+.timeline-step:not(:last-child)::after {
+  position: absolute;
+  content: "";
+  left: 11px;
+  top: 30px;
+  bottom: -2px;
+  width: 2px;
+  background: var(--line);
+}
+.timeline-dot {
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+.timeline-step.is-done .timeline-dot { border-color: var(--ok); background: var(--ok-bg); color: var(--ok); }
+.timeline-step.is-active .timeline-dot { border-color: var(--accent); background: var(--accent); color: #fff; }
+.timeline-step.is-held .timeline-dot { border-color: var(--warn); background: var(--warn-bg); color: var(--warn); }
+.timeline-copy { min-width: 0; }
+.timeline-title { display: block; font-weight: 650; }
+.timeline-time { display: block; color: var(--muted); font-size: 12px; }
+.timeline-detail { margin: 4px 0 0; color: var(--ink-soft); font-size: 13px; }
+.timeline-source { display: block; margin-top: 3px; color: var(--muted); font-family: var(--mono); font-size: 11.5px; }
+
+.inspect-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px 14px;
+  align-items: center;
+  padding: 10px 15px 12px;
+  border-top: 1px solid var(--line-soft);
+}
+.inspect-bar .status-line { flex: 1 1 180px; }
+.evidence-panel {
+  display: grid;
+  gap: 10px;
+  margin: 0 15px 14px;
+  padding: 12px;
+  background: var(--bg);
+  border: 1px solid var(--line-soft);
+  border-left: 3px solid var(--accent);
+}
+.evidence-panel h3 { margin: 0; font-size: 13.5px; }
+.evidence-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.evidence-list li { display: grid; grid-template-columns: 100px minmax(0, 1fr); gap: 8px; font-size: 12.5px; }
+.evidence-list strong { color: var(--muted); font-weight: 600; }
+.evidence-list span { min-width: 0; }
+.evidence-source { color: var(--muted); font-family: var(--mono); font-size: 11px; }
+
+.next-body { display: grid; gap: 13px; }
+.next-object {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 5px 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.next-object h3 { margin: 0; font-size: 17px; }
+.next-object .mono { color: var(--muted); font-size: 11.5px; }
+.next-label { margin: 0; color: var(--accent-strong); font-size: 12px; font-weight: 700; }
+.suggestion {
+  padding: 12px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-line);
+  border-radius: var(--radius);
+}
+.suggestion-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.suggestion h3 { margin: 0; font-size: 15px; }
+.suggestion p { margin: 7px 0 0; font-size: 13.5px; }
+.suggestion dl { display: grid; grid-template-columns: 78px minmax(0, 1fr); gap: 5px 9px; margin: 11px 0 0; font-size: 12.5px; }
+.suggestion dt { color: var(--muted); }
+.suggestion dd { margin: 0; min-width: 0; }
+.uncertainty { padding: 10px 11px; background: var(--surface-2); border: 1px solid var(--line-soft); border-radius: var(--radius); font-size: 12.5px; }
+.uncertainty strong { display: block; margin-bottom: 2px; font-size: 12px; }
+.action-zone { display: grid; gap: 9px; }
+.action-zone .btn { justify-content: center; width: 100%; }
+.action-note { margin: 0; color: var(--muted); font-size: 12px; }
+.audit-wrap { border-top: 1px solid var(--line-soft); padding-top: 12px; }
+.audit-wrap h3 { margin: 0 0 8px; font-size: 13.5px; }
+.audit .audit-copy { min-width: 0; }
+.audit .audit-detail { display: block; margin-top: 1px; color: var(--muted); font-size: 12px; }
+
+.review-hold {
+  display: grid;
+  gap: 9px;
+  padding: 11px 12px;
+  background: var(--warn-bg);
+  border: 1px solid #e6d08a;
+  border-radius: var(--radius);
+  color: #704b0b;
+  font-size: 13px;
+}
+.review-hold h3 { margin: 0; color: #704b0b; font-size: 14px; }
+.missing-fields { list-style: none; display: grid; gap: 4px; padding: 0; margin: 0; }
+.missing-fields li { display: flex; gap: 6px; align-items: baseline; }
+.missing-fields li::before { content: "•"; font-weight: 700; }
+.escalation { margin: 0; font-size: 12.5px; }
+
+.completion {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 10px 11px;
+  background: var(--ok-bg);
+  border: 1px solid #a7d9a7;
+  border-radius: var(--radius);
+  color: #0b5c0b;
+  font-size: 13px;
+}
+.completion strong { display: block; }
+.completion p { margin: 2px 0 0; font-size: 12.5px; }
+
+.below-fold {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(280px, .8fr);
+  gap: 14px;
+  margin-top: 14px;
+}
+.below-fold .card-body { display: grid; gap: 11px; }
+.guardrails { list-style: none; padding: 0; margin: 0; display: grid; gap: 7px; font-size: 13px; }
+.guardrails li { padding-left: 17px; position: relative; }
+.guardrails li::before { content: "✓"; position: absolute; left: 0; color: var(--ok); font-weight: 700; }
+.source-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.source-chip { padding: 3px 7px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface-2); font-family: var(--mono); font-size: 11.5px; color: var(--ink-soft); }
+.sample-note { color: var(--muted); font-size: 12px; }
+.catalog-context { margin-top: 11px; border-top: 1px solid var(--line-soft); padding-top: 10px; }
+.catalog-context summary { color: var(--accent-strong); cursor: pointer; font-weight: 600; font-size: 13px; }
+.catalog-context p { margin: 8px 0 0; font-size: 12.5px; }
+.catalog-context strong { color: var(--ink-soft); }
+
+@media (max-width: 1099px) {
+  .workspace { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .queue-panel { grid-column: 1; }
+  .lifecycle-panel { grid-column: 2; }
+  .next-panel { grid-column: 1 / -1; }
+  .next-body { grid-template-columns: minmax(0, 1.2fr) minmax(240px, .8fr); align-items: start; }
+  .next-object, .next-label, .suggestion, .uncertainty { grid-column: 1; }
+  .action-zone, .audit-wrap, .review-hold, .completion { grid-column: 2; }
+}
+
+@media (max-width: 700px) {
+  .page-shell { width: min(100% - 24px, var(--content-max)); padding-top: 14px; }
+  .intro { grid-template-columns: 1fr; gap: 13px; }
+  .owner-context { min-width: 0; }
+  .kpi-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .control-bar { align-items: flex-start; }
+  .search { width: 100%; min-width: 0; }
+  .search input { flex: 1 1 auto; width: auto; }
+  .workspace { display: flex; flex-direction: column; }
+  .next-panel { order: -1; width: 100%; }
+  .queue-panel, .lifecycle-panel { width: 100%; }
+  .next-body { display: grid; grid-template-columns: 1fr; }
+  .next-object, .next-label, .suggestion, .uncertainty, .action-zone, .audit-wrap, .review-hold, .completion { grid-column: auto; }
+  .below-fold { grid-template-columns: 1fr; }
+  .evidence-list li { grid-template-columns: 88px minmax(0, 1fr); }
+}
+
+@media (max-width: 420px) {
+  .page-shell { width: calc(100% - 20px); }
+  .kpi { padding-inline: 10px; }
+  .kpi-value { font-size: 20px; }
+  .filter-group { align-items: flex-start; }
+  .filter-label { width: 100%; }
+  .queue-row { padding-inline: 11px; }
+}
+  </style>
+</head>
+<body data-subvertical="health-providers">
+  <header class="appbar">
+    <div class="brand">
+      <svg class="brand-mark" aria-hidden="true" width="25" height="25" viewBox="0 0 25 25" fill="none">
+        <path d="M12.5 2.5 21 6.2v5.6c0 5.2-3.5 9.1-8.5 11-5-1.9-8.5-5.8-8.5-11V6.2l8.5-3.7Z" stroke="currentColor" stroke-width="1.8"/>
+        <path d="M8.1 12.3h8.8M12.5 8v8.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <span class="brand-name">DemoCare Network</span>
+        <span class="brand-sub">Referral operations workspace</span>
+      </div>
+    </div>
+    <p class="disclosure"><span aria-hidden="true">●</span> Illustrative demo - synthetic data</p>
+    <p class="who"><b>VP Network Operations</b><br>Referral control tower · Assessment</p>
+  </header>
+
+  <main class="page-shell" id="main-content">
+    <section class="intro" aria-labelledby="page-title">
+      <div>
+        <p class="eyebrow">Access &amp; Patient Engagement · Referral operations</p>
+        <h1 id="page-title">Referral Management and Patient Leakage Reduction</h1>
+        <p class="intro-copy">Review referral signals across systems, inspect the evidence, and take a reversible human-approved next step.</p>
+      </div>
+      <aside class="owner-context" aria-label="Workspace context">
+        <p class="context-label">Working as</p>
+        <strong>VP Network Operations</strong>
+        <p class="context-tenant">DemoCare Network — fictional evaluation tenant</p>
+      </aside>
+    </section>
+
+    <section class="kpi-strip" aria-label="Synthetic operational sample data">
+      <div class="kpi kpi-accent">
+        <span class="kpi-label">Open referral queue</span>
+        <strong class="kpi-value" id="open-count"></strong>
+        <span class="kpi-note">sample operational count</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label">Aging leakage risk</span>
+        <strong class="kpi-value" id="aging-count"></strong>
+        <span class="kpi-note">sample queue segment</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label">Needs evidence review</span>
+        <strong class="kpi-value" id="review-count"></strong>
+        <span class="kpi-note">sample operational count</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label">Loops monitoring</span>
+        <strong class="kpi-value" id="monitoring-count">07</strong>
+        <span class="kpi-note">sample operational count</span>
+      </div>
+    </section>
+
+    <section class="control-bar" aria-label="Referral queue controls">
+      <div class="filter-group">
+        <span class="filter-label">Show</span>
+        <button class="chip" type="button" data-filter="all" aria-pressed="false">All referrals</button>
+        <button class="chip" type="button" data-filter="aging" aria-pressed="true">Aging leakage risk</button>
+        <button class="chip" type="button" data-filter="review" aria-pressed="false">Needs review</button>
+      </div>
+      <div class="search">
+        <label for="referral-search">Find referral</label>
+        <input id="referral-search" type="search" placeholder="ID, name, or service line" autocomplete="off">
+      </div>
+    </section>
+
+    <div class="workspace">
+      <aside class="card next-panel" aria-labelledby="next-title">
+        <div class="card-head">
+          <h2 id="next-title">Next action</h2>
+          <span class="card-note">Reviewer decision required</span>
+        </div>
+        <div id="next-body" class="card-body next-body"></div>
+      </aside>
+
+      <section class="card queue-panel" aria-labelledby="queue-title">
+        <div class="card-head">
+          <h2 id="queue-title">Referral queue</h2>
+          <span class="card-note">Sample work items</span>
+        </div>
+        <div class="queue-body">
+          <ul class="queue-list" id="queue-list" aria-label="Synthetic referral work items"></ul>
+          <p class="empty-state" id="queue-empty" hidden>No sample referrals match this view.</p>
+        </div>
+      </section>
+
+      <section class="card lifecycle-panel" aria-labelledby="lifecycle-title">
+        <div class="card-head">
+          <h2 id="lifecycle-title">Selected referral lifecycle</h2>
+          <span class="card-note">Source-backed checkpoints</span>
+        </div>
+        <div id="selected-summary" class="selected-summary"></div>
+        <ol id="timeline" class="timeline" aria-label="Referral lifecycle timeline"></ol>
+        <div class="inspect-bar">
+          <p class="status-line" id="inspect-status">Select a referral to inspect its evidence.</p>
+          <button class="btn" type="button" id="inspect-button">Inspect evidence</button>
+        </div>
+        <section id="evidence-panel" class="evidence-panel" aria-labelledby="evidence-title" hidden></section>
+      </section>
+    </div>
+
+    <div class="below-fold">
+      <section class="card" aria-labelledby="guardrail-title">
+        <div class="card-head">
+          <h2 id="guardrail-title">Review guardrails</h2>
+          <span class="card-note">Human accountability stays visible</span>
+        </div>
+        <div class="card-body">
+          <ul class="guardrails">
+            <li>AI can surface a routing suggestion; the reviewer approves the destination and outreach task.</li>
+            <li>Patient choice and network evidence are shown before any simulated action.</li>
+            <li>A missing encounter signal does not mean care did not happen; this view only tracks referral workflow evidence.</li>
+          </ul>
+          <p class="sample-note">All counts, timestamps, names, and statuses in this workspace are fictional sample operational data, not outcomes.</p>
+          <details class="catalog-context">
+            <summary>Catalog context</summary>
+            <p><strong>Problem:</strong> Referrals fall through fragmented systems, sending patients out of network and eroding revenue and continuity of care.</p>
+            <p><strong>Solution pattern:</strong> AI — intelligent referral routing and leakage analytics that close referral loops across systems.</p>
+            <p><strong>Stakeholders:</strong> Chief Strategy Officer, VP Ambulatory Operations, CFO, CMIO.</p>
+          </details>
+        </div>
+      </section>
+      <section class="card" aria-labelledby="sources-title">
+        <div class="card-head">
+          <h2 id="sources-title">Connected sample sources</h2>
+          <span class="card-note">Synthetic source labels</span>
+        </div>
+        <div class="card-body">
+          <div class="source-row">
+            <span class="source-chip">SYN-EHR</span>
+            <span class="source-chip">SYN-SCHED</span>
+            <span class="source-chip">SYN-NET</span>
+            <span class="source-chip">SYN-CLAIMS</span>
+          </div>
+          <p class="sample-note">The demonstration reads fixture data only. No booking, notification, or external system write occurs.</p>
+          <div class="actions">
+            <button class="btn" type="button" id="reset-button">Reset demo</button>
+            <button class="btn-link" type="button" id="replay-button">Replay from start</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <p class="sr-only" id="live-status" aria-live="polite"></p>
+    <noscript>
+      <p class="notice notice-warn">This illustrative demo needs JavaScript enabled to render its synthetic referral queue.</p>
+    </noscript>
+  </main>
+
+  <footer class="footer">
+    <div class="built">
+      <span>Catalog workloads:</span>
+      <span class="svc-chip">AI: Foundry Models - OpenAI (Standard)</span>
+      <span class="svc-chip">Fabric (New Analytics)</span>
+      <span class="svc-chip">Databricks (Analytics Migration / New)</span>
+      <span class="svc-chip">Logic Apps</span>
+    </div>
+    <p class="claim"><b>Catalog value:</b> Closed-loop referral tracking reduces patient leakage, keeps care in network, and recaptures downstream revenue; improves continuity and referring-provider satisfaction.</p>
+  </footer>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const FIXTURES = Object.freeze({
+        tenant: "DemoCare Network — fictional evaluation tenant",
+        reviewer: "VP Network Operations",
+        disclosure: "Illustrative demo - synthetic data",
+        kpis: {
+          open: "18",
+          aging: "04",
+          review: "03",
+          monitoring: "07"
+        },
+        referrals: [
+          {
+            id: "SYN-REF-26004",
+            person: "Mira Solano",
+            service: "Cardiology",
+            referring: "Cal Rowan",
+            status: "Aging · leakage risk",
+            statusKind: "warn",
+            age: "8 sample days",
+            priority: "Routine — source recorded",
+            network: "In-network option identified",
+            authorization: "Evidence present for review",
+            category: "aging",
+            queued: false,
+            choice: "Patient requested an in-network Cardiology option.",
+            suggestion: "Harborline Cardiology team",
+            suggestionDetail: "In-network sample match · next sample opening in 6 days",
+            rationale: "Patient choice and network directory evidence align with the referral service line; the sample scheduling signal is available for reviewer inspection.",
+            uncertainty: "The suggestion does not determine medical necessity or clinical urgency. Reviewer confirmation is required before outreach.",
+            evidence: [
+              { label: "Patient choice", value: "In-network Cardiology requested", source: "SYN-EHR · 2026-08-14 09:12 sample timestamp" },
+              { label: "Network check", value: "Harborline Cardiology listed in sample network snapshot", source: "SYN-NET · 2026-08-14 09:18 sample timestamp" },
+              { label: "Scheduling signal", value: "Sample opening in 6 days; not a booked visit", source: "SYN-SCHED · 2026-08-14 09:23 sample timestamp" },
+              { label: "Referral packet", value: "Routine priority recorded; authorization evidence present for review", source: "SYN-EHR · 2026-08-14 09:12 sample timestamp" }
+            ],
+            timeline: [
+              { title: "Referral received", time: "2026-08-14 09:12 · sample timestamp", detail: "Referral packet created by Cal Rowan for Cardiology.", source: "SYN-EHR", state: "done" },
+              { title: "Network evidence checked", time: "2026-08-14 09:18 · sample timestamp", detail: "Patient choice and an in-network sample option are visible.", source: "SYN-NET", state: "done" },
+              { title: "Scheduling signal found", time: "2026-08-14 09:23 · sample timestamp", detail: "A sample opening is available; no booking has been made.", source: "SYN-SCHED", state: "done" },
+              { title: "Reviewer outreach decision", time: "Waiting for human approval", detail: "Approve a reversible outreach task to begin loop monitoring.", source: "Reviewer action", state: "active" }
+            ]
+          },
+          {
+            id: "SYN-REF-26012",
+            person: "Jonas Wren",
+            service: "Neurology",
+            referring: "Lina Voss",
+            status: "Held · incomplete evidence",
+            statusKind: "warn",
+            age: "5 sample days",
+            priority: "Not found in sample packet",
+            network: "Not found in sample snapshot",
+            authorization: "Not found in sample packet",
+            category: "review",
+            queued: false,
+            exception: true,
+            choice: "Patient network preference is not recorded in the available sample evidence.",
+            suggestion: "No routing suggestion",
+            suggestionDetail: "Required evidence is incomplete",
+            rationale: "The sample record is missing fields needed for a safe network operations review.",
+            uncertainty: "No priority, network, or authorization evidence is available in the sample packet. Do not infer urgency, network eligibility, or authorization status.",
+            missing: ["Priority", "Network evidence", "Authorization evidence"],
+            evidence: [
+              { label: "Patient choice", value: "Not recorded in available sample evidence", source: "SYN-EHR · 2026-08-15 10:04 sample timestamp" },
+              { label: "Network check", value: "No matching sample directory evidence", source: "SYN-NET · 2026-08-15 10:05 sample timestamp" },
+              { label: "Authorization", value: "Not found in available sample packet", source: "SYN-EHR · 2026-08-15 10:04 sample timestamp" },
+              { label: "Scheduling signal", value: "No scheduling signal in sample evidence", source: "SYN-SCHED · 2026-08-15 10:06 sample timestamp" }
+            ],
+            timeline: [
+              { title: "Referral received", time: "2026-08-15 10:04 · sample timestamp", detail: "Referral packet created by Lina Voss for Neurology.", source: "SYN-EHR", state: "done" },
+              { title: "Evidence review held", time: "2026-08-15 10:06 · sample timestamp", detail: "Required fields are not present in the available sample sources.", source: "SYN-EHR · SYN-NET · SYN-SCHED", state: "held" },
+              { title: "Scheduling signal", time: "Not available in sample evidence", detail: "No conclusion is drawn about whether care occurred.", source: "SYN-SCHED", state: "idle" },
+              { title: "Human escalation", time: "Needs network operations review", detail: "Resolve missing fields before considering any outreach task.", source: "Reviewer action", state: "active" }
+            ]
+          },
+          {
+            id: "SYN-REF-26021",
+            person: "Tessa Noor",
+            service: "Orthopedics",
+            referring: "Jonas Wren",
+            status: "Loop monitoring",
+            statusKind: "ok",
+            age: "2 sample days",
+            priority: "Routine — source recorded",
+            network: "In-network option confirmed",
+            authorization: "Evidence present for review",
+            category: "all",
+            queued: true,
+            choice: "Patient accepted an in-network Orthopedics option.",
+            suggestion: "Harborline Orthopedics team",
+            suggestionDetail: "Sample referral loop is being monitored",
+            rationale: "A reviewer-approved outreach task is represented as queued in this sample state.",
+            uncertainty: "Monitoring is not confirmation of a completed visit or clinical outcome.",
+            evidence: [
+              { label: "Patient choice", value: "In-network Orthopedics accepted", source: "SYN-EHR · 2026-08-16 08:42 sample timestamp" },
+              { label: "Network check", value: "In-network sample option confirmed", source: "SYN-NET · 2026-08-16 08:45 sample timestamp" },
+              { label: "Outreach task", value: "Queued by reviewer for simulated monitoring", source: "SYN-SCHED · 2026-08-16 08:51 sample timestamp" }
+            ],
+            timeline: [
+              { title: "Referral received", time: "2026-08-16 08:42 · sample timestamp", detail: "Referral packet created for Orthopedics.", source: "SYN-EHR", state: "done" },
+              { title: "Network evidence checked", time: "2026-08-16 08:45 · sample timestamp", detail: "Patient choice and an in-network sample option are visible.", source: "SYN-NET", state: "done" },
+              { title: "Outreach task approved", time: "2026-08-16 08:51 · sample timestamp", detail: "Reviewer-approved task entered simulated loop monitoring.", source: "SYN-SCHED", state: "done" },
+              { title: "Loop monitoring", time: "Current sample state", detail: "Monitoring is simulated; no notification or booking is sent.", source: "SYN-CLAIMS", state: "active" }
+            ]
+          }
+        ]
+      });
+
+      const state = {
+        selectedId: "SYN-REF-26004",
+        filter: "aging",
+        search: "",
+        evidenceOpen: false,
+        queuedIds: new Set(["SYN-REF-26021"]),
+        working: false,
+        escalated: false
+      };
+
+      const refs = {
+        queue: document.querySelector("#queue-list"),
+        empty: document.querySelector("#queue-empty"),
+        summary: document.querySelector("#selected-summary"),
+        timeline: document.querySelector("#timeline"),
+        next: document.querySelector("#next-body"),
+        evidence: document.querySelector("#evidence-panel"),
+        inspectStatus: document.querySelector("#inspect-status"),
+        inspectButton: document.querySelector("#inspect-button"),
+        search: document.querySelector("#referral-search"),
+        live: document.querySelector("#live-status"),
+        openCount: document.querySelector("#open-count"),
+        agingCount: document.querySelector("#aging-count"),
+        reviewCount: document.querySelector("#review-count"),
+        monitoring: document.querySelector("#monitoring-count")
+      };
+
+      const getReferral = (id) => FIXTURES.referrals.find((referral) => referral.id === id) || FIXTURES.referrals[0];
+      const selected = () => getReferral(state.selectedId);
+      const make = (tag, className, text) => {
+        const node = document.createElement(tag);
+        if (className) node.className = className;
+        if (text !== undefined) node.textContent = text;
+        return node;
+      };
+      const tag = (text, kind) => make("span", `tag ${kind ? `tag-${kind}` : ""}`, text);
+      const source = (text) => make("span", "timeline-source", text);
+      const announce = (text) => { refs.live.textContent = text; };
+
+      function statusKind(referral) {
+        return state.working ? "warn" : (state.queuedIds.has(referral.id) ? "ok" : referral.statusKind);
+      }
+
+      function statusText(referral) {
+        if (state.working) return "Preparing simulated outreach";
+        if (state.queuedIds.has(referral.id)) return "Outreach queued · loop monitoring";
+        return referral.status;
+      }
+
+      function renderQueue() {
+        refs.queue.replaceChildren();
+        const needle = state.search.trim().toLowerCase();
+        const rows = FIXTURES.referrals.filter((referral) => {
+          const matchesFilter = state.filter === "all" || (state.filter === "aging" && referral.category === "aging") || (state.filter === "review" && referral.category === "review");
+          const haystack = `${referral.id} ${referral.person} ${referral.service}`.toLowerCase();
+          return matchesFilter && (!needle || haystack.includes(needle));
+        });
+        refs.empty.hidden = rows.length !== 0;
+        rows.forEach((referral) => {
+          const item = make("li", "queue-item");
+          const button = make("button", "queue-row");
+          button.type = "button";
+          button.dataset.referral = referral.id;
+          button.setAttribute("aria-current", referral.id === state.selectedId ? "true" : "false");
+          const main = make("span", "queue-main");
+          main.append(make("span", "queue-name", referral.person));
+          main.append(make("span", "queue-meta", `${referral.service} · ${referral.id}`));
+          const foot = make("span", "queue-foot");
+          foot.append(tag(statusText(referral), statusKind(referral)));
+          foot.append(make("span", "queue-age", referral.age));
+          main.append(foot);
+          button.append(main);
+          button.append(make("span", "queue-marker", referral.id === state.selectedId ? "Selected" : ""));
+          item.append(button);
+          refs.queue.append(item);
+        });
+        document.querySelectorAll("[data-filter]").forEach((button) => {
+          button.setAttribute("aria-pressed", String(button.dataset.filter === state.filter));
+        });
+      }
+
+      function renderSummary(referral) {
+        refs.summary.replaceChildren();
+        const title = make("h3", "", `${referral.person} · ${referral.service}`);
+        refs.summary.append(title);
+        refs.summary.append(make("span", "summary-id mono", referral.id));
+        const tags = make("div", "summary-tags");
+        tags.append(tag(statusText(referral), statusKind(referral)));
+        tags.append(tag(`Referred by ${referral.referring}`));
+        refs.summary.append(tags);
+        const facts = make("dl", "facts summary-facts");
+        [
+          ["Priority", referral.priority],
+          ["Network", referral.network],
+          ["Authorization", referral.authorization],
+          ["Age", referral.age]
+        ].forEach(([label, value]) => {
+          facts.append(make("dt", "", label));
+          facts.append(make("dd", "", value));
+        });
+        refs.summary.append(facts);
+      }
+
+      function renderTimeline(referral) {
+        refs.timeline.replaceChildren();
+        referral.timeline.forEach((step, index) => {
+          const item = make("li", `timeline-step is-${step.state}`);
+          const dot = make("span", "timeline-dot", step.state === "done" ? "✓" : (step.state === "held" ? "!" : String(index + 1)));
+          dot.setAttribute("aria-hidden", "true");
+          const copy = make("div", "timeline-copy");
+          copy.append(make("span", "timeline-title", step.title));
+          copy.append(make("span", "timeline-time", step.time));
+          copy.append(make("p", "timeline-detail", step.detail));
+          copy.append(source(step.source));
+          item.append(dot, copy);
+          refs.timeline.append(item);
+        });
+      }
+
+      function renderEvidence(referral) {
+        refs.evidence.replaceChildren();
+        const heading = make("h3", "", "Evidence reviewed for this sample referral");
+        heading.id = "evidence-title";
+        refs.evidence.append(heading);
+        const list = make("ul", "evidence-list");
+        referral.evidence.forEach((entry) => {
+          const item = make("li");
+          item.append(make("strong", "", entry.label));
+          const value = make("span");
+          value.append(make("span", "", entry.value));
+          value.append(make("span", "evidence-source", entry.source));
+          item.append(value);
+          list.append(item);
+        });
+        refs.evidence.append(list);
+      }
+
+      function renderAudit(referral) {
+        const wrap = make("section", "audit-wrap");
+        const heading = make("h3", "", "Visible audit trail");
+        wrap.append(heading);
+        const list = make("ol", "audit");
+        const baseEntries = [
+          ["09:12", "SYN-EHR", "Referral packet received", "system"],
+          ["09:18", "SYN-NET", "Network evidence refreshed", "system"]
+        ];
+        if (state.queuedIds.has(referral.id)) {
+          baseEntries.push(["09:31", FIXTURES.reviewer, "Approved reversible outreach task · simulated", "human"]);
+        } else if (state.escalated && referral.exception) {
+          baseEntries.push(["10:12", FIXTURES.reviewer, "Escalated missing evidence for human follow-up", "human"]);
+        }
+        baseEntries.forEach(([time, actor, detail, kind]) => {
+          const item = make("li");
+          item.append(make("time", "", time));
+          const copy = make("div", "audit-copy");
+          copy.append(make("span", `actor is-${kind}`, actor));
+          copy.append(make("span", "audit-detail", detail));
+          item.append(copy);
+          list.append(item);
+        });
+        wrap.append(list);
+        return wrap;
+      }
+
+      function renderNext(referral) {
+        refs.next.replaceChildren();
+        const object = make("div", "next-object");
+        object.append(make("h3", "", `${referral.person} · ${referral.service}`));
+        object.append(make("span", "mono", referral.id));
+        refs.next.append(object);
+        refs.next.append(make("p", "next-label", referral.exception ? "Next action: resolve evidence gap" : "Next action: approve outreach task"));
+
+        if (referral.exception) {
+          const hold = make("section", "review-hold");
+          const holdTitle = make("h3", "", "Held for human review");
+          hold.append(holdTitle);
+          hold.append(make("p", "", "No routing or outreach suggestion is available until the sample evidence is completed."));
+          const missing = make("ul", "missing-fields");
+          referral.missing.forEach((field) => missing.append(make("li", "", `Missing: ${field}`)));
+          hold.append(missing);
+          hold.append(make("p", "escalation", "Escalation: request the missing fields from network operations; do not infer urgency, network eligibility, or authorization."));
+          if (state.escalated) hold.append(make("p", "escalation", "Escalation recorded in the simulated audit trail."));
+          refs.next.append(hold);
+          const action = make("div", "action-zone");
+          const escalate = make("button", "btn btn-primary", state.escalated ? "Escalated for review" : "Escalate to network operations");
+          escalate.type = "button";
+          escalate.dataset.action = "escalate";
+          escalate.disabled = state.escalated;
+          action.append(escalate);
+          action.append(make("p", "action-note", "This does not book care, send a notification, or decide medical necessity."));
+          refs.next.append(action);
+          refs.next.append(renderAudit(referral));
+          return;
+        }
+
+        const suggestion = make("section", "suggestion");
+        const action = make("div", "action-zone");
+        if (state.working) {
+          const working = make("button", "btn btn-primary", "Preparing simulated outreach…");
+          working.type = "button";
+          working.disabled = true;
+          action.append(working);
+        } else if (state.queuedIds.has(referral.id)) {
+          const completion = make("div", "completion");
+          const copy = make("div");
+          copy.append(make("strong", "", "Outreach queued · loop monitoring"));
+          copy.append(make("p", "", "Reversible sample state. No live booking or notification was sent."));
+          completion.append(copy);
+          action.append(completion);
+          const undo = make("button", "btn", "Undo simulated queue");
+          undo.type = "button";
+          undo.dataset.action = "undo";
+          action.append(undo);
+        } else {
+          const approve = make("button", "btn btn-primary", "Approve reversible outreach task");
+          approve.type = "button";
+          approve.dataset.action = "approve";
+          action.append(approve);
+          action.append(make("p", "action-note", "Reviewer: VP Network Operations. Approval starts simulated loop monitoring only."));
+        }
+        refs.next.append(action);
+
+        const suggestionHead = make("div", "suggestion-head");
+        suggestionHead.append(make("h3", "", `Suggested in-network option`));
+        suggestionHead.append(tag(state.queuedIds.has(referral.id) ? "Reviewer approved" : "AI-assisted · not approved", state.queuedIds.has(referral.id) ? "ok" : ""));
+        suggestion.append(suggestionHead);
+        suggestion.append(make("p", "", referral.suggestion));
+        suggestion.append(make("p", "card-note", referral.suggestionDetail));
+        const details = make("dl");
+        details.className = "suggestion";
+        [
+          ["Source", "SYN-NET + SYN-SCHED"],
+          ["Timestamp", "2026-08-14 09:23 · sample"],
+          ["Rationale", referral.rationale]
+        ].forEach(([label, value]) => {
+          details.append(make("dt", "", label));
+          details.append(make("dd", "", value));
+        });
+        suggestion.append(details);
+        refs.next.append(suggestion);
+
+        const uncertainty = make("div", "uncertainty");
+        uncertainty.append(make("strong", "", "Uncertainty and boundary"));
+        uncertainty.append(make("span", "", referral.uncertainty));
+        refs.next.append(uncertainty);
+        refs.next.append(renderAudit(referral));
+      }
+
+      function render() {
+        const referral = selected();
+        renderQueue();
+        renderSummary(referral);
+        renderTimeline(referral);
+        renderEvidence(referral);
+        refs.evidence.hidden = !state.evidenceOpen;
+        refs.inspectButton.textContent = state.evidenceOpen ? "Hide evidence" : "Inspect evidence";
+        refs.inspectStatus.textContent = state.evidenceOpen ? "Evidence is open for review." : "Source, timestamp, and rationale are available.";
+        renderNext(referral);
+        refs.openCount.textContent = FIXTURES.kpis.open;
+        refs.agingCount.textContent = FIXTURES.kpis.aging;
+        refs.reviewCount.textContent = FIXTURES.kpis.review;
+        refs.monitoring.textContent = "08";
+      }
+
+      document.addEventListener("click", (event) => {
+        const referralButton = event.target.closest("[data-referral]");
+        if (referralButton) {
+          state.selectedId = referralButton.dataset.referral;
+          state.evidenceOpen = false;
+          state.escalated = false;
+          render();
+          const selectedButton = Array.from(refs.queue.querySelectorAll("[data-referral]"))
+            .find((button) => button.dataset.referral === state.selectedId);
+          selectedButton?.focus();
+          announce(`Selected ${state.selectedId}. Review the lifecycle evidence and next action.`);
+          return;
+        }
+
+        const filterButton = event.target.closest("[data-filter]");
+        if (filterButton) {
+          state.filter = filterButton.dataset.filter;
+          renderQueue();
+          announce(`Showing ${filterButton.textContent.toLowerCase()}.`);
+          return;
+        }
+
+        if (event.target.closest("#inspect-button")) {
+          state.evidenceOpen = !state.evidenceOpen;
+          render();
+          announce(state.evidenceOpen ? "Evidence opened: source, timestamp, and rationale are visible." : "Evidence closed.");
+          return;
+        }
+
+        const action = event.target.closest("[data-action]");
+        if (action) {
+          const referral = selected();
+          if (action.dataset.action === "approve" && !state.working && !referral.exception) {
+            state.working = true;
+            render();
+            announce("Simulated outreach task is being prepared.");
+            window.setTimeout(() => {
+              state.working = false;
+              state.queuedIds.add(referral.id);
+              render();
+              announce("Outreach queued. Loop monitoring is now active in the simulated state.");
+            }, 420);
+          } else if (action.dataset.action === "undo") {
+            state.queuedIds.delete(referral.id);
+            state.evidenceOpen = true;
+            render();
+            announce("Simulated outreach queue undone. Reviewer decision is available again.");
+          } else if (action.dataset.action === "escalate") {
+            state.escalated = true;
+            render();
+            announce("Missing evidence escalation recorded in the simulated audit trail.");
+          }
+        }
+      });
+
+      refs.search.addEventListener("input", (event) => {
+        state.search = event.target.value;
+        renderQueue();
+        announce(state.search ? `Queue filtered by ${state.search}.` : "Queue search cleared.");
+      });
+
+      function resetDemo(message) {
+        state.selectedId = "SYN-REF-26004";
+        state.filter = "aging";
+        state.search = "";
+        state.evidenceOpen = false;
+        state.queuedIds = new Set(["SYN-REF-26021"]);
+        state.working = false;
+        state.escalated = false;
+        refs.search.value = "";
+        render();
+        announce(message);
+      }
+
+      document.querySelector("#reset-button").addEventListener("click", () => resetDemo("Demo reset to the aging referral review state."));
+      document.querySelector("#replay-button").addEventListener("click", () => resetDemo("Demo replayed from the beginning. Select the aging referral to review it."));
+
+      render();
+    })();
+  </script>
+</body>
+</html>

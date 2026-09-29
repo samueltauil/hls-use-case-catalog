@@ -1,0 +1,888 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Shift plan review | Workforce operations</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+  </style>
+  <style>
+    /* Layout tokens extend the shared shell without replacing its palette. */
+    body {
+      height: auto;
+      min-height: 100%;
+      --on-accent: #fff;
+      --space-1: 6px;
+      --space-2: 10px;
+      --space-3: 16px;
+      --space-4: 22px;
+      --space-5: 30px;
+    }
+    .btn-primary { color: var(--on-accent); }
+    .appbar { min-height: 58px; }
+    .brand-mark { width: 27px; height: 27px; display: grid; place-items: center; border: 1px solid var(--accent); border-radius: 5px; }
+    .brand-mark svg { width: 17px; height: 17px; }
+    .workspace { width: min(1540px, 100%); margin-inline: auto; padding: 15px clamp(14px, 2.2vw, 30px) 24px; }
+    .page-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px 24px; margin-bottom: 12px; }
+    .eyebrow { margin: 0 0 2px; color: var(--muted); font-size: 12px; }
+    h1 { margin: 0; font-size: clamp(20px, 2.1vw, 26px); line-height: 1.2; letter-spacing: -.02em; font-weight: 650; }
+    .page-subtitle { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+    .selected-plan { display: grid; justify-items: end; gap: 2px; flex: none; color: var(--muted); font-size: 12px; }
+    .selected-plan .mono { color: var(--ink-soft); font-size: 12px; }
+    .queue-strip { display: flex; align-items: center; gap: 11px; min-height: 40px; margin-bottom: 12px; padding: 6px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+    .queue-label { font-size: 12px; color: var(--muted); font-weight: 600; }
+    .queue-current { display: flex; align-items: center; gap: 8px; min-width: 0; padding-left: 10px; border-left: 1px solid var(--line); font-size: 13px; }
+    .queue-current strong { font-weight: 600; }
+    .queue-current span:last-child { color: var(--muted); }
+    .work-area { display: grid; grid-template-columns: minmax(0, 1fr) minmax(305px, 360px); gap: 14px; align-items: start; }
+    .plan-card { min-width: 0; overflow: hidden; }
+    .plan-card .card-head { align-items: center; }
+    .plan-title { display: grid; gap: 2px; }
+    .plan-title h2 { font-size: 16px; }
+    .plan-title p { margin: 0; color: var(--muted); font-size: 12.5px; }
+    .plan-body { padding: 12px 15px 14px; }
+    .coverage-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--bg); }
+    .coverage-copy { min-width: 0; }
+    .coverage-copy strong { display: block; font-size: 15px; font-weight: 650; line-height: 1.3; }
+    .coverage-copy span { display: block; margin-top: 2px; color: var(--muted); font-size: 12px; }
+    .coverage-visual { width: min(35%, 180px); min-width: 86px; }
+    .coverage-visual progress { display: block; width: 100%; height: 9px; accent-color: var(--accent); }
+    .coverage-visual span { display: block; margin-top: 3px; color: var(--muted); text-align: right; font-size: 11px; }
+    .planning-signals { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 8px; margin-top: 10px; }
+    .planning-signal { min-width: 0; padding: 9px 10px; border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--surface); }
+    .planning-signal h3 { margin: 0 0 3px; font-size: 12px; font-weight: 650; }
+    .planning-signal p { margin: 0; font-size: 12px; }
+    .planning-signal .signal-note { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; line-height: 1.4; }
+    .section-label { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 13px 0 6px; }
+    .section-label h3 { margin: 0; font-size: 13px; font-weight: 650; }
+    .section-label span { color: var(--muted); font-size: 11.5px; }
+    .roster { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line-soft); }
+    .slot { display: grid; grid-template-columns: minmax(0, 1fr) 116px 92px; align-items: center; gap: 9px; min-height: 32px; padding: 4px 9px; border-bottom: 1px solid var(--line-soft); font-size: 12.5px; }
+    .slot:last-child { border-bottom: 0; }
+    .slot-id { min-width: 0; overflow-wrap: anywhere; font-family: var(--mono); font-size: 12px; }
+    .slot-role { color: var(--muted); }
+    .slot-state { justify-self: end; }
+    .slot-open { margin-block: 3px; border: 1px dashed var(--warn); border-radius: 5px; background: var(--warn-bg); }
+    .slot-open .slot-id, .slot-open .slot-role { font-weight: 600; color: var(--ink-soft); }
+    .slot-filled { border-left: 3px solid var(--ok); padding-left: 6px; }
+    .forecast-source { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 10px; margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--line-soft); }
+    .forecast-source p { margin: 0; color: var(--muted); font-size: 11.5px; }
+    .forecast-source strong { color: var(--ink-soft); font-weight: 600; }
+    .forecast-note { flex-basis: 100%; }
+    .decision-card { border-top: 3px solid var(--accent); }
+    .decision-body { display: grid; gap: 12px; padding: 12px 14px 14px; }
+    .steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; margin: 0; padding: 0; list-style: none; }
+    .steps li { min-width: 0; padding-top: 5px; border-top: 2px solid var(--line); color: var(--muted); font-size: 10px; line-height: 1.25; }
+    .steps li.is-done { border-color: var(--accent); color: var(--ink-soft); }
+    .steps li.is-current { border-color: var(--accent); color: var(--accent-strong); font-weight: 650; }
+    .step-number { display: block; margin-bottom: 2px; font-family: var(--mono); font-size: 10px; }
+    .btn[aria-disabled="true"] { cursor: not-allowed; opacity: .65; }
+    .evidence-group { display: grid; gap: 8px; }
+    .evidence-block { display: grid; gap: 2px; padding-bottom: 7px; border-bottom: 1px solid var(--line-soft); }
+    .evidence-block:last-child { padding-bottom: 0; border-bottom: 0; }
+    .evidence-label { color: var(--muted); font-size: 11.5px; }
+    .evidence-value { overflow-wrap: anywhere; font-size: 13px; font-weight: 600; }
+    .evidence-detail { color: var(--muted); font-size: 11.5px; line-height: 1.4; }
+    .decision-result { display: flex; align-items: flex-start; gap: 8px; padding: 9px 10px; border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--surface-2); font-size: 12px; }
+    .decision-result strong { display: block; font-size: 12.5px; }
+    .decision-result p { margin: 2px 0 0; color: var(--ink-soft); }
+    .decision-actions { display: grid; gap: 8px; }
+    .decision-actions .btn-primary { justify-content: center; width: 100%; }
+    .decision-actions .btn:not(.btn-primary) { justify-content: center; width: 100%; }
+    .policy-note { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.4; }
+    .exception-box { padding: 10px; border: 1px solid #e5b4b7; border-radius: var(--radius); background: var(--stop-bg); color: #741a20; font-size: 12.5px; }
+    .exception-box strong { display: block; margin-bottom: 3px; }
+    .exception-box p { margin: 0; }
+    .escalation-note { padding: 9px 10px; border-left: 3px solid var(--accent); background: var(--accent-soft); font-size: 12px; color: var(--ink-soft); }
+    .escalation-note strong { display: block; margin-bottom: 2px; }
+    .audit-card { margin-top: 14px; }
+    .audit-card .card-body { padding-block: 11px; }
+    .audit { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 8px 14px; }
+    .audit li { grid-template-columns: 48px minmax(0, 1fr); gap: 8px; }
+    .audit time { font-size: 11px; }
+    .audit-entry { min-width: 0; }
+    .audit .actor { margin-right: 4px; }
+    .sample-footnote { margin: 9px 0 0; color: var(--muted); font-size: 11px; }
+    .self-service-card { margin-top: 14px; }
+    .self-service-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px 20px; align-items: start; }
+    .self-service-grid p { margin: 0 0 5px; font-size: 13px; }
+    .worker-preview { padding: 10px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); font-size: 12.5px; }
+    .worker-preview summary { color: var(--accent-strong); cursor: pointer; font-weight: 600; }
+    .worker-preview p { margin: 8px 0 0; }
+    .footer { margin-top: 6px; }
+    .built-label { color: var(--muted); font-weight: 600; }
+    .footer .svc-chip { font-size: 11.5px; }
+
+    @media (max-width: 900px) {
+      .work-area { grid-template-columns: minmax(0, 1fr) minmax(285px, 330px); gap: 10px; }
+      .workspace { padding-inline: 15px; }
+      .slot { grid-template-columns: minmax(0, 1fr) 90px 84px; gap: 6px; }
+      .plan-body { padding-inline: 12px; }
+    }
+    @media (max-width: 700px) {
+      .workspace { padding: 13px 12px 20px; }
+      .page-heading { display: block; }
+      .selected-plan { justify-items: start; margin-top: 7px; }
+      .queue-strip { align-items: flex-start; gap: 7px; }
+      .queue-current { flex-wrap: wrap; }
+      .work-area { grid-template-columns: minmax(0, 1fr); }
+      .decision-card { grid-row: 1; }
+      .plan-card { grid-row: 2; }
+      .audit { grid-template-columns: minmax(0, 1fr); }
+      .appbar .who { margin-left: 37px; }
+    }
+    @media (max-width: 390px) {
+      .appbar { padding-inline: 10px; gap: 7px 9px; }
+      .disclosure { font-size: 10.5px; padding: 4px 7px; }
+      .appbar .who { margin-left: 0; width: 100%; text-align: left; }
+      .slot { grid-template-columns: minmax(0, 1fr) 66px; gap: 2px 8px; min-height: 39px; }
+      .slot-role { grid-column: 1; grid-row: 2; font-size: 11px; }
+      .slot-state { grid-column: 2; grid-row: 1 / span 2; }
+      .slot-id { grid-column: 1; grid-row: 1; }
+      .coverage-row { padding-inline: 9px; }
+      .coverage-visual { min-width: 76px; }
+    }
+  </style>
+</head>
+<body data-subvertical="health-providers">
+  <header class="appbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 20 20" fill="none"><path d="M3 5.5h14M3 10h9M3 14.5h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="15" cy="10" r="2" fill="currentColor"/></svg>
+      </span>
+      <div>
+        <span class="brand-name">Workforce operations</span>
+        <span class="brand-sub" id="hospital-name"></span>
+      </div>
+    </div>
+    <p class="who"><b>Operator</b> · <span id="operator-role"></span></p>
+    <p class="disclosure"><span aria-hidden="true">●</span>Illustrative demo - synthetic data</p>
+  </header>
+
+  <main class="workspace">
+    <div class="page-heading">
+      <div>
+        <p class="eyebrow">Workforce &amp; Operations / Draft review</p>
+        <h1>Review a shift plan</h1>
+        <p class="page-subtitle">Inspect the demand snapshot and proposed cover before changing this draft.</p>
+      </div>
+      <div class="selected-plan">
+        <span>Selected plan</span>
+        <span class="mono" id="plan-id"></span>
+      </div>
+    </div>
+
+    <nav class="queue-strip" aria-label="Work queue">
+      <span class="queue-label">Draft queue</span>
+      <div class="queue-current" aria-current="page">
+        <span class="tag tag-warn" id="queue-status">Needs review</span>
+        <strong id="queue-plan"></strong>
+        <span id="queue-context"></span>
+      </div>
+    </nav>
+
+    <div class="work-area">
+      <section class="card plan-card" aria-labelledby="plan-heading">
+        <div class="card-head">
+          <div class="plan-title">
+            <h2 id="plan-heading"><span id="unit-name"></span> · Night shift</h2>
+            <p><span id="shift-date"></span> · <span id="shift-hours"></span></p>
+          </div>
+          <span class="tag" id="draft-status">Draft · human review pending</span>
+        </div>
+        <div class="plan-body">
+          <div class="coverage-row" aria-label="Synthetic operational sample coverage">
+            <div class="coverage-copy">
+              <strong id="coverage-count"></strong>
+              <span id="coverage-detail"></span>
+            </div>
+            <div class="coverage-visual">
+              <progress id="coverage-progress" aria-label="Assigned slots out of target slots"></progress>
+              <span id="coverage-progress-text"></span>
+            </div>
+          </div>
+
+          <div class="section-label">
+            <h3>Shift roster</h3>
+            <span>Role and assignment status only</span>
+          </div>
+          <ol class="roster" id="roster" aria-label="Synthetic shift roster"></ol>
+
+          <div class="forecast-source">
+            <p><strong>Demand snapshot</strong> · <span class="mono" id="demand-id"></span></p>
+            <p>Refreshed <time id="demand-refresh"></time></p>
+            <p class="forecast-note">Fixture target: <span id="target-slots"></span> slots · Synthetic operational sample; not a staffing policy or safety threshold.</p>
+          </div>
+          <div class="planning-signals" aria-label="Illustrative planning signals">
+            <section class="planning-signal" aria-labelledby="forecast-heading">
+              <h3 id="forecast-heading">Demand outlook · sample forecast</h3>
+              <p><strong id="forecast-range"></strong> target slots across this shift</p>
+              <span class="signal-note">Planning range only; no calibrated confidence score is supplied. Review the source and freshness before relying on it.</span>
+            </section>
+            <section class="planning-signal" aria-labelledby="labor-heading">
+              <h3 id="labor-heading">Premium-labor options</h3>
+              <p>Overtime: not estimated · Agency: not requested</p>
+              <span class="signal-note">No cost comparison or savings are modeled. Adding a staff request changes this draft only.</span>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <aside class="card decision-card" aria-labelledby="decision-heading">
+        <div class="card-head">
+          <h2 id="decision-heading">Review and decide</h2>
+          <span class="tag" id="state-tag">Ready for review</span>
+        </div>
+        <div class="decision-body">
+          <ol class="steps" aria-label="Review steps">
+            <li data-step="1"><span class="step-number">01</span>Open draft</li>
+            <li data-step="2"><span class="step-number">02</span>Inspect evidence</li>
+            <li data-step="3"><span class="step-number">03</span>Apply to draft</li>
+            <li data-step="4"><span class="step-number">04</span>Human review</li>
+          </ol>
+
+          <div class="evidence-group" aria-label="Candidate evidence">
+            <div class="evidence-block">
+              <span class="evidence-label">Proposed cover · availability</span>
+              <span class="evidence-value" id="candidate-availability"></span>
+              <span class="evidence-detail" id="candidate-role"></span>
+            </div>
+            <div class="evidence-block">
+              <span class="evidence-label">Rationale</span>
+              <span class="evidence-detail" id="candidate-rationale"></span>
+            </div>
+            <div class="evidence-block">
+              <span class="evidence-label">Sample configured-rule result</span>
+              <span class="evidence-value" id="rule-result"></span>
+              <span class="evidence-detail" id="rule-provenance"></span>
+            </div>
+          </div>
+
+          <div class="decision-result" id="decision-result">
+            <span class="tag tag-ok" id="decision-result-tag">Pass</span>
+            <div>
+              <strong id="decision-result-title">Eligible to review</strong>
+              <p id="decision-result-copy"></p>
+            </div>
+          </div>
+
+          <div class="exception-box" id="exception-box" hidden>
+            <strong>No eligible cover in this simulation</strong>
+            <p>The sample configured rules block this assignment. The slot stays open; no bypass or override is offered. Ending the simulation restores the original synthetic draft for replay; it does not override a rule.</p>
+          </div>
+          <div class="escalation-note" id="escalation-note" hidden>
+            <strong>Escalation prepared · not sent</strong>
+            <span id="escalation-copy"></span>
+          </div>
+
+          <div class="decision-actions">
+            <button class="btn btn-primary" id="primary-action" type="button">Review candidate &amp; rule check</button>
+            <button class="btn" id="conflict-toggle" type="button">Simulate rule conflict</button>
+            <button class="btn" id="escalation-action" type="button" hidden>Prepare escalation note</button>
+            <button class="btn-link" id="reset-action" type="button">Reset demo</button>
+          </div>
+          <p class="policy-note" id="human-boundary">A scheduler decides whether to add a cover. This demo never approves or publishes a schedule.</p>
+          <p class="status-line" id="workflow-status" role="status" aria-live="polite">Draft opened. Review the demand source, gap, candidate evidence, and sample rule result.</p>
+        </div>
+      </aside>
+    </div>
+
+    <section class="card self-service-card" aria-labelledby="self-service-heading">
+      <div class="card-head">
+        <h2 id="self-service-heading">Staff self-service request</h2>
+        <span class="tag tag-warn" id="request-status">Pending scheduler review</span>
+      </div>
+      <div class="card-body self-service-grid">
+        <div>
+          <p><strong>Request <span class="mono" id="request-id"></span></strong> · <span class="mono" id="request-staff"></span> · RN</p>
+          <p>Fictional staff interest for the ED-03 night shift. The request is not an assignment; a scheduler reviews it before changing the draft.</p>
+        </div>
+        <details class="worker-preview">
+          <summary>Preview the staff-side shift listing</summary>
+          <p>Northstar Demo Hospital · ED-03 · 12 Oct 2026 · 19:00–07:00</p>
+          <p id="request-preview-state">Role: RN · One open sample slot · Request interest is pending scheduler review.</p>
+          <p>Fictional preview only. No employee account, patient details, or sensitive reasons are shown.</p>
+        </details>
+      </div>
+    </section>
+
+    <section class="card audit-card" aria-labelledby="audit-heading">
+      <div class="card-head">
+        <h2 id="audit-heading">Review trail</h2>
+        <span class="card-note">Synthetic audit entries · sample local time</span>
+      </div>
+      <div class="card-body">
+        <ol class="audit" id="audit-list"></ol>
+        <p class="sample-footnote" id="coverage-evidence"></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="built" aria-label="Catalog workload context only">
+      <span class="built-label">Catalog workload context only · not demonstrated integrations:</span>
+      <span class="svc-chip">Azure Machine Learning</span>
+      <span class="svc-chip">Azure OpenAI in Azure AI Foundry Models</span>
+      <span class="svc-chip">Microsoft Fabric</span>
+      <span class="svc-chip">Azure App Service</span>
+    </div>
+    <span class="claim"><b>Human decision required.</b> No auto-approval or publication.</span>
+  </footer>
+
+  <script>
+    // State model: ready -> candidate-reviewed -> draft-updated -> human-reviewed.
+    // Exception is a reversible simulation that restores the original open slot;
+    // reset always returns to the deterministic starting fixture.
+    const DEMO_FIXTURE = Object.freeze({
+      hospital: "Northstar Demo Hospital",
+      operatorRole: "Workforce scheduler",
+      unit: "ED-03",
+      shift: { date: "12 Oct 2026", hours: "19:00–07:00" },
+      planId: "PLAN-SYN-261012-N",
+      targetSlots: 7,
+      initialAssigned: 6,
+      initialOpen: 1,
+      demand: { id: "DEMAND-SYN-241", refreshed: "29 Sep 2026 14:05", refreshedAt: "2026-09-29T14:05" },
+      forecast: { lowSlots: 6, highSlots: 8 },
+      selfServiceRequest: { id: "REQUEST-SYN-014", staffId: "STAFF-SYN-014" },
+      auditDate: "2026-09-29",
+      auditTimes: {
+        opened: "14:11",
+        evidenceReviewed: "14:12",
+        candidateAdded: "14:13",
+        humanReviewed: "14:14",
+        conflictSimulated: "14:12",
+        escalationPrepared: "14:13"
+      },
+      ruleSet: { id: "LABOR-DEMO-04", version: "sample v1.2 (fictional)" },
+      candidate: {
+        id: "STAFF-SYN-014",
+        role: "RN",
+        availabilitySource: "REQUEST-SYN-014",
+        availability: "Interest received through staff self-service",
+        rationale: "The fictional staff request covers this sample shift; the role matches the open RN slot; the configured sample check passes."
+      },
+      assignedSlots: [
+        { id: "STAFF-SYN-003", role: "RN" },
+        { id: "STAFF-SYN-006", role: "RN" },
+        { id: "STAFF-SYN-008", role: "RN" },
+        { id: "STAFF-SYN-009", role: "RN" },
+        { id: "STAFF-SYN-011", role: "RN" },
+        { id: "STAFF-SYN-012", role: "RN" }
+      ],
+      auditBase: [
+        { time: "14:11", actor: "Scheduler", kind: "human", message: "Opened draft for review." }
+      ]
+    });
+
+    const state = {
+      mode: "ready",
+      escalationPrepared: false,
+      audit: DEMO_FIXTURE.auditBase.map((entry) => ({ ...entry })),
+      message: "Draft opened. Review the demand source, gap, candidate evidence, and sample rule result."
+    };
+
+    const byId = (id) => document.getElementById(id);
+    const setText = (id, value) => { byId(id).textContent = value; };
+    const create = (tag, className, text) => {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text !== undefined) node.textContent = text;
+      return node;
+    };
+
+    function populateContext() {
+      setText("hospital-name", DEMO_FIXTURE.hospital);
+      setText("operator-role", DEMO_FIXTURE.operatorRole);
+      setText("plan-id", DEMO_FIXTURE.planId);
+      setText("queue-plan", DEMO_FIXTURE.planId);
+      setText("queue-context", `${DEMO_FIXTURE.unit} · ${DEMO_FIXTURE.shift.date}`);
+      setText("unit-name", DEMO_FIXTURE.unit);
+      setText("shift-date", DEMO_FIXTURE.shift.date);
+      setText("shift-hours", DEMO_FIXTURE.shift.hours);
+      setText("demand-id", DEMO_FIXTURE.demand.id);
+      byId("demand-refresh").dateTime = DEMO_FIXTURE.demand.refreshedAt;
+      setText("demand-refresh", DEMO_FIXTURE.demand.refreshed);
+      setText("target-slots", String(DEMO_FIXTURE.targetSlots));
+      setText("forecast-range", `${DEMO_FIXTURE.forecast.lowSlots}–${DEMO_FIXTURE.forecast.highSlots}`);
+      setText("request-id", DEMO_FIXTURE.selfServiceRequest.id);
+      setText("request-staff", DEMO_FIXTURE.selfServiceRequest.staffId);
+      byId("coverage-progress").max = DEMO_FIXTURE.targetSlots;
+      setText("coverage-evidence", `Before change: ${DEMO_FIXTURE.initialAssigned} of ${DEMO_FIXTURE.targetSlots} assigned · ${DEMO_FIXTURE.initialOpen} slot open. All coverage figures are synthetic operational sample data.`);
+      setText("rule-provenance", `${DEMO_FIXTURE.ruleSet.id} · ${DEMO_FIXTURE.ruleSet.version}. Fixture-only result; not workforce policy.`);
+    }
+
+    function assignedCount() {
+      return state.mode === "draft-updated" || state.mode === "human-reviewed"
+        ? DEMO_FIXTURE.initialAssigned + 1
+        : DEMO_FIXTURE.initialAssigned;
+    }
+
+    function renderRoster() {
+      const roster = byId("roster");
+      roster.replaceChildren();
+      DEMO_FIXTURE.assignedSlots.forEach((slot) => {
+        const item = create("li", "slot");
+        item.append(create("span", "slot-id", slot.id));
+        item.append(create("span", "slot-role", slot.role));
+        item.append(create("span", "slot-state tag tag-ok", "Assigned"));
+        roster.append(item);
+      });
+
+      const open = create("li", state.mode === "draft-updated" || state.mode === "human-reviewed" ? "slot slot-filled" : "slot slot-open");
+      if (state.mode === "draft-updated" || state.mode === "human-reviewed") {
+        open.append(create("span", "slot-id", DEMO_FIXTURE.candidate.id));
+        open.append(create("span", "slot-role", DEMO_FIXTURE.candidate.role));
+        open.append(create("span", "slot-state tag tag-ok", "Added to draft"));
+      } else {
+        open.append(create("span", "slot-id", "Open slot"));
+        open.append(create("span", "slot-role", DEMO_FIXTURE.candidate.role));
+        open.append(create("span", "slot-state tag tag-warn", "Unfilled"));
+      }
+      roster.append(open);
+
+      const count = assignedCount();
+      byId("coverage-progress").value = count;
+      setText("coverage-count", `${count} of ${DEMO_FIXTURE.targetSlots} slots assigned`);
+      setText("coverage-detail", `${DEMO_FIXTURE.targetSlots - count} open · Synthetic operational sample`);
+      setText("coverage-progress-text", `${count} / ${DEMO_FIXTURE.targetSlots}`);
+      if (state.mode === "draft-updated" || state.mode === "human-reviewed") {
+        setText("coverage-evidence", `Before: ${DEMO_FIXTURE.initialAssigned} of ${DEMO_FIXTURE.targetSlots} assigned · After: ${count} of ${DEMO_FIXTURE.targetSlots} in the draft · Synthetic operational sample data; not an outcome.`);
+      } else {
+        setText("coverage-evidence", `Before change: ${DEMO_FIXTURE.initialAssigned} of ${DEMO_FIXTURE.targetSlots} assigned · ${DEMO_FIXTURE.initialOpen} slot open. All coverage figures are synthetic operational sample data.`);
+      }
+    }
+
+    function renderAudit() {
+      const list = byId("audit-list");
+      list.replaceChildren();
+      state.audit.forEach((entry) => {
+        const item = create("li");
+        const time = create("time", "", entry.time);
+        time.dateTime = `${DEMO_FIXTURE.auditDate}T${entry.time}:00`;
+        const details = create("span", "audit-entry");
+        details.append(create("span", `actor ${entry.kind === "human" ? "is-human" : "is-system"}`, `${entry.actor}:`));
+        details.append(document.createTextNode(` ${entry.message}`));
+        item.append(time, details);
+        list.append(item);
+      });
+    }
+
+    function renderSteps() {
+      const stepByMode = {
+        ready: 2,
+        "candidate-reviewed": 3,
+        "draft-updated": 4,
+        "human-reviewed": 4,
+        exception: 2
+      };
+      const current = stepByMode[state.mode];
+      document.querySelectorAll("[data-step]").forEach((step) => {
+        const number = Number(step.dataset.step);
+        step.classList.toggle("is-done", number < current || state.mode === "human-reviewed");
+        step.classList.toggle("is-current", number === current && state.mode !== "human-reviewed");
+        if (number === current && state.mode !== "human-reviewed") step.setAttribute("aria-current", "step");
+        else step.removeAttribute("aria-current");
+      });
+      if (state.mode === "ready") document.querySelector('[data-step="1"]').classList.add("is-done");
+      if (state.mode === "exception") document.querySelector('[data-step="1"]').classList.add("is-done");
+    }
+
+    function render() {
+      const blocked = state.mode === "exception";
+      const updated = state.mode === "draft-updated" || state.mode === "human-reviewed";
+      const reviewed = state.mode === "human-reviewed";
+      const ruleResult = byId("rule-result");
+      const resultTag = byId("decision-result-tag");
+      const primary = byId("primary-action");
+
+      renderRoster();
+      renderAudit();
+      renderSteps();
+      setText("request-status", blocked
+        ? "Held · sample rule blocks assignment"
+        : reviewed
+          ? "Reviewed in draft · not published"
+          : updated
+            ? "Added to draft · human review pending"
+            : "Pending scheduler review");
+      byId("request-status").className = blocked ? "tag tag-stop" : reviewed ? "tag tag-ok" : "tag tag-warn";
+      setText("request-preview-state", blocked
+        ? "Role: RN · Sample check blocks this request; the slot remains open."
+        : reviewed
+          ? "Role: RN · Draft review recorded; not published."
+          : updated
+            ? "Role: RN · Request is in the draft; human review is pending."
+            : "Role: RN · One open sample slot · Request interest is pending scheduler review.");
+      setText("draft-status", blocked
+        ? "Draft · assignment blocked"
+        : reviewed
+          ? "Reviewed · not published"
+          : "Draft · human review pending");
+      byId("draft-status").className = blocked ? "tag tag-stop" : reviewed ? "tag tag-ok" : "tag tag-warn";
+      setText("queue-status", blocked ? "Blocked" : reviewed ? "Reviewed" : "Needs review");
+      byId("queue-status").className = blocked ? "tag tag-stop" : reviewed ? "tag tag-ok" : "tag tag-warn";
+
+      byId("exception-box").hidden = !blocked;
+      byId("escalation-action").hidden = !blocked;
+      byId("escalation-note").hidden = !state.escalationPrepared;
+      byId("decision-result").hidden = blocked;
+      setText("candidate-availability", blocked ? "No eligible cover in this simulation" : `${DEMO_FIXTURE.candidate.availability} · ${DEMO_FIXTURE.candidate.availabilitySource}`);
+      setText("candidate-role", blocked
+        ? `${DEMO_FIXTURE.candidate.id} · assignment blocked by simulated sample check`
+        : `${DEMO_FIXTURE.candidate.id} · ${DEMO_FIXTURE.candidate.role}`);
+      setText("candidate-rationale", blocked
+        ? "This simulation blocks the candidate under its fictional configured-rule result. No alternate candidate or override is presented."
+        : DEMO_FIXTURE.candidate.rationale);
+      setText("rule-result", blocked ? "Blocked · assignment not eligible" : "Pass · sample check only");
+      ruleResult.className = `evidence-value ${blocked ? "st-stop" : "st-ok"}`;
+
+      if (blocked) {
+        setText("state-tag", "Blocked · escalation");
+        byId("state-tag").className = "tag tag-stop";
+        setText("conflict-toggle", "End simulation and reset");
+        setText("decision-result-title", "No assignment can be added");
+        setText("decision-result-copy", "The open slot remains unfilled; escalate to the workforce / labor-rule owner.");
+        primary.textContent = "No eligible cover";
+        setText("human-boundary", "Do not bypass or override the configured sample result. No schedule is approved or published.");
+      } else if (reviewed) {
+        setText("state-tag", "Reviewed · not published");
+        byId("state-tag").className = "tag tag-ok";
+        setText("conflict-toggle", "Simulate rule conflict");
+        setText("decision-result-title", "Reviewed - not published");
+        setText("decision-result-copy", "A human recorded review. The draft remains unpublished.");
+        primary.textContent = "Review recorded";
+        setText("human-boundary", "Human review recorded. The schedule is still a draft; this demo has no publish action.");
+      } else {
+        setText("state-tag", updated ? "Draft updated · review pending" : state.mode === "candidate-reviewed" ? "Evidence reviewed" : "Ready for review");
+        byId("state-tag").className = updated ? "tag tag-warn" : "tag";
+        setText("conflict-toggle", "Simulate rule conflict");
+        setText("decision-result-title", updated ? "Cover added to draft" : state.mode === "candidate-reviewed" ? "Evidence reviewed by scheduler" : "Eligible to review");
+        setText("decision-result-copy", updated ? "Coverage changed in this draft only. Human review is still required." : state.mode === "candidate-reviewed" ? "Demand, candidate availability, rationale, and configured sample result were inspected." : "Inspect evidence, then decide whether to add this candidate to the draft.");
+        primary.disabled = false;
+        if (state.mode === "ready") primary.textContent = "Review candidate & rule check";
+        if (state.mode === "candidate-reviewed") primary.textContent = "Apply to draft";
+        if (state.mode === "draft-updated") primary.textContent = "Record human review";
+        setText("human-boundary", "A scheduler decides whether to add a cover. This demo never approves or publishes a schedule.");
+      }
+      primary.setAttribute("aria-disabled", String(blocked || reviewed));
+
+      if (state.escalationPrepared) {
+        setText("escalation-copy", `Workforce / labor-rule owner · include ${DEMO_FIXTURE.planId}, ${DEMO_FIXTURE.unit}, ${DEMO_FIXTURE.candidate.id}, ${DEMO_FIXTURE.ruleSet.id}, and the demand snapshot ${DEMO_FIXTURE.demand.id}. No message is sent.`);
+        byId("escalation-action").textContent = "Escalation note prepared";
+        byId("escalation-action").setAttribute("aria-disabled", "true");
+      } else {
+        byId("escalation-action").textContent = "Prepare escalation note";
+        byId("escalation-action").setAttribute("aria-disabled", "false");
+      }
+      setText("workflow-status", state.message);
+    }
+
+    function recordAudit(actor, kind, message, time) {
+      state.audit.push({ actor, kind, message, time });
+    }
+
+    function handlePrimaryAction() {
+      if (state.mode === "exception" || state.mode === "human-reviewed") return;
+      if (state.mode === "ready") {
+        state.mode = "candidate-reviewed";
+        state.message = "Evidence reviewed. Confirm the draft change before adding the candidate.";
+        recordAudit("Scheduler", "human", "Inspected demand freshness, candidate availability, rationale, and configured sample result.", DEMO_FIXTURE.auditTimes.evidenceReviewed);
+      } else if (state.mode === "candidate-reviewed") {
+        state.mode = "draft-updated";
+        state.message = "Candidate added to the draft only. Review remains pending; no schedule was published.";
+        recordAudit("Scheduler", "human", `Added ${DEMO_FIXTURE.candidate.id} to the open row in draft; coverage changed from ${DEMO_FIXTURE.initialAssigned} of ${DEMO_FIXTURE.targetSlots} to ${assignedCount()} of ${DEMO_FIXTURE.targetSlots}.`, DEMO_FIXTURE.auditTimes.candidateAdded);
+      } else if (state.mode === "draft-updated") {
+        state.mode = "human-reviewed";
+        state.message = "Human review recorded. Status: Reviewed - not published.";
+        recordAudit("Scheduler", "human", "Recorded human review; schedule remains an unpublished draft.", DEMO_FIXTURE.auditTimes.humanReviewed);
+      }
+      render();
+    }
+
+    function resetDemo(message = "Demo reset. The original synthetic draft is ready to review.") {
+      state.mode = "ready";
+      state.escalationPrepared = false;
+      state.audit = DEMO_FIXTURE.auditBase.map((entry) => ({ ...entry }));
+      state.message = message;
+      render();
+    }
+
+    function toggleConflict() {
+      if (state.mode === "exception") {
+        resetDemo("Conflict simulation ended. The original synthetic draft is restored for replay; no rule was overridden.");
+        return;
+      }
+      state.mode = "exception";
+      state.escalationPrepared = false;
+      state.audit = DEMO_FIXTURE.auditBase.map((entry) => ({ ...entry }));
+      recordAudit("Simulation", "system", "Configured sample-rule conflict simulated; assignment blocked and slot left open.", DEMO_FIXTURE.auditTimes.conflictSimulated);
+      state.message = "Blocked state shown. The slot remains open; prepare an escalation note for the workforce / labor-rule owner.";
+      render();
+    }
+
+    function prepareEscalation() {
+      if (state.mode !== "exception" || state.escalationPrepared) return;
+      state.escalationPrepared = true;
+      state.message = "Escalation note prepared locally, not sent. The open slot remains blocked.";
+      recordAudit("Scheduler", "human", "Prepared a local escalation note for the workforce / labor-rule owner; not sent.", DEMO_FIXTURE.auditTimes.escalationPrepared);
+      render();
+    }
+
+    populateContext();
+    render();
+    byId("primary-action").addEventListener("click", handlePrimaryAction);
+    byId("conflict-toggle").addEventListener("click", toggleConflict);
+    byId("escalation-action").addEventListener("click", prepareEscalation);
+    byId("reset-action").addEventListener("click", () => resetDemo());
+  </script>
+</body>
+</html>

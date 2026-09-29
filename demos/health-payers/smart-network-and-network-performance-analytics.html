@@ -1,0 +1,1185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Network Performance Workbench - Smart Network Analytics (illustrative demo)</title>
+<style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+body {
+  --on-accent: var(--surface);
+  --queue-width: 256px;
+  --review-width: 312px;
+}
+
+.btn-primary,
+.chip[aria-pressed="true"] { color: var(--on-accent); }
+.btn-dark {
+  color: var(--surface);
+  background: transparent;
+  border-color: var(--muted);
+}
+.btn-dark:hover:not(:disabled) { background: var(--ink-soft); border-color: var(--line); }
+
+.workspace {
+  display: grid;
+  grid-template-columns: var(--queue-width) minmax(0, 1fr) var(--review-width);
+  min-height: calc(100vh - 112px);
+  background: var(--line);
+  gap: 1px;
+}
+.pane { min-width: 0; background: var(--surface-2); }
+.pane-main { background: var(--bg); }
+.pane-title {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  padding: 13px 15px 10px; border-bottom: 1px solid var(--line);
+}
+.pane-title h2 { margin: 0; font-size: 14px; }
+.pane-title span { color: var(--muted); font-size: 12px; }
+
+.queue { list-style: none; margin: 0; padding: 10px; display: grid; gap: 8px; }
+.queue-button {
+  width: 100%; display: grid; gap: 6px; padding: 11px; text-align: left;
+  border: 1px solid var(--line); border-left: 4px solid var(--line);
+  border-radius: var(--radius); background: var(--surface); color: var(--ink);
+  font: inherit; cursor: pointer;
+}
+.queue-button:hover { border-color: var(--muted-soft); }
+.queue-button[aria-current="true"] {
+  border-color: var(--accent); border-left-color: var(--accent); background: var(--accent-soft);
+}
+.queue-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.queue-id { color: var(--muted); font: 12px var(--mono); }
+.queue-service { display: block; font-weight: 600; line-height: 1.35; }
+.queue-meta { display: block; color: var(--muted); font-size: 12.5px; }
+.queue-help { margin: 4px 14px 14px; color: var(--muted); font-size: 12.5px; }
+
+.detail { display: grid; gap: 12px; padding: 14px; align-content: start; }
+.object-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+.object-head h1 { margin: 0; font-size: clamp(19px, 2vw, 24px); line-height: 1.2; }
+.eyebrow { margin: 0 0 3px; color: var(--muted); font-size: 12.5px; }
+.object-meta { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 8px 0 0; color: var(--muted); font-size: 13px; }
+.object-actions { display: grid; justify-items: end; gap: 8px; flex: none; }
+.mobile-next { display: none; }
+
+.signal-layout {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(180px, 230px);
+  gap: 14px; align-items: start;
+}
+.access-plot { min-width: 0; }
+.plot-title { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 10px; font-size: 13px; }
+.plot-title strong { font-size: 14px; }
+.axis {
+  position: relative; height: 88px; margin: 0 10px 4px 4px;
+  border-bottom: 2px solid var(--muted); background:
+    linear-gradient(to right, transparent 49.7%, var(--line) 49.7%, var(--line) 50.3%, transparent 50.3%);
+}
+.planning-zone {
+  position: absolute; inset: 0 0 0 50%; background: var(--warn-bg);
+  border-left: 2px dashed var(--warn);
+}
+.provider-dot {
+  position: absolute; bottom: 13px; transform: translateX(-50%); z-index: 1;
+  width: 16px; height: 16px; border-radius: 50%; border: 3px solid var(--surface);
+  background: var(--accent-strong); box-shadow: 0 0 0 1px var(--accent-strong);
+}
+.provider-dot.is-gap { background: var(--stop); box-shadow: 0 0 0 1px var(--stop); }
+.provider-label {
+  position: absolute; bottom: 34px; transform: translateX(-50%);
+  width: 78px; text-align: center; color: var(--ink-soft); font-size: 11.5px; line-height: 1.2;
+}
+.axis-ticks { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; }
+.legend { display: flex; flex-wrap: wrap; gap: 5px 13px; margin-top: 9px; color: var(--muted); font-size: 12px; }
+.legend span { display: inline-flex; align-items: center; gap: 5px; }
+.legend-mark { width: 9px; height: 9px; border-radius: 50%; background: var(--accent-strong); }
+.legend-mark.gap { background: var(--stop); }
+.legend-mark.zone { border-radius: 1px; background: var(--warn-bg); border: 1px solid var(--warn); }
+
+.signal-summary { display: grid; gap: 8px; }
+.measure {
+  padding: 9px 10px; background: var(--surface-2); border-left: 3px solid var(--line);
+}
+.measure strong { display: block; font-size: 14px; }
+.measure span { display: block; color: var(--muted); font-size: 12px; }
+.measure.is-alert { border-left-color: var(--stop); }
+
+.table-wrap { overflow-x: auto; }
+.providers { width: 100%; border-collapse: collapse; font-size: 13px; }
+.providers caption { text-align: left; padding: 0 0 9px; color: var(--muted); font-size: 12.5px; }
+.providers th, .providers td {
+  padding: 8px 9px; text-align: left; vertical-align: top; border-top: 1px solid var(--line-soft);
+}
+.providers thead th { border-top: 0; color: var(--muted); font-size: 12px; white-space: nowrap; }
+.provider-name { display: block; font-weight: 600; }
+.provider-id { display: block; color: var(--muted); font: 11.5px var(--mono); margin-top: 2px; }
+.value-note { display: block; color: var(--muted); font-size: 11.5px; margin-top: 2px; }
+
+.source-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.source-row {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center;
+  padding: 8px 0; border-bottom: 1px solid var(--line-soft);
+}
+.source-row:last-child { border-bottom: 0; }
+.source-name { display: block; font-weight: 600; font-size: 13.5px; }
+.source-meta { display: block; color: var(--muted); font-size: 12px; }
+
+.review { background: var(--surface); }
+.review-inner { display: grid; gap: 12px; padding: 14px; align-content: start; }
+.review-status { display: grid; gap: 4px; }
+.review-status strong { font-size: 16px; }
+.review-status span { color: var(--muted); font-size: 12.5px; }
+.decision-box {
+  display: grid; gap: 9px; padding: 11px; border: 1px solid var(--line);
+  border-left: 3px solid var(--accent); border-radius: 0 var(--radius) var(--radius) 0;
+  background: var(--bg);
+}
+.decision-box h3 { margin: 0; font-size: 14px; }
+.decision-box p { margin: 0; color: var(--ink-soft); font-size: 13px; }
+.review .actions { display: grid; }
+.review .actions .btn { justify-content: center; }
+.microcopy { margin: 0; color: var(--muted); font-size: 12px; }
+.audit-wrap { border-top: 1px solid var(--line); padding-top: 11px; }
+.audit-wrap h3 { margin: 0 0 9px; font-size: 13.5px; }
+
+.progress-line {
+  height: 5px; overflow: hidden; border-radius: 3px; background: var(--line-soft);
+}
+.progress-line span {
+  display: block; width: 65%; height: 100%; background: var(--accent);
+  animation: progress 600ms ease-in-out infinite alternate;
+}
+@keyframes progress { from { transform: translateX(-55%); } to { transform: translateX(105%); } }
+
+.dialog-copy { margin: 0; font-size: 14px; }
+.scope-summary {
+  padding: 10px 11px; background: var(--accent-soft); border: 1px solid var(--accent-line);
+  border-radius: var(--radius); font-size: 13.5px;
+}
+.scope-summary strong { display: block; margin-bottom: 3px; }
+
+.footer { position: relative; }
+
+@media (max-width: 1120px) {
+  .workspace { grid-template-columns: var(--queue-width) minmax(0, 1fr); }
+  .review { grid-column: 1 / -1; }
+  .review-inner { grid-template-columns: minmax(180px, .7fr) minmax(260px, 1.3fr); }
+  .audit-wrap { grid-column: 1 / -1; }
+  .mobile-next { display: block; }
+}
+
+@media (max-width: 900px) {
+  .workspace { grid-template-columns: minmax(0, 1fr); }
+  .review { grid-column: auto; }
+  .review-inner { grid-template-columns: minmax(0, 1fr); }
+  .signal-layout { grid-template-columns: minmax(0, 1fr); }
+  .queue { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 760px) {
+  .object-head { display: grid; }
+  .object-actions { justify-items: stretch; }
+  .mobile-next .btn { width: 100%; justify-content: center; }
+  .providers, .providers tbody { display: block; }
+  .providers thead { display: none; }
+  .providers tbody tr {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px 10px;
+    padding: 10px 0; border-top: 1px solid var(--line-soft);
+  }
+  .providers td { border-top: 0; padding: 0; }
+  .providers td:first-child { grid-column: 1 / -1; }
+  .providers td::before {
+    content: attr(data-label); display: block; color: var(--muted); font-size: 11px; font-weight: 600;
+  }
+  .providers td:first-child::before { display: none; }
+}
+
+@media (max-width: 430px) {
+  .detail { padding: 10px; }
+  .axis { margin-right: 4px; }
+  .provider-label { display: none; }
+  .providers tbody tr { grid-template-columns: minmax(0, 1fr); }
+  .providers td:first-child { grid-column: auto; }
+  .source-row { grid-template-columns: minmax(0, 1fr); }
+}
+</style>
+</head>
+<body data-subvertical="health-payers">
+
+<svg class="sr-only" aria-hidden="true" focusable="false">
+  <symbol id="i-network" viewBox="0 0 20 20"><circle cx="4" cy="10" r="2.2" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="15.5" cy="4.5" r="2.2" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="15.5" cy="15.5" r="2.2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M6 9l7.4-3.6M6 11l7.4 3.6" fill="none" stroke="currentColor" stroke-width="1.7"/></symbol>
+  <symbol id="i-info" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 7.2v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="4.8" r=".9" fill="currentColor"/></symbol>
+  <symbol id="i-check" viewBox="0 0 16 16"><path d="M3 8.5l3.1 3.1L13 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 16 16"><path d="M8 2.2l6.1 11.1H1.9L8 2.2z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 6.1v3.6" stroke="currentColor" stroke-width="1.6"/><circle cx="8" cy="11.7" r=".8" fill="currentColor"/></symbol>
+  <symbol id="i-source" viewBox="0 0 16 16"><path d="M3 2.5h7l3 3v8H3v-11z" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M10 2.8v3h2.7M5.3 8h5.4M5.3 10.5h5.4" fill="none" stroke="currentColor" stroke-width="1.3"/></symbol>
+</svg>
+
+<header class="appbar">
+  <div class="brand">
+    <svg class="brand-mark" width="26" height="26" viewBox="0 0 20 20" aria-hidden="true"><use href="#i-network"/></svg>
+    <span class="brand-name">Network Performance Workbench
+      <span class="brand-sub">Northstar Health Plan - fictional payer</span>
+    </span>
+  </div>
+  <p class="disclosure">
+    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><use href="#i-info"/></svg>
+    Illustrative demo - synthetic data
+  </p>
+  <p class="who"><b>Jordan Lee</b><br>VP Network Strategy</p>
+  <button type="button" class="btn btn-dark" id="resetDemo">Reset demo</button>
+</header>
+
+<main class="workspace">
+  <nav class="pane" aria-labelledby="queueHeading">
+    <div class="pane-title">
+      <h2 id="queueHeading">Network reviews</h2>
+      <span id="queueCount"></span>
+    </div>
+    <ul class="queue" id="reviewQueue"></ul>
+    <p class="queue-help">Sample planning signals only. A flagged review is not an adequacy or compliance determination.</p>
+  </nav>
+
+  <section class="pane pane-main" aria-labelledby="objectHeading">
+    <div class="detail">
+      <header class="object-head">
+        <div>
+          <p class="eyebrow" id="objectEyebrow"></p>
+          <h1 id="objectHeading"></h1>
+          <p class="object-meta" id="objectMeta"></p>
+        </div>
+        <div class="object-actions">
+          <span class="tag" id="objectStatus"></span>
+          <div class="mobile-next" id="mobileNext"></div>
+        </div>
+      </header>
+
+      <article class="card" aria-labelledby="signalHeading">
+        <div class="card-head">
+          <h2 id="signalHeading">Access signal and provider evidence</h2>
+          <span class="card-note">Sample values - not measured outcomes</span>
+        </div>
+        <div class="card-body signal-layout">
+          <div class="access-plot">
+            <div class="plot-title">
+              <strong>Estimated member travel time</strong>
+              <span class="card-note" id="plotFreshness"></span>
+            </div>
+            <div class="axis" id="accessAxis" role="img"></div>
+            <div class="axis-ticks" aria-hidden="true"><span>0 min</span><span>30 min</span><span>60 min</span></div>
+            <div class="legend">
+              <span><i class="legend-mark"></i> Available group</span>
+              <span><i class="legend-mark gap"></i> Access concern</span>
+              <span><i class="legend-mark zone"></i> Beyond sample planning marker</span>
+            </div>
+          </div>
+          <div class="signal-summary" id="signalSummary"></div>
+        </div>
+      </article>
+
+      <article class="card" aria-labelledby="providersHeading">
+        <div class="card-head">
+          <h2 id="providersHeading">Provider comparison</h2>
+          <span class="card-note" id="providerCount"></span>
+        </div>
+        <div class="card-body table-wrap">
+          <table class="providers">
+            <caption>Transparent sample measures for contracting review. Lower cost index indicates lower relative cost in this fictional dataset.</caption>
+            <thead>
+              <tr>
+                <th scope="col">Provider group</th>
+                <th scope="col">Travel</th>
+                <th scope="col">Cost index</th>
+                <th scope="col">Quality signal</th>
+                <th scope="col">Directory source</th>
+              </tr>
+            </thead>
+            <tbody id="providerRows"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="card" aria-labelledby="sourcesHeading">
+        <div class="card-head">
+          <h2 id="sourcesHeading">Governed source evidence</h2>
+          <span class="card-note" id="sourceTrust"></span>
+        </div>
+        <div class="card-body">
+          <ul class="source-list" id="sourceList"></ul>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <aside class="pane review" aria-labelledby="decisionHeading">
+    <div class="pane-title">
+      <h2 id="decisionHeading">Human review</h2>
+      <span>Decision support</span>
+    </div>
+    <div class="review-inner">
+      <div class="review-status">
+        <strong id="reviewState"></strong>
+        <span id="reviewOwner"></span>
+      </div>
+
+      <div class="decision-box" id="decisionBox">
+        <h3 id="decisionTitle"></h3>
+        <p id="decisionRationale"></p>
+      </div>
+
+      <div class="notice" id="resultNotice" hidden>
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><use href="#i-check"/></svg>
+        <span id="resultText"></span>
+      </div>
+
+      <div id="workingState" hidden>
+        <p class="status-line">Recording the simulated review...</p>
+        <div class="progress-line" aria-hidden="true"><span></span></div>
+      </div>
+
+      <div class="actions" id="reviewActions"></div>
+      <p class="microcopy" id="actionNote"></p>
+      <p class="status-line sr-only" id="liveStatus" role="status" aria-live="polite"></p>
+
+      <div class="audit-wrap">
+        <h3>Review audit</h3>
+        <ol class="audit" id="auditList"></ol>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<footer class="footer">
+  <span class="built">Catalog workloads:
+    <span class="svc-chip">Microsoft Fabric</span>
+    <span class="svc-chip">Azure Databricks</span>
+    <span class="svc-chip">Azure Machine Learning</span>
+    <span class="svc-chip">Microsoft Purview</span>
+  </span>
+  <span class="claim">Catalog value: <b>network steerage and adequacy compliance up, medical cost trend down, contract performance visibility up.</b> No measured customer outcome is claimed.</span>
+</footer>
+
+<dialog id="actionDialog" aria-labelledby="dialogTitle">
+  <div class="dlg-head">
+    <div>
+      <h2 id="dialogTitle"></h2>
+      <span class="dlg-sub" id="dialogSubtitle"></span>
+    </div>
+  </div>
+  <div class="dlg-body">
+    <p class="dialog-copy" id="dialogCopy"></p>
+    <div class="scope-summary" id="scopeSummary"></div>
+    <label class="attest" id="attestWrap">
+      <input type="checkbox" id="reviewAttest">
+      <span>I reviewed the provider measures and source dates. I understand this stages a plan for human follow-up; it does not steer members or change a contract.</span>
+    </label>
+    <div class="field" id="noteField">
+      <label for="reviewNote">Reviewer rationale</label>
+      <textarea id="reviewNote" maxlength="240"></textarea>
+    </div>
+    <p class="dlg-error" id="dialogError" role="alert"></p>
+  </div>
+  <div class="dlg-foot">
+    <button type="button" class="btn" id="dialogCancel">Cancel</button>
+    <button type="button" class="btn btn-primary" id="dialogConfirm"></button>
+  </div>
+</dialog>
+
+<dialog id="sourceDialog" aria-labelledby="sourceDialogTitle">
+  <div class="dlg-head">
+    <div>
+      <h2 id="sourceDialogTitle"></h2>
+      <span class="dlg-sub" id="sourceDialogMeta"></span>
+    </div>
+  </div>
+  <div class="dlg-body">
+    <dl class="meta-grid" id="sourceDetails"></dl>
+    <p class="evidence" id="sourceExcerpt"></p>
+    <p class="rule">
+      <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><use href="#i-info"/></svg>
+      This excerpt and its lineage are fictional sample data shown so the reviewer can inspect why a signal is trusted or blocked.
+    </p>
+  </div>
+  <div class="dlg-foot">
+    <button type="button" class="btn btn-primary" id="sourceClose">Back to review</button>
+  </div>
+</dialog>
+
+<script>
+(function () {
+  "use strict";
+
+  /*
+   * Synthetic fixture data. Every organization, geography, provider,
+   * identifier, date, and operational value below is fictional.
+   */
+  var FIXTURES = {
+    organization: "Northstar Health Plan",
+    reviewer: "Jordan Lee",
+    reviews: [
+      {
+        id: "NR-2048",
+        service: "Cardiology",
+        geography: "East River service area",
+        period: "September 2026 planning cycle",
+        status: "ready",
+        statusLabel: "Ready for review",
+        signal: "Access concern",
+        planningMarker: 30,
+        freshness: "Sources aligned through 2026-09-22",
+        trust: "Cross-source agreement: high",
+        owner: "Accountable reviewer: Jordan Lee, VP Network Strategy",
+        recommendation: "Stage contracting outreach to two fictional provider groups for capacity validation.",
+        rationale: "Sample claims, quality, directory, and access feeds agree that two available groups could be reviewed for the East River access gap.",
+        actionNote: "Next action: review the evidence and stage a reversible outreach plan.",
+        summary: [
+          { label: "Access signal", value: "2 of 4 groups beyond marker", alert: true },
+          { label: "Cost range", value: "0.91-1.18 sample index", alert: false },
+          { label: "Quality evidence", value: "4 groups with current feeds", alert: false }
+        ],
+        providers: [
+          { name: "Pine Harbor Cardiology", id: "PG-DEMO-104", travel: 18, cost: "0.91", quality: "Above peer band", qualityTone: "ok", directory: "2026-09-20", gap: false },
+          { name: "Juniper Heart Group", id: "PG-DEMO-118", travel: 27, cost: "1.02", quality: "Within peer band", qualityTone: "idle", directory: "2026-09-21", gap: false },
+          { name: "East River Cardiac Partners", id: "PG-DEMO-203", travel: 39, cost: "0.96", quality: "Above peer band", qualityTone: "ok", directory: "2026-09-22", gap: true },
+          { name: "Summit Cardiology Collective", id: "PG-DEMO-225", travel: 51, cost: "1.18", quality: "Within peer band", qualityTone: "idle", directory: "2026-09-19", gap: true }
+        ],
+        sources: [
+          { key: "claims", name: "Synthetic claims service-line extract", asOf: "Through 2026-08-31", status: "Governed", tone: "ok", owner: "Network Analytics", lineage: "Sample claims extract -> service-line model -> NR-2048", excerpt: "Fictional allowed-amount records were grouped to the Cardiology service line. Values are represented only as a relative sample cost index." },
+          { key: "quality", name: "Fictional provider quality feed", asOf: "Published 2026-09-18", status: "Governed", tone: "ok", owner: "Clinical Quality", lineage: "Sample quality feed -> provider measure model -> NR-2048", excerpt: "Synthetic provider measures were normalized to a fictional peer band. No clinical recommendation or provider ranking is produced." },
+          { key: "directory", name: "Northstar sample provider directory", asOf: "Verified 2026-09-22", status: "Current", tone: "ok", owner: "Provider Operations", lineage: "Sample directory -> location match -> travel estimate", excerpt: "Fictional service locations and availability indicators were used to estimate travel time for planning. No member address or real routing data is present." },
+          { key: "access", name: "Synthetic access planning model", asOf: "Run 2026-09-22", status: "Reviewable", tone: "idle", owner: "Network Strategy", lineage: "Directory + sample geography -> access planning view", excerpt: "The 30-minute marker is an illustrative internal planning input, not a regulatory threshold or compliance determination." }
+        ],
+        audit: [
+          { time: "09:12", actor: "System", type: "system", text: "Unified sample feeds for review NR-2048." },
+          { time: "09:13", actor: "System", type: "system", text: "Flagged a Cardiology access signal for human review." }
+        ]
+      },
+      {
+        id: "NR-2051",
+        service: "Behavioral health",
+        geography: "North Valley service area",
+        period: "September 2026 planning cycle",
+        status: "exception",
+        statusLabel: "Source issue",
+        signal: "Freshness exception",
+        planningMarker: 30,
+        freshness: "Directory source is outside review window",
+        trust: "Insufficient source freshness",
+        owner: "Accountable reviewer: Jordan Lee, VP Network Strategy",
+        recommendation: "Do not stage a network action until the fictional provider directory is refreshed.",
+        rationale: "Claims and quality feeds are current, but the sample directory was last verified before the current planning cycle. Provider availability cannot be trusted.",
+        actionNote: "Staging is blocked. Escalate the source issue to Data Governance.",
+        summary: [
+          { label: "Access signal", value: "Provisional - source stale", alert: true },
+          { label: "Directory freshness", value: "Needs owner review", alert: true },
+          { label: "Quality evidence", value: "Current but not actionable alone", alert: false }
+        ],
+        providers: [
+          { name: "North Valley Behavioral Care", id: "PG-DEMO-310", travel: 16, cost: "0.94", quality: "Within peer band", qualityTone: "idle", directory: "2026-05-08", gap: false },
+          { name: "Cedar Grove Wellness Group", id: "PG-DEMO-322", travel: 34, cost: "1.07", quality: "Above peer band", qualityTone: "ok", directory: "2026-05-06", gap: true },
+          { name: "Blue Heron Behavioral Partners", id: "PG-DEMO-337", travel: 47, cost: "0.99", quality: "Within peer band", qualityTone: "idle", directory: "2026-05-09", gap: true }
+        ],
+        sources: [
+          { key: "claims", name: "Synthetic claims service-line extract", asOf: "Through 2026-08-31", status: "Governed", tone: "ok", owner: "Network Analytics", lineage: "Sample claims extract -> service-line model -> NR-2051", excerpt: "Fictional allowed-amount records were grouped to the Behavioral health service line. Values are represented only as a relative sample cost index." },
+          { key: "quality", name: "Fictional provider quality feed", asOf: "Published 2026-09-18", status: "Governed", tone: "ok", owner: "Clinical Quality", lineage: "Sample quality feed -> provider measure model -> NR-2051", excerpt: "Synthetic quality measures are current, but they cannot establish provider availability or an access result." },
+          { key: "directory", name: "Northstar sample provider directory", asOf: "Last verified 2026-05-09", status: "Stale", tone: "stop", owner: "Provider Operations", lineage: "Sample directory -> location match -> travel estimate", excerpt: "The fictional location records predate the current planning cycle. Availability and travel estimates must be refreshed before any outreach plan is staged." },
+          { key: "access", name: "Synthetic access planning model", asOf: "Run paused 2026-09-22", status: "Blocked", tone: "warn", owner: "Network Strategy", lineage: "Directory freshness gate -> model run blocked", excerpt: "The planning model withheld an actionable result because the provider directory did not meet the fictional review window." }
+        ],
+        audit: [
+          { time: "09:18", actor: "System", type: "system", text: "Detected that a required sample directory source is stale." },
+          { time: "09:18", actor: "System", type: "system", text: "Blocked network action pending source-owner review." }
+        ]
+      }
+    ]
+  };
+
+  var state = {
+    reviews: [],
+    selectedId: "NR-2048",
+    pendingAction: null,
+    timer: null
+  };
+
+  var el = {};
+  [
+    "resetDemo", "queueCount", "reviewQueue", "objectEyebrow", "objectHeading", "objectMeta", "objectStatus",
+    "mobileNext", "plotFreshness", "accessAxis", "signalSummary", "providerCount", "providerRows", "sourceTrust", "sourceList",
+    "reviewState", "reviewOwner", "decisionBox", "decisionTitle", "decisionRationale", "resultNotice", "resultText",
+    "workingState", "reviewActions", "actionNote", "liveStatus", "auditList", "actionDialog", "dialogTitle",
+    "dialogSubtitle", "dialogCopy", "scopeSummary", "attestWrap", "reviewAttest", "noteField", "reviewNote",
+    "dialogError", "dialogCancel", "dialogConfirm", "sourceDialog", "sourceDialogTitle", "sourceDialogMeta",
+    "sourceDetails", "sourceExcerpt", "sourceClose"
+  ].forEach(function (id) { el[id] = document.getElementById(id); });
+
+  function copy(value) { return JSON.parse(JSON.stringify(value)); }
+  function selectedReview() {
+    return state.reviews.filter(function (review) { return review.id === state.selectedId; })[0];
+  }
+  function icon(name) {
+    var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("width", "15");
+    svg.setAttribute("height", "15");
+    svg.setAttribute("viewBox", "0 0 16 16");
+    svg.setAttribute("aria-hidden", "true");
+    var use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+    use.setAttribute("href", "#i-" + name);
+    svg.appendChild(use);
+    return svg;
+  }
+  function openDialog(dialog) {
+    if (typeof dialog.showModal === "function") dialog.showModal();
+    else dialog.setAttribute("open", "");
+  }
+  function closeDialog(dialog) {
+    if (typeof dialog.close === "function") dialog.close();
+    else dialog.removeAttribute("open");
+  }
+  function statusClass(tone) {
+    if (tone === "ok") return "st st-ok";
+    if (tone === "warn") return "st st-warn";
+    if (tone === "stop") return "st st-stop";
+    return "st st-idle";
+  }
+  function tagClass(review) {
+    if (review.status === "staged") return "tag tag-ok";
+    if (review.status === "escalated" || review.status === "exception") return "tag tag-warn";
+    return "tag";
+  }
+
+  function renderQueue() {
+    el.reviewQueue.textContent = "";
+    state.reviews.forEach(function (review) {
+      var item = document.createElement("li");
+      var button = document.createElement("button");
+      button.type = "button";
+      button.className = "queue-button";
+      button.setAttribute("aria-current", review.id === state.selectedId ? "true" : "false");
+
+      var top = document.createElement("span");
+      top.className = "queue-top";
+      var code = document.createElement("span");
+      code.className = "queue-id";
+      code.textContent = review.id;
+      var status = document.createElement("span");
+      status.className = tagClass(review);
+      status.textContent = review.statusLabel;
+      top.appendChild(code);
+      top.appendChild(status);
+
+      var service = document.createElement("span");
+      service.className = "queue-service";
+      service.textContent = review.service;
+      var meta = document.createElement("span");
+      meta.className = "queue-meta";
+      meta.textContent = review.geography;
+
+      button.appendChild(top);
+      button.appendChild(service);
+      button.appendChild(meta);
+      button.addEventListener("click", function () {
+        state.selectedId = review.id;
+        render();
+        el.objectHeading.focus({ preventScroll: true });
+      });
+      item.appendChild(button);
+      el.reviewQueue.appendChild(item);
+    });
+    el.queueCount.textContent = state.reviews.length + " sample reviews";
+  }
+
+  function renderObject(review) {
+    el.objectEyebrow.textContent = review.id + " - " + review.period;
+    el.objectHeading.textContent = review.service + " - " + review.geography;
+    el.objectHeading.setAttribute("tabindex", "-1");
+    el.objectMeta.textContent = "Signal: " + review.signal + " | Planning marker: " + review.planningMarker + " minutes (illustrative internal input)";
+    el.objectStatus.className = tagClass(review);
+    el.objectStatus.textContent = review.statusLabel;
+  }
+
+  function renderPlot(review) {
+    el.plotFreshness.textContent = review.freshness;
+    el.accessAxis.textContent = "";
+    var zone = document.createElement("span");
+    zone.className = "planning-zone";
+    zone.setAttribute("aria-hidden", "true");
+    el.accessAxis.appendChild(zone);
+
+    review.providers.forEach(function (provider) {
+      var left = Math.min(96, Math.max(4, provider.travel / 60 * 100));
+      var label = document.createElement("span");
+      label.className = "provider-label";
+      label.style.left = left + "%";
+      label.textContent = provider.name.split(" ")[0] + " " + provider.travel + "m";
+      label.setAttribute("aria-hidden", "true");
+
+      var dot = document.createElement("span");
+      dot.className = "provider-dot" + (provider.gap ? " is-gap" : "");
+      dot.style.left = left + "%";
+      dot.setAttribute("aria-hidden", "true");
+      el.accessAxis.appendChild(label);
+      el.accessAxis.appendChild(dot);
+    });
+    el.accessAxis.setAttribute(
+      "aria-label",
+      "Estimated travel time for " + review.providers.length + " fictional provider groups. " +
+      review.providers.map(function (provider) { return provider.name + ", " + provider.travel + " minutes"; }).join("; ") +
+      ". The illustrative planning marker is " + review.planningMarker + " minutes."
+    );
+
+    el.signalSummary.textContent = "";
+    review.summary.forEach(function (measure) {
+      var box = document.createElement("div");
+      box.className = "measure" + (measure.alert ? " is-alert" : "");
+      var strong = document.createElement("strong");
+      strong.textContent = measure.value;
+      var label = document.createElement("span");
+      label.textContent = measure.label;
+      box.appendChild(strong);
+      box.appendChild(label);
+      el.signalSummary.appendChild(box);
+    });
+  }
+
+  function renderProviders(review) {
+    el.providerRows.textContent = "";
+    review.providers.forEach(function (provider) {
+      var row = document.createElement("tr");
+      var nameCell = document.createElement("td");
+      var name = document.createElement("span");
+      name.className = "provider-name";
+      name.textContent = provider.name;
+      var id = document.createElement("span");
+      id.className = "provider-id";
+      id.textContent = provider.id;
+      nameCell.appendChild(name);
+      nameCell.appendChild(id);
+
+      var travelCell = document.createElement("td");
+      travelCell.dataset.label = "Travel";
+      travelCell.textContent = provider.travel + " min";
+
+      var costCell = document.createElement("td");
+      costCell.dataset.label = "Cost index";
+      costCell.textContent = provider.cost;
+      var costNote = document.createElement("span");
+      costNote.className = "value-note";
+      costNote.textContent = "sample relative index";
+      costCell.appendChild(costNote);
+
+      var qualityCell = document.createElement("td");
+      qualityCell.dataset.label = "Quality signal";
+      var quality = document.createElement("span");
+      quality.className = statusClass(provider.qualityTone);
+      quality.textContent = provider.quality;
+      qualityCell.appendChild(quality);
+
+      var directoryCell = document.createElement("td");
+      directoryCell.dataset.label = "Directory source";
+      directoryCell.textContent = provider.directory;
+
+      row.appendChild(nameCell);
+      row.appendChild(travelCell);
+      row.appendChild(costCell);
+      row.appendChild(qualityCell);
+      row.appendChild(directoryCell);
+      el.providerRows.appendChild(row);
+    });
+    el.providerCount.textContent = review.providers.length + " fictional provider groups";
+  }
+
+  function openSource(source) {
+    el.sourceDialogTitle.textContent = source.name;
+    el.sourceDialogMeta.textContent = source.asOf + " - " + source.status;
+    el.sourceDetails.textContent = "";
+    [
+      ["Source owner", source.owner],
+      ["Lineage", source.lineage],
+      ["Review state", source.status]
+    ].forEach(function (pair) {
+      var wrap = document.createElement("div");
+      var dt = document.createElement("dt");
+      dt.textContent = pair[0];
+      var dd = document.createElement("dd");
+      dd.textContent = pair[1];
+      wrap.appendChild(dt);
+      wrap.appendChild(dd);
+      el.sourceDetails.appendChild(wrap);
+    });
+    el.sourceExcerpt.textContent = source.excerpt;
+    openDialog(el.sourceDialog);
+  }
+
+  function renderSources(review) {
+    el.sourceTrust.textContent = review.trust;
+    el.sourceList.textContent = "";
+    review.sources.forEach(function (source) {
+      var item = document.createElement("li");
+      item.className = "source-row";
+      var body = document.createElement("span");
+      var name = document.createElement("span");
+      name.className = "source-name";
+      name.textContent = source.name;
+      var meta = document.createElement("span");
+      meta.className = "source-meta";
+      meta.textContent = source.asOf + " - Owner: " + source.owner;
+      body.appendChild(name);
+      body.appendChild(meta);
+
+      var action = document.createElement("span");
+      var status = document.createElement("span");
+      status.className = statusClass(source.tone);
+      status.textContent = source.status;
+      var button = document.createElement("button");
+      button.type = "button";
+      button.className = "btn-link";
+      button.textContent = "View source";
+      button.addEventListener("click", function () { openSource(source); });
+      action.appendChild(status);
+      action.appendChild(document.createTextNode(" "));
+      action.appendChild(button);
+      item.appendChild(body);
+      item.appendChild(action);
+      el.sourceList.appendChild(item);
+    });
+  }
+
+  function actionButton(label, primary, handler) {
+    var button = document.createElement("button");
+    button.type = "button";
+    button.className = "btn" + (primary ? " btn-primary" : "");
+    button.textContent = label;
+    button.addEventListener("click", handler);
+    return button;
+  }
+
+  function renderAudit(review) {
+    el.auditList.textContent = "";
+    review.audit.forEach(function (entry) {
+      var item = document.createElement("li");
+      var time = document.createElement("time");
+      time.textContent = entry.time;
+      var text = document.createElement("span");
+      var actor = document.createElement("span");
+      actor.className = "actor " + (entry.type === "human" ? "is-human" : "is-system");
+      actor.textContent = entry.actor + " - ";
+      var detail = document.createElement("span");
+      detail.textContent = entry.text;
+      text.appendChild(actor);
+      text.appendChild(detail);
+      item.appendChild(time);
+      item.appendChild(text);
+      el.auditList.appendChild(item);
+    });
+  }
+
+  function renderReview(review) {
+    el.reviewState.textContent = review.statusLabel;
+    el.reviewOwner.textContent = review.owner;
+    el.decisionTitle.textContent = review.status === "staged" ? "Outreach plan staged" :
+      review.status === "escalated" ? "Source issue escalated" :
+      review.status === "exception" ? "Action blocked by source trust" : "Suggested next step";
+    el.decisionRationale.textContent = review.status === "staged" ? review.result :
+      review.status === "escalated" ? review.result : review.rationale;
+    el.reviewActions.textContent = "";
+    el.workingState.hidden = true;
+    el.resultNotice.hidden = review.status !== "staged" && review.status !== "escalated";
+    el.resultNotice.className = "notice" + (review.status === "staged" ? " notice-ok" : " notice-warn");
+    el.resultText.textContent = review.result || "";
+    el.actionNote.textContent = review.actionNote;
+
+    if (review.status === "ready") {
+      el.reviewActions.appendChild(actionButton("Open plan review", true, function () { openAction("stage"); }));
+    } else if (review.status === "exception") {
+      el.reviewActions.appendChild(actionButton("Escalate source issue", true, function () { openAction("escalate"); }));
+    } else {
+      el.reviewActions.appendChild(actionButton("Reopen this review", false, function () { reopenReview(review); }));
+    }
+    renderAudit(review);
+  }
+
+  function renderMobileAction(review) {
+    el.mobileNext.textContent = "";
+    if (review.status === "ready") {
+      el.mobileNext.appendChild(actionButton("Open plan review", true, function () { openAction("stage"); }));
+    } else if (review.status === "exception") {
+      el.mobileNext.appendChild(actionButton("Escalate source issue", true, function () { openAction("escalate"); }));
+    } else {
+      el.mobileNext.appendChild(actionButton("Reopen this review", false, function () { reopenReview(review); }));
+    }
+  }
+
+  function render() {
+    var review = selectedReview();
+    renderQueue();
+    renderObject(review);
+    renderMobileAction(review);
+    renderPlot(review);
+    renderProviders(review);
+    renderSources(review);
+    renderReview(review);
+  }
+
+  function openAction(action) {
+    var review = selectedReview();
+    state.pendingAction = action;
+    el.reviewAttest.checked = false;
+    el.reviewNote.value = action === "stage"
+      ? "Review current capacity with the two identified fictional provider groups."
+      : "Directory freshness blocks a trusted network review.";
+    el.dialogError.textContent = "";
+
+    if (action === "stage") {
+      el.dialogTitle.textContent = "Stage contracting outreach plan";
+      el.dialogSubtitle.textContent = review.id + " - Human review required";
+      el.dialogCopy.textContent = "Confirm the evidence and record why this reversible plan should move to provider outreach.";
+      el.scopeSummary.textContent = "";
+      var strong = document.createElement("strong");
+      strong.textContent = "Scope";
+      var text = document.createElement("span");
+      text.textContent = "Initiate capacity validation with East River Cardiac Partners and Summit Cardiology Collective. No member steerage, contract change, or compliance determination occurs.";
+      el.scopeSummary.appendChild(strong);
+      el.scopeSummary.appendChild(text);
+      el.attestWrap.hidden = false;
+      el.noteField.hidden = false;
+      el.dialogConfirm.textContent = "Stage plan";
+    } else {
+      el.dialogTitle.textContent = "Escalate source issue";
+      el.dialogSubtitle.textContent = review.id + " - Provider directory exception";
+      el.dialogCopy.textContent = "Route the stale fictional directory source to Data Governance. The network review remains blocked and no provider action is staged.";
+      el.scopeSummary.textContent = "";
+      var escalationStrong = document.createElement("strong");
+      escalationStrong.textContent = "Escalation owner";
+      var escalationText = document.createElement("span");
+      escalationText.textContent = "Provider Data Governance queue - requested refresh and owner validation.";
+      el.scopeSummary.appendChild(escalationStrong);
+      el.scopeSummary.appendChild(escalationText);
+      el.attestWrap.hidden = true;
+      el.noteField.hidden = true;
+      el.dialogConfirm.textContent = "Record escalation";
+    }
+    openDialog(el.actionDialog);
+  }
+
+  function confirmAction() {
+    var review = selectedReview();
+    if (state.pendingAction === "stage" && !el.reviewAttest.checked) {
+      el.dialogError.textContent = "Confirm the human-review attestation before staging the plan.";
+      el.reviewAttest.focus();
+      return;
+    }
+    if (state.pendingAction === "stage" && !el.reviewNote.value.trim()) {
+      el.dialogError.textContent = "Add a short rationale for the audit trail.";
+      el.reviewNote.focus();
+      return;
+    }
+
+    closeDialog(el.actionDialog);
+    el.reviewActions.textContent = "";
+    el.workingState.hidden = false;
+    el.liveStatus.textContent = state.pendingAction === "stage"
+      ? "Staging the simulated outreach plan."
+      : "Recording the Data Governance escalation.";
+    var action = state.pendingAction;
+    state.timer = window.setTimeout(function () {
+      if (action === "stage") {
+        review.status = "staged";
+        review.statusLabel = "Plan staged";
+        review.result = "Outreach plan OP-DEMO-2048 is staged for Jordan Lee's follow-up. No member or contract action was taken.";
+        review.actionNote = "Reopen the review to revise the simulated plan.";
+        review.audit.push({ time: "09:24", actor: FIXTURES.reviewer, type: "human", text: "Reviewed source evidence and staged outreach plan OP-DEMO-2048. Rationale: " + el.reviewNote.value.trim() });
+        el.liveStatus.textContent = "Outreach plan staged. No member or contract action was taken.";
+      } else {
+        review.status = "escalated";
+        review.statusLabel = "Escalated";
+        review.result = "Source issue DG-DEMO-2051 was routed to the fictional Provider Data Governance queue. Network action remains blocked.";
+        review.actionNote = "Reopen the review to replay the source exception.";
+        review.audit.push({ time: "09:26", actor: FIXTURES.reviewer, type: "human", text: "Escalated the stale provider directory source. Network action remains blocked." });
+        el.liveStatus.textContent = "Source issue escalated. Network action remains blocked.";
+      }
+      state.pendingAction = null;
+      state.timer = null;
+      render();
+    }, 550);
+  }
+
+  function reopenReview(review) {
+    var seed = FIXTURES.reviews.filter(function (item) { return item.id === review.id; })[0];
+    var index = state.reviews.indexOf(review);
+    state.reviews[index] = copy(seed);
+    render();
+    el.liveStatus.textContent = review.id + " restored to its initial review state.";
+  }
+
+  function resetDemo() {
+    if (state.timer) window.clearTimeout(state.timer);
+    state.timer = null;
+    state.reviews = copy(FIXTURES.reviews);
+    state.selectedId = "NR-2048";
+    state.pendingAction = null;
+    closeDialog(el.actionDialog);
+    closeDialog(el.sourceDialog);
+    render();
+    el.liveStatus.textContent = "Demo reset to the Cardiology review.";
+  }
+
+  el.resetDemo.addEventListener("click", resetDemo);
+  el.dialogCancel.addEventListener("click", function () {
+    state.pendingAction = null;
+    closeDialog(el.actionDialog);
+  });
+  el.dialogConfirm.addEventListener("click", confirmAction);
+  el.sourceClose.addEventListener("click", function () { closeDialog(el.sourceDialog); });
+  el.actionDialog.addEventListener("cancel", function () { state.pendingAction = null; });
+  el.reviewAttest.addEventListener("change", function () { el.dialogError.textContent = ""; });
+  el.reviewNote.addEventListener("input", function () { el.dialogError.textContent = ""; });
+
+  resetDemo();
+}());
+</script>
+</body>
+</html>

@@ -1,0 +1,718 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Capacity command view | Illustrative provider demo</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+body { --brand: var(--accent); --brand-dark: var(--accent-strong); }
+.workspace { width: min(1500px, calc(100% - 36px)); margin: 0 auto; padding: 27px 0 30px; }
+.title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 18px; }
+.eyebrow { margin: 0 0 5px; color: var(--accent-strong); font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+h1 { margin: 0; font-size: clamp(24px, 3vw, 34px); line-height: 1.16; letter-spacing: -.02em; }
+.lede { max-width: 760px; margin: 8px 0 0; color: var(--muted); }
+.context-band { padding: 13px 15px; margin-bottom: 16px; }
+.context-band .facts { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.command-layout { display: grid; grid-template-columns: minmax(235px, .9fr) minmax(380px, 1.7fr) minmax(205px, .8fr); gap: 15px; align-items: start; }
+.queue-card, .detail-card, .outlook-card { min-width: 0; }
+.queue-tools { display: flex; flex-wrap: wrap; gap: 7px; padding: 11px 15px; border-bottom: 1px solid var(--line-soft); }
+.queue-list { display: grid; gap: 8px; padding: 10px; }
+.queue-item { width: 100%; display: grid; gap: 5px; text-align: left; padding: 11px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--ink); cursor: pointer; }
+.queue-item:hover { border-color: var(--accent-line); background: var(--accent-soft); }
+.queue-item[aria-current="true"] { border-color: var(--accent); box-shadow: inset 3px 0 var(--accent); background: var(--accent-soft); }
+.queue-top, .detail-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.queue-id { font: 600 12px var(--mono); color: var(--muted); }
+.queue-item strong { font-size: 14px; font-weight: 650; }
+.queue-meta { color: var(--muted); font-size: 12.5px; }
+.queue-empty { margin: 4px; padding: 18px 10px; color: var(--muted); text-align: center; }
+.detail-card .card-body { display: grid; gap: 16px; }
+.detail-title { margin: 2px 0 0; font-size: 20px; line-height: 1.2; }
+.detail-subtitle { margin: 3px 0 0; color: var(--muted); font-size: 13px; }
+.section-label { margin: 0 0 7px; color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.evidence-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.evidence-box { padding: 9px 10px; background: var(--surface-2); border: 1px solid var(--line-soft); border-radius: var(--radius); }
+.evidence-box dt { color: var(--muted); font-size: 11.5px; }
+.evidence-box dd { margin: 2px 0 0; font-size: 13.5px; font-weight: 600; }
+.source-note { margin: 0; padding: 10px 11px; border-left: 3px solid var(--accent); background: var(--bg); color: var(--ink-soft); font-size: 13.5px; }
+.source-note strong { color: var(--ink); }
+.review-box { padding: 12px; background: var(--accent-soft); border: 1px solid var(--accent-line); border-radius: var(--radius); }
+.review-box p { margin: 0 0 9px; font-size: 13px; }
+.review-box label { display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px; }
+.review-box input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; accent-color: var(--accent); }
+.review-box textarea { width: 100%; min-height: 58px; resize: vertical; margin-top: 10px; padding: 8px 9px; border: 1px solid var(--line); border-radius: var(--radius); color: var(--ink); background: var(--surface); font: inherit; font-size: 13px; }
+.action-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px; }
+.action-row .status-line { flex: 1 1 220px; }
+.outlook-card .card-body { display: grid; gap: 16px; }
+.outlook-number { display: block; font-size: 27px; font-weight: 650; line-height: 1; }
+.outlook-label { display: block; margin-top: 4px; color: var(--muted); font-size: 12.5px; }
+.bar-wrap { display: grid; gap: 7px; }
+.bar-label { display: flex; justify-content: space-between; gap: 8px; font-size: 12.5px; }
+.bar-label span:last-child { color: var(--muted); font-family: var(--mono); font-size: 12px; }
+.bar { height: 8px; overflow: hidden; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line); }
+.bar > span { display: block; height: 100%; background: var(--accent); }
+.bar.warn > span { background: var(--warn); }
+.scope-list { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+.scope-list li { padding-bottom: 7px; border-bottom: 1px solid var(--line-soft); font-size: 12.5px; }
+.scope-list li:last-child { padding-bottom: 0; border-bottom: 0; }
+.scope-list a { color: var(--accent-strong); font-weight: 600; }
+.scope-list small { display: block; color: var(--muted); }
+.state-result { margin: 0; }
+.state-result.notice { align-items: flex-start; }
+.state-result strong { display: block; }
+.detail-card.is-working { border-color: var(--accent); }
+.detail-card.is-result { border-color: var(--ok); }
+.detail-card.is-exception { border-color: var(--warn); }
+
+@media (max-width: 1100px) {
+  .context-band .facts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .command-layout { grid-template-columns: minmax(220px, .85fr) minmax(360px, 1.6fr); }
+  .outlook-card { grid-column: 1 / -1; }
+  .outlook-card .card-body { grid-template-columns: 1fr 1.5fr 1.4fr; align-items: start; }
+}
+@media (max-width: 760px) {
+  .workspace { width: min(100% - 24px, 620px); padding-top: 20px; }
+  .title-row { display: block; }
+  .title-row .btn { margin-top: 13px; }
+  .context-band .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .command-layout { grid-template-columns: 1fr; }
+  .outlook-card { grid-column: auto; }
+  .outlook-card .card-body { grid-template-columns: 1fr; }
+  .evidence-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 420px) {
+  .workspace { width: calc(100% - 20px); }
+  .context-band .facts, .evidence-grid { grid-template-columns: 1fr; }
+  .appbar { padding-left: 10px; padding-right: 10px; }
+  .disclosure { order: 3; width: 100%; justify-content: center; }
+}
+  </style>
+</head>
+<body data-subvertical="health-providers">
+  <header class="appbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">[+]</span>
+      <div>
+        <span class="brand-name">Flow command</span>
+        <span class="brand-sub">Care delivery operations workspace</span>
+      </div>
+    </div>
+    <p class="disclosure">Illustrative demo - synthetic data</p>
+    <p class="who"><b>Alex Morgan, COO</b> · Northstar Health (fictional)</p>
+  </header>
+
+  <main class="workspace">
+    <div class="title-row">
+      <div>
+        <p class="eyebrow">Care Delivery &amp; Clinical Operations · Assessment</p>
+        <h1>Capacity command view</h1>
+        <p class="lede">Review discharge barriers that may be holding beds longer than planned, then route a human-owned next step to the flow huddle.</p>
+      </div>
+      <button class="btn" id="resetButton" type="button">Reset demo</button>
+    </div>
+
+    <section class="card context-band" aria-labelledby="context-heading">
+      <h2 class="sr-only" id="context-heading">Operational context</h2>
+      <dl class="facts">
+        <div><dt>Workspace</dt><dd>Northstar Health / Riverside campus</dd></div>
+        <div><dt>Sample snapshot</dt><dd>Tuesday, 09:20</dd></div>
+        <div><dt>View</dt><dd>42 staffed beds in scope</dd></div>
+        <div><dt>Grounding</dt><dd>Confirmed input</dd></div>
+        <div><dt>Starting motion</dt><dd>Analytics assessment</dd></div>
+      </dl>
+    </section>
+
+    <div class="command-layout">
+      <section class="card queue-card" aria-labelledby="queue-heading">
+        <div class="card-head">
+          <h2 id="queue-heading">Discharge readiness queue</h2>
+          <span class="card-note" id="queueCount">4 records</span>
+        </div>
+        <div class="queue-tools" aria-label="Queue filters">
+          <button class="chip" type="button" data-filter="all" aria-pressed="true">All</button>
+          <button class="chip" type="button" data-filter="review" aria-pressed="false">Needs review</button>
+          <button class="chip" type="button" data-filter="exception" aria-pressed="false">Exceptions</button>
+        </div>
+        <div class="queue-list" id="queueList" role="list"></div>
+      </section>
+
+      <section class="card detail-card" id="detailCard" aria-labelledby="detailHeading">
+        <div class="card-head">
+          <div>
+            <h2 id="detailHeading">Work item review</h2>
+            <span class="card-note">One accountable owner before any operational change</span>
+          </div>
+          <span class="tag tag-warn" id="stateTag">Ready for review</span>
+        </div>
+        <div class="card-body">
+          <div class="detail-top">
+            <div>
+              <span class="queue-id" id="detailId"></span>
+              <h3 class="detail-title" id="detailTitle"></h3>
+              <p class="detail-subtitle" id="detailSubtitle"></p>
+            </div>
+            <span class="tag" id="confidenceTag"></span>
+          </div>
+
+          <div>
+            <p class="section-label">Evidence used for ranking</p>
+            <dl class="evidence-grid" id="evidenceGrid"></dl>
+          </div>
+
+          <div>
+            <p class="section-label">Why it is surfaced</p>
+            <p class="source-note" id="sourceNote"></p>
+          </div>
+
+          <div class="review-box">
+            <p><strong>Human review required.</strong> The view recommends a workflow handoff; it does not make a discharge decision.</p>
+            <label>
+              <input id="reviewCheck" type="checkbox">
+              <span>I reviewed the synthetic evidence and agree this needs the next accountable owner.</span>
+            </label>
+            <label class="sr-only" for="reviewNote">Review rationale</label>
+            <textarea id="reviewNote" rows="2" placeholder="Add a short rationale for the flow huddle record"></textarea>
+            <div class="action-row">
+              <button class="btn btn-primary" id="primaryAction" type="button">Create huddle task</button>
+              <p class="status-line" id="statusLine" aria-live="polite">Select the evidence, then confirm the review.</p>
+            </div>
+          </div>
+
+          <div id="stateMessage" class="state-result" hidden></div>
+
+          <div>
+            <p class="section-label">Audit trail</p>
+            <ul class="audit" id="auditTrail"></ul>
+          </div>
+        </div>
+      </section>
+
+      <aside class="card outlook-card" aria-labelledby="outlook-heading">
+        <div class="card-head">
+          <h2 id="outlook-heading">Flow outlook</h2>
+          <span class="card-note">Sample data</span>
+        </div>
+        <div class="card-body">
+          <div>
+            <span class="outlook-number">38 / 42</span>
+            <span class="outlook-label">occupied / staffed beds</span>
+          </div>
+          <div class="bar-wrap" aria-label="Bed occupancy sample">
+            <div class="bar-label"><span>Occupied</span><span>90%</span></div>
+            <div class="bar"><span style="width: 90%"></span></div>
+            <div class="bar-label"><span>Expected discharges</span><span>5</span></div>
+            <div class="bar warn"><span style="width: 42%"></span></div>
+            <div class="bar-label"><span>Pending admissions</span><span>7</span></div>
+            <div class="bar"><span style="width: 58%"></span></div>
+          </div>
+          <div>
+            <p class="section-label">Assessment scope</p>
+            <ul class="scope-list">
+              <li><a href="https://learn.microsoft.com/fabric/" target="_blank" rel="noreferrer">Microsoft Fabric</a><small>Fabric (New Analytics)</small></li>
+              <li><a href="https://learn.microsoft.com/azure/databricks/" target="_blank" rel="noreferrer">Azure Databricks</a><small>Databricks (Analytics Migration / New)</small></li>
+              <li><a href="https://learn.microsoft.com/azure/machine-learning/" target="_blank" rel="noreferrer">Azure Machine Learning</a><small>AI: Azure Machine Learning</small></li>
+              <li><a href="https://learn.microsoft.com/power-bi/" target="_blank" rel="noreferrer">Power BI</a><small>Fabric (Power BI)</small></li>
+            </ul>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="built"><span>Catalog workloads</span><span class="svc-chip">Fabric (New Analytics)</span><span class="svc-chip">Databricks (Analytics Migration / New)</span><span class="svc-chip">AI: Azure Machine Learning</span><span class="svc-chip">Fabric (Power BI)</span></div>
+    <div class="claim"><b>Catalog value:</b> length-of-stay and throughput analytics reduce avoidable bed-days, increase effective capacity, and lower cost per case.</div>
+  </footer>
+
+  <script>
+    "use strict";
+
+    const FIXTURE = {
+      records: [
+        {
+          id: "FLOW-014",
+          location: "5 West",
+          service: "General medicine",
+          stay: "Day 5",
+          readiness: "At risk",
+          confidence: "High confidence",
+          confidenceTone: "ok",
+          barrier: "Home oxygen delivery",
+          detail: "The sample case-management feed has no delivery confirmation for the planned home oxygen equipment.",
+          source: "ADT event stream + case-management queue",
+          updated: "09:15",
+          owner: "Case management",
+          action: "Create huddle task",
+          category: "review",
+          defaultNote: "Confirm delivery timing with case management before the flow huddle."
+        },
+        {
+          id: "FLOW-021",
+          location: "3 East",
+          service: "Surgical step-down",
+          stay: "Day 4",
+          readiness: "Data conflict",
+          confidence: "Low confidence",
+          confidenceTone: "warn",
+          barrier: "Expected discharge date conflict",
+          detail: "The synthetic ADT feed and case-management queue disagree on the expected discharge date.",
+          source: "ADT event stream vs. case-management queue",
+          updated: "09:11",
+          owner: "Case management",
+          action: "Escalate for data check",
+          category: "exception",
+          defaultNote: "Ask case management to reconcile the two source records before acting."
+        },
+        {
+          id: "FLOW-033",
+          location: "4 North",
+          service: "Cardiology",
+          stay: "Day 3",
+          readiness: "On track",
+          confidence: "High confidence",
+          confidenceTone: "ok",
+          barrier: "No active barrier identified",
+          detail: "The synthetic source slices agree that the next readiness review is already assigned.",
+          source: "ADT event stream + flow huddle roster",
+          updated: "09:08",
+          owner: "Unit flow lead",
+          action: "Create huddle task",
+          category: "all",
+          defaultNote: "Keep the existing owner and review at the next flow huddle."
+        },
+        {
+          id: "FLOW-040",
+          location: "2 South",
+          service: "General medicine",
+          stay: "Day 6",
+          readiness: "At risk",
+          confidence: "Medium confidence",
+          confidenceTone: "warn",
+          barrier: "Transport arrangement not confirmed",
+          detail: "A transport request is present, but the synthetic dispatch status has not been refreshed.",
+          source: "Case-management queue + transport status feed",
+          updated: "08:57",
+          owner: "Unit flow lead",
+          action: "Create huddle task",
+          category: "review",
+          defaultNote: "Verify the dispatch status with the unit flow lead."
+        }
+      ],
+      originalRecords: null,
+      selectedId: "FLOW-014",
+      filter: "all",
+      state: "ready",
+      audit: [
+        { time: "09:20", actor: "System", text: "Assessment snapshot refreshed from synthetic source slices." }
+      ]
+    };
+    FIXTURE.originalRecords = FIXTURE.records.map((record) => ({ ...record }));
+
+    const elements = {
+      queueList: document.getElementById("queueList"),
+      queueCount: document.getElementById("queueCount"),
+      detailCard: document.getElementById("detailCard"),
+      detailId: document.getElementById("detailId"),
+      detailTitle: document.getElementById("detailTitle"),
+      detailSubtitle: document.getElementById("detailSubtitle"),
+      confidenceTag: document.getElementById("confidenceTag"),
+      evidenceGrid: document.getElementById("evidenceGrid"),
+      sourceNote: document.getElementById("sourceNote"),
+      reviewCheck: document.getElementById("reviewCheck"),
+      reviewNote: document.getElementById("reviewNote"),
+      primaryAction: document.getElementById("primaryAction"),
+      statusLine: document.getElementById("statusLine"),
+      stateTag: document.getElementById("stateTag"),
+      stateMessage: document.getElementById("stateMessage"),
+      auditTrail: document.getElementById("auditTrail"),
+      resetButton: document.getElementById("resetButton")
+    };
+
+    function selectedRecord() {
+      return FIXTURE.records.find((record) => record.id === FIXTURE.selectedId) || FIXTURE.records[0];
+    }
+
+    function makeElement(tag, className, text) {
+      const element = document.createElement(tag);
+      if (className) element.className = className;
+      if (text !== undefined) element.textContent = text;
+      return element;
+    }
+
+    function statusClass(record) {
+      if (record.status === "Escalated") return "tag-warn";
+      if (record.status === "Review task created") return "tag-ok";
+      if (record.readiness === "On track") return "tag-ok";
+      if (record.confidenceTone === "warn") return "tag-warn";
+      return "tag-warn";
+    }
+
+    function visibleRecords() {
+      return FIXTURE.records.filter((record) => {
+        if (FIXTURE.filter === "all") return true;
+        if (FIXTURE.filter === "exception") return record.category === "exception" || record.status === "Escalated";
+        return record.category === "review" && record.status !== "Review task created";
+      });
+    }
+
+    function renderQueue() {
+      elements.queueList.replaceChildren();
+      const records = visibleRecords();
+      elements.queueCount.textContent = records.length + (records.length === 1 ? " record" : " records");
+      if (!records.length) {
+        elements.queueList.appendChild(makeElement("p", "queue-empty", "No work items match this view."));
+        return;
+      }
+      records.forEach((record) => {
+        const button = makeElement("button", "queue-item");
+        button.type = "button";
+        button.setAttribute("role", "listitem");
+        button.setAttribute("aria-current", record.id === FIXTURE.selectedId ? "true" : "false");
+        button.addEventListener("click", () => selectRecord(record.id));
+        const top = makeElement("span", "queue-top");
+        top.append(
+          makeElement("span", "queue-id", record.id),
+          makeElement("span", "tag " + statusClass(record), record.status || record.readiness)
+        );
+        button.append(top, makeElement("strong", "", record.barrier), makeElement("span", "queue-meta", record.location + " · " + record.service + " · updated " + record.updated));
+        elements.queueList.appendChild(button);
+      });
+    }
+
+    function renderEvidence(record) {
+      const facts = [
+        ["Location", record.location],
+        ["Service", record.service],
+        ["Length of stay", record.stay],
+        ["Readiness", record.readiness],
+        ["Owner", record.owner],
+        ["Last update", record.updated]
+      ];
+      elements.evidenceGrid.replaceChildren();
+      facts.forEach(([label, value]) => {
+        const wrapper = makeElement("div", "evidence-box");
+        wrapper.append(makeElement("dt", "", label), makeElement("dd", "", value));
+        elements.evidenceGrid.appendChild(wrapper);
+      });
+    }
+
+    function renderAudit() {
+      elements.auditTrail.replaceChildren();
+      FIXTURE.audit.forEach((entry) => {
+        const item = document.createElement("li");
+        const time = makeElement("time", "", entry.time);
+        const text = document.createElement("span");
+        text.append(makeElement("span", "actor " + (entry.actor === "System" ? "is-system" : "is-human"), entry.actor + ": "), document.createTextNode(entry.text));
+        item.append(time, text);
+        elements.auditTrail.appendChild(item);
+      });
+    }
+
+    function setStateMessage(type, title, detail) {
+      elements.stateMessage.replaceChildren();
+      elements.stateMessage.className = "state-result notice notice-" + type;
+      elements.stateMessage.hidden = false;
+      elements.stateMessage.append(makeElement("div", "", title), makeElement("span", "notice-note", detail));
+    }
+
+    function clearStateMessage() {
+      elements.stateMessage.hidden = true;
+      elements.stateMessage.replaceChildren();
+      elements.stateMessage.className = "state-result";
+    }
+
+    function renderDetail() {
+      const record = selectedRecord();
+      const complete = elements.reviewCheck.checked;
+      elements.detailCard.classList.remove("is-working", "is-result", "is-exception");
+      if (FIXTURE.state === "working") elements.detailCard.classList.add("is-working");
+      if (FIXTURE.state === "result") elements.detailCard.classList.add("is-result");
+      if (FIXTURE.state === "exception") elements.detailCard.classList.add("is-exception");
+      elements.detailId.textContent = record.id;
+      elements.detailTitle.textContent = record.barrier;
+      elements.detailSubtitle.textContent = record.location + " · " + record.service + " · synthetic operational record";
+      elements.confidenceTag.textContent = record.confidence;
+      elements.confidenceTag.className = "tag " + (record.confidenceTone === "ok" ? "tag-ok" : "tag-warn");
+      elements.sourceNote.replaceChildren(
+        makeElement("strong", "", "Signal: "),
+        document.createTextNode(record.detail + " "),
+        makeElement("strong", "", "Source: "),
+        document.createTextNode(record.source + ". Refreshed " + record.updated + ".")
+      );
+      elements.stateTag.textContent = record.status || (FIXTURE.state === "exception" ? "Escalation required" : FIXTURE.state === "result" ? "Task created" : "Ready for review");
+      elements.stateTag.className = "tag " + (FIXTURE.state === "result" ? "tag-ok" : FIXTURE.state === "exception" ? "tag-warn" : "tag-warn");
+      elements.primaryAction.textContent = record.status === "Escalated" ? "Escalated to case management" : record.status === "Review task created" ? "Huddle task created" : record.action;
+      elements.primaryAction.disabled = !complete || FIXTURE.state === "working" || record.status === "Escalated" || record.status === "Review task created";
+      if (FIXTURE.state === "working") elements.statusLine.textContent = "Writing the reversible handoff to the synthetic flow-huddle queue...";
+      else if (record.status === "Review task created") elements.statusLine.textContent = "Human-owned task is ready for the flow huddle.";
+      else if (record.status === "Escalated") elements.statusLine.textContent = "Data reconciliation is required before a workflow handoff.";
+      else if (record.confidenceTone === "warn") elements.statusLine.textContent = "Low or medium confidence: review the source context before escalating.";
+      else if (!complete) elements.statusLine.textContent = "Select the evidence, then confirm the review.";
+      else elements.statusLine.textContent = "Ready to record the next accountable owner.";
+      renderEvidence(record);
+      renderAudit();
+    }
+
+    function selectRecord(id) {
+      FIXTURE.selectedId = id;
+      FIXTURE.state = "ready";
+      elements.reviewCheck.checked = false;
+      elements.reviewNote.value = "";
+      clearStateMessage();
+      renderQueue();
+      renderDetail();
+    }
+
+    function addAudit(text) {
+      FIXTURE.audit.push({ time: "09:20", actor: "Alex Morgan", text });
+    }
+
+    function completePrimaryAction() {
+      const record = selectedRecord();
+      if (!elements.reviewCheck.checked || elements.primaryAction.disabled) return;
+      FIXTURE.state = "working";
+      renderDetail();
+      window.setTimeout(() => {
+        if (record.confidenceTone === "warn" && record.category === "exception") {
+          record.status = "Escalated";
+          FIXTURE.state = "exception";
+          addAudit("Escalated " + record.id + " to case management for source reconciliation.");
+          setStateMessage("warn", "Escalation recorded", "No operational change was made. A case-management owner must reconcile the source conflict.");
+        } else {
+          record.status = "Review task created";
+          FIXTURE.state = "result";
+          const rationale = elements.reviewNote.value.trim();
+          addAudit("Created a reversible huddle task for " + record.id + (rationale ? " with review rationale." : "."));
+          setStateMessage("ok", "Huddle task created", "The synthetic task is ready for human follow-up; it does not change a discharge status or bed assignment.");
+        }
+        renderQueue();
+        renderDetail();
+      }, 420);
+    }
+
+    function resetDemo() {
+      FIXTURE.records = FIXTURE.originalRecords.map((record) => ({ ...record }));
+      FIXTURE.selectedId = "FLOW-014";
+      FIXTURE.filter = "all";
+      FIXTURE.state = "ready";
+      FIXTURE.audit = [{ time: "09:20", actor: "System", text: "Assessment snapshot refreshed from synthetic source slices." }];
+      elements.reviewCheck.checked = false;
+      elements.reviewNote.value = "";
+      document.querySelectorAll("[data-filter]").forEach((button) => button.setAttribute("aria-pressed", button.dataset.filter === "all" ? "true" : "false"));
+      clearStateMessage();
+      renderQueue();
+      renderDetail();
+      elements.resetButton.focus();
+    }
+
+    document.querySelectorAll("[data-filter]").forEach((button) => {
+      button.addEventListener("click", () => {
+        FIXTURE.filter = button.dataset.filter;
+        document.querySelectorAll("[data-filter]").forEach((item) => item.setAttribute("aria-pressed", item === button ? "true" : "false"));
+        renderQueue();
+      });
+    });
+    elements.reviewCheck.addEventListener("change", renderDetail);
+    elements.primaryAction.addEventListener("click", completePrimaryAction);
+    elements.resetButton.addEventListener("click", resetDemo);
+    renderQueue();
+    renderDetail();
+  </script>
+</body>
+</html>

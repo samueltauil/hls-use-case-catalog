@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Engagement routing workbench — illustrative demo</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 42px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent-strong); border-color: var(--accent-strong); color: var(--on-accent); }
+.btn-primary:hover:not(:disabled) { background: var(--ink); border-color: var(--ink); }
+.btn-secondary { color: var(--accent-strong); border-color: var(--accent-line); }
+.btn-secondary:hover:not(:disabled) { background: var(--accent-soft); border-color: var(--accent-strong); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 22px; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+  </style>
+  <style>
+    body {
+      --on-accent: #ffffff;
+      --route-ink: var(--accent-strong);
+      --route-tint: var(--accent-soft);
+      --route-rule: var(--accent-line);
+    }
+
+    button { font-family: inherit; }
+    .workspace {
+      width: min(100%, 1640px);
+      margin-inline: auto;
+      padding: 18px 20px 30px;
+      display: grid;
+      grid-template-columns: minmax(238px, 270px) minmax(0, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+    .queue { min-width: 0; overflow: hidden; }
+    .queue-head { padding: 14px 15px 10px; }
+    .queue-head h1 { margin: 0; font-size: 16px; line-height: 1.35; }
+    .queue-head p { margin: 4px 0 0; color: var(--muted); font-size: 12.5px; }
+    .queue-list { list-style: none; margin: 0; padding: 0 9px 10px; display: grid; gap: 7px; }
+    .queue-list li { min-width: 0; }
+    .queue-item {
+      width: 100%; min-width: 0; display: grid; gap: 5px; text-align: left;
+      padding: 10px 11px; border: 1px solid var(--line); border-left: 3px solid var(--line);
+      border-radius: var(--radius); background: var(--surface); color: var(--ink);
+      font: inherit; cursor: pointer;
+    }
+    .queue-item:hover { border-color: var(--muted-soft); }
+    .queue-item[aria-current="true"] { border-color: var(--accent-strong); border-left-color: var(--accent-strong); background: var(--accent-soft); }
+    .queue-item-top { display: flex; align-items: center; justify-content: space-between; gap: 7px; }
+    .queue-id { color: var(--muted); font: 12px/1.4 var(--mono); }
+    .queue-title { font-size: 13.5px; line-height: 1.35; font-weight: 600; }
+    .queue-detail { color: var(--muted); font-size: 12px; }
+    .queue-foot { margin: 0 14px 13px; padding-top: 10px; border-top: 1px solid var(--line-soft); color: var(--muted); font-size: 12px; }
+
+    .case-pane { min-width: 0; overflow: hidden; }
+    .case-head {
+      padding: 16px 18px 14px; display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 14px; border-bottom: 1px solid var(--line-soft);
+    }
+    .case-heading { min-width: 0; }
+    .eyebrow { margin: 0 0 3px; color: var(--muted); font-size: 11.5px; font-weight: 600; letter-spacing: .02em; }
+    .case-head h2 { margin: 0; font-size: clamp(18px, 2vw, 23px); line-height: 1.25; }
+    .case-head .case-subtitle { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+    .case-head .btn { flex: none; }
+    .case-content {
+      padding: 17px 18px 19px; display: grid;
+      grid-template-columns: minmax(0, 1.08fr) minmax(300px, .92fr);
+      gap: 17px; align-items: start;
+    }
+    .primary-object, .review-column { min-width: 0; }
+    .object-label { margin: 0 0 7px; color: var(--muted); font-size: 12px; font-weight: 600; }
+    .participant-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-bottom: 13px; }
+    .participant { font-weight: 600; }
+    .participant-meta { color: var(--muted); font-size: 12.5px; }
+    .fact-line { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 0 0 15px; padding: 10px 0; border-block: 1px solid var(--line-soft); }
+    .fact { min-width: 0; }
+    .fact dt { color: var(--muted); font-size: 11.5px; }
+    .fact dd { margin: 1px 0 0; font-size: 13px; font-weight: 600; }
+    .message-label { margin: 0 0 6px; font-size: 12px; color: var(--muted); font-weight: 600; }
+    .intake-message {
+      margin: 0; padding: 12px 13px; background: var(--surface-2);
+      border-left: 3px solid var(--accent); border-radius: 0 var(--radius) var(--radius) 0;
+      font-size: 15px; line-height: 1.55;
+    }
+    .message-source { display: block; margin-top: 8px; color: var(--muted); font-size: 11.5px; font-style: normal; }
+    .object-note { margin: 12px 0 0; color: var(--muted); font-size: 12.5px; }
+
+    .decision-card { border: 1px solid var(--line); border-top: 3px solid var(--accent); border-radius: var(--radius); overflow: hidden; }
+    .decision-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 13px 10px; }
+    .decision-head h3 { margin: 0; font-size: 15px; }
+    .decision-body { padding: 0 13px 13px; }
+    .decision-intro { margin: 0 0 12px; color: var(--ink-soft); font-size: 13px; }
+    .route-track {
+      display: grid; grid-template-columns: minmax(0, 1fr) 22px minmax(0, 1fr) 22px minmax(0, 1fr);
+      align-items: center; gap: 4px; margin: 12px 0 14px;
+    }
+    .route-step {
+      min-width: 0; min-height: 54px; display: grid; align-content: center; gap: 2px;
+      padding: 7px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface);
+    }
+    .route-step.active { border-color: var(--route-rule); background: var(--route-tint); }
+    .route-step-label { color: var(--muted); font-size: 10.5px; line-height: 1.25; }
+    .route-step-value { font-size: 11.5px; line-height: 1.3; font-weight: 600; overflow-wrap: anywhere; }
+    .route-arrow { color: var(--muted); text-align: center; font-size: 15px; }
+    .recommendation {
+      padding: 11px 12px; border: 1px solid var(--route-rule); border-radius: var(--radius);
+      background: var(--route-tint);
+    }
+    .recommendation h4, .exception-panel h4 { margin: 0 0 5px; font-size: 13.5px; }
+    .recommendation p, .exception-panel p { margin: 0; font-size: 13px; line-height: 1.5; }
+    .recommendation .route-destination { display: block; margin: 3px 0 6px; color: var(--route-ink); font-size: 15px; font-weight: 700; }
+    .exception-panel {
+      padding: 11px 12px; border: 1px solid #e6d08a; border-radius: var(--radius);
+      background: var(--warn-bg);
+    }
+    .exception-panel p { color: #5f4108; }
+    .evidence-details { margin-top: 10px; border-top: 1px solid var(--line-soft); }
+    .evidence-details summary { width: fit-content; padding: 9px 0 1px; color: var(--accent-strong); font-size: 12.5px; font-weight: 600; cursor: pointer; }
+    .evidence-list { margin: 7px 0 0; padding-left: 19px; color: var(--ink-soft); font-size: 12px; }
+    .evidence-list li + li { margin-top: 4px; }
+    .decision-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .decision-actions .btn { flex: 1 1 180px; justify-content: center; }
+    .safe-boundary { margin: 11px 0 0; padding: 9px 10px; border: 1px solid var(--line-soft); border-radius: var(--radius); color: var(--muted); font-size: 11.5px; }
+    .safe-boundary strong { color: var(--ink-soft); }
+    .completion {
+      margin-top: 11px; padding: 11px 12px; border: 1px solid #a7d9a7;
+      border-radius: var(--radius); background: var(--ok-bg); color: #0b5c0b;
+    }
+    .completion.escalated { border-color: #e6d08a; background: var(--warn-bg); color: #5f4108; }
+    .completion h4 { margin: 0 0 3px; font-size: 13.5px; }
+    .completion p { margin: 0; font-size: 12.5px; }
+    .completion .receipt { display: block; margin-top: 5px; font: 11.5px/1.45 var(--mono); overflow-wrap: anywhere; }
+    .feedback { margin: 10px 0 0; color: var(--muted); font-size: 12px; min-height: 19px; }
+    .workload-note { padding: 11px 18px 13px; border-top: 1px solid var(--line-soft); color: var(--muted); font-size: 11.5px; }
+    .workload-list { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+    .workload-chip { display: inline-flex; padding: 3px 7px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface-2); color: var(--ink-soft); font-size: 11px; }
+
+    @media (max-width: 1100px) {
+      .case-content { grid-template-columns: minmax(0, 1fr); }
+      .review-column { max-width: none; }
+    }
+    @media (max-width: 760px) {
+      .workspace { grid-template-columns: minmax(0, 1fr); padding: 13px 12px 22px; gap: 12px; }
+      .queue-list { grid-template-columns: repeat(2, minmax(0, 1fr)); padding-inline: 9px; }
+      .queue-foot { margin-bottom: 11px; }
+      .case-head { padding: 13px 13px 11px; }
+      .case-content { padding: 13px; gap: 14px; }
+      .workload-note { padding-inline: 13px; }
+    }
+    @media (max-width: 430px) {
+      .appbar { gap: 7px 10px; padding: 8px 11px; }
+      .brand { margin-right: 0; flex-basis: 100%; }
+      .brand-sub { display: none; }
+      .who { font-size: 12px; }
+      .disclosure { font-size: 11px; padding: 4px 8px; }
+      .workspace { padding-inline: 9px; }
+      .queue-list { grid-template-columns: minmax(0, 1fr); }
+      .case-head { align-items: flex-start; }
+      .case-head .btn { min-height: 38px; padding: 7px 9px; font-size: 12.5px; }
+      .route-track { grid-template-columns: minmax(0, 1fr) 15px minmax(0, 1fr) 15px minmax(0, 1fr); gap: 2px; }
+      .route-step { padding: 6px 5px; }
+      .route-step-label { font-size: 9.5px; }
+      .route-step-value { font-size: 10.5px; }
+      .decision-actions .btn { flex-basis: 100%; }
+    }
+  </style>
+</head>
+<body data-subvertical="medtech">
+  <header class="appbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">◆</span>
+      <div>
+        <span class="brand-name">Pathway</span>
+        <span class="brand-sub">Engagement operations</span>
+      </div>
+    </div>
+    <p class="who">Workspace · <b>Care navigation coordinator</b></p>
+    <p class="disclosure"><span aria-hidden="true">●</span> Illustrative demo - synthetic data</p>
+  </header>
+
+  <main class="workspace">
+    <aside class="queue card" aria-labelledby="queue-title">
+      <div class="queue-head">
+        <h1 id="queue-title">Engagement inbox</h1>
+        <p>Sample intakes awaiting a routing decision</p>
+      </div>
+      <nav aria-label="Synthetic intake queue">
+        <ul class="queue-list" id="queue-list"></ul>
+      </nav>
+      <p class="queue-foot">No clinical action is taken automatically. Review each suggestion before deciding.</p>
+    </aside>
+
+    <article class="case-pane card" aria-labelledby="case-title">
+      <header class="case-head">
+        <div class="case-heading">
+          <p class="eyebrow">Upstream engagement · routing review</p>
+          <h2 id="case-title"></h2>
+          <p class="case-subtitle" id="case-subtitle"></p>
+        </div>
+        <button class="btn" id="reset-button" type="button">Reset intake</button>
+      </header>
+
+      <div class="case-content">
+        <section class="primary-object" aria-labelledby="request-title">
+          <p class="object-label" id="request-title">Intake request</p>
+          <div class="participant-row">
+            <span class="participant" id="participant"></span>
+            <span class="participant-meta" id="case-id"></span>
+          </div>
+          <dl class="fact-line">
+            <div class="fact">
+              <dt>Received (sample time)</dt>
+              <dd id="received-time"></dd>
+            </div>
+            <div class="fact">
+              <dt>Stated intent</dt>
+              <dd id="stated-intent"></dd>
+            </div>
+          </dl>
+          <p class="message-label">Participant message · synthetic</p>
+          <blockquote class="intake-message">
+            <span id="message-text"></span>
+            <cite class="message-source">Source: fictional engagement intake · no external records</cite>
+          </blockquote>
+          <p class="object-note">The text is illustrative. It is not a clinical record, diagnosis, or medical advice.</p>
+        </section>
+
+        <section class="review-column" aria-labelledby="decision-title">
+          <div class="decision-card">
+            <div class="decision-head">
+              <h3 id="decision-title">Routing review</h3>
+              <span class="tag" id="state-tag">Awaiting review</span>
+            </div>
+            <div class="decision-body">
+              <p class="decision-intro" id="decision-intro"></p>
+              <div class="route-track" aria-label="Request to human decision to a possible destination">
+                <div class="route-step">
+                  <span class="route-step-label">Source</span>
+                  <span class="route-step-value">Participant request</span>
+                </div>
+                <span class="route-arrow" aria-hidden="true">›</span>
+                <div class="route-step active">
+                  <span class="route-step-label">Decision owner</span>
+                  <span class="route-step-value">Human review</span>
+                </div>
+                <span class="route-arrow" aria-hidden="true">›</span>
+                <div class="route-step" id="destination-step">
+                  <span class="route-step-label">Possible next step</span>
+                  <span class="route-step-value" id="route-step-value">Not assessed</span>
+                </div>
+              </div>
+
+              <div class="recommendation" id="recommendation" hidden>
+                <h4>Illustrative routing suggestion · not yet approved</h4>
+                <span class="route-destination" id="route-destination"></span>
+                <p id="route-rationale"></p>
+                <details class="evidence-details">
+                  <summary>Review cited sample sources</summary>
+                  <ul class="evidence-list" id="evidence-list"></ul>
+                </details>
+              </div>
+
+              <div class="exception-panel" id="exception-panel" hidden>
+                <h4>No safe route suggested</h4>
+                <p id="exception-reason"></p>
+                <details class="evidence-details">
+                  <summary>Review sample review context</summary>
+                  <ul class="evidence-list" id="exception-sources"></ul>
+                </details>
+              </div>
+
+              <div class="completion" id="completion" hidden>
+                <h4 id="completion-title"></h4>
+                <p id="completion-message"></p>
+                <span class="receipt" id="completion-receipt"></span>
+              </div>
+
+              <div class="decision-actions">
+                <button class="btn btn-primary" id="review-button" type="button">Review routing suggestion</button>
+                <button class="btn btn-primary" id="confirm-button" type="button" hidden>Confirm care-coordination handoff</button>
+                <button class="btn btn-secondary" id="escalate-button" type="button" hidden>Escalate to clinician review</button>
+              </div>
+              <p class="safe-boundary"><strong>Human accountability:</strong> this screen does not diagnose, assess urgency, or contact a care team. A coordinator reviews the rationale, can override it, or escalates an unclear request for clinician review.</p>
+              <p class="feedback" id="feedback" role="status" aria-live="polite"></p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <footer class="workload-note">
+        Catalog-listed workload names · illustrative mapping only; no live service connection.
+        <div class="workload-list" aria-label="Catalog workload names">
+          <span class="workload-chip">Azure OpenAI in Azure AI Foundry Models</span>
+          <span class="workload-chip">Azure AI Bot Service</span>
+          <span class="workload-chip">Azure AI Search</span>
+          <span class="workload-chip">Azure App Service</span>
+        </div>
+      </footer>
+    </article>
+  </main>
+
+  <script>
+    "use strict";
+
+    const DEMO_FIXTURES = {
+      cases: [
+        {
+          id: "SIM-0417",
+          title: "Follow-up appointment support",
+          participant: "Fictional participant 01",
+          received: "08:14",
+          intent: "Appointment coordination",
+          message: "I was asked to get back in touch after my last visit. Could someone help me arrange a follow-up?",
+          queueStatus: "Ready for review",
+          route: {
+            destination: "Care coordination follow-up",
+            rationale: "The request is about arranging a follow-up appointment. No diagnostic interpretation is included in this suggestion.",
+            sources: [
+              "Synthetic participant message · SIM-0417 · sample text",
+              "Illustrative navigation guide · revision 0.4 · synthetic source"
+            ]
+          },
+          completion: "Care-coordination handoff staged for human follow-up."
+        },
+        {
+          id: "SIM-0421",
+          title: "New concern · destination unclear",
+          participant: "Fictional participant 02",
+          received: "08:22",
+          intent: "Unmapped care request",
+          message: "I have a new health concern and don't know which team to contact.",
+          queueStatus: "Needs clinician review",
+          exception: {
+            reason: "This request does not match a defined non-clinical route in the synthetic guide. No routing suggestion is shown; send it for clinician review.",
+            sources: [
+              "Synthetic participant message · SIM-0421 · sample text",
+              "Illustrative navigation guide · no mapped route · synthetic source"
+            ]
+          },
+          completion: "Clinician-review escalation staged for human follow-up."
+        }
+      ]
+    };
+
+    const elements = {
+      queue: document.getElementById("queue-list"),
+      caseTitle: document.getElementById("case-title"),
+      caseSubtitle: document.getElementById("case-subtitle"),
+      participant: document.getElementById("participant"),
+      caseId: document.getElementById("case-id"),
+      received: document.getElementById("received-time"),
+      intent: document.getElementById("stated-intent"),
+      message: document.getElementById("message-text"),
+      stateTag: document.getElementById("state-tag"),
+      decisionIntro: document.getElementById("decision-intro"),
+      routeStep: document.getElementById("route-step-value"),
+      recommendation: document.getElementById("recommendation"),
+      routeDestination: document.getElementById("route-destination"),
+      routeRationale: document.getElementById("route-rationale"),
+      evidence: document.getElementById("evidence-list"),
+      exception: document.getElementById("exception-panel"),
+      exceptionReason: document.getElementById("exception-reason"),
+      exceptionSources: document.getElementById("exception-sources"),
+      completion: document.getElementById("completion"),
+      completionTitle: document.getElementById("completion-title"),
+      completionMessage: document.getElementById("completion-message"),
+      completionReceipt: document.getElementById("completion-receipt"),
+      review: document.getElementById("review-button"),
+      confirm: document.getElementById("confirm-button"),
+      escalate: document.getElementById("escalate-button"),
+      reset: document.getElementById("reset-button"),
+      feedback: document.getElementById("feedback")
+    };
+
+    let activeCaseId = DEMO_FIXTURES.cases[0].id;
+    let state = "ready";
+    let reviewTimer = 0;
+
+    function activeCase() {
+      return DEMO_FIXTURES.cases.find((item) => item.id === activeCaseId);
+    }
+
+    function addText(parent, tagName, className, text) {
+      const node = document.createElement(tagName);
+      if (className) node.className = className;
+      node.textContent = text;
+      parent.append(node);
+      return node;
+    }
+
+    function renderQueue() {
+      elements.queue.replaceChildren();
+      DEMO_FIXTURES.cases.forEach((item) => {
+        const listItem = document.createElement("li");
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "queue-item";
+        button.setAttribute("aria-current", String(item.id === activeCaseId));
+
+        const top = document.createElement("span");
+        top.className = "queue-item-top";
+        addText(top, "span", "queue-id", item.id);
+        addText(top, "span", item.exception ? "tag tag-warn" : "tag", item.queueStatus);
+        button.append(top);
+        addText(button, "span", "queue-title", item.title);
+        addText(button, "span", "queue-detail", item.participant);
+
+        button.addEventListener("click", () => selectCase(item.id));
+        listItem.append(button);
+        elements.queue.append(listItem);
+      });
+    }
+
+    function fillList(list, values) {
+      list.replaceChildren();
+      values.forEach((value) => addText(list, "li", "", value));
+    }
+
+    function clearTimer() {
+      if (reviewTimer) window.clearTimeout(reviewTimer);
+      reviewTimer = 0;
+    }
+
+    function selectCase(id) {
+      clearTimer();
+      activeCaseId = id;
+      state = "reset";
+      render();
+      state = "ready";
+      renderDecision();
+    }
+
+    function resetCase() {
+      clearTimer();
+      state = "reset";
+      renderDecision();
+      state = "ready";
+      renderDecision();
+      elements.feedback.textContent = "Review reset. No handoff or escalation was sent.";
+    }
+
+    function render() {
+      const item = activeCase();
+      elements.caseTitle.textContent = item.title;
+      elements.caseSubtitle.textContent = "Synthetic intake · human review required";
+      elements.participant.textContent = item.participant;
+      elements.caseId.textContent = "Intake " + item.id;
+      elements.received.textContent = item.received + " · sample time";
+      elements.intent.textContent = item.intent;
+      elements.message.textContent = "“" + item.message + "”";
+      elements.feedback.textContent = "";
+      renderQueue();
+      renderDecision();
+    }
+
+    function renderDecision() {
+      const item = activeCase();
+      const isWorking = state === "working";
+      const hasRoute = state === "result";
+      const hasException = state === "exception";
+      const isComplete = state === "done" || state === "escalated";
+
+      elements.stateTag.textContent = isWorking ? "Reviewing sample" :
+        hasRoute ? "Human approval required" :
+        hasException ? "Clinician review required" :
+        state === "done" ? "Handoff staged" :
+        state === "escalated" ? "Escalation staged" : "Awaiting review";
+      elements.stateTag.className = "tag" +
+        (hasRoute || state === "done" ? " tag-ok" : hasException || state === "escalated" ? " tag-warn" : "");
+
+      elements.decisionIntro.textContent = isWorking
+        ? "Checking this fictional request against the illustrative navigation guide…"
+        : hasRoute
+          ? "Review the rationale and sample sources. A person must confirm or escalate; this suggestion does not take action."
+          : hasException
+            ? "The review found no mapped non-clinical route. Keep the request with a clinician rather than infer a destination."
+            : isComplete
+              ? "This is a local demonstration state only. No real handoff or message was sent."
+              : "Review the synthetic request against the illustrative navigation guide. Nothing is routed until a person confirms.";
+
+      elements.routeStep.textContent = hasRoute ? "Care coordination" :
+        hasException ? "No route suggested" :
+        state === "done" ? "Human follow-up staged" :
+        state === "escalated" ? "Clinician review staged" : "Not assessed";
+
+      elements.recommendation.hidden = !hasRoute;
+      elements.exception.hidden = !hasException;
+      elements.completion.hidden = !isComplete;
+      elements.review.hidden = !(state === "ready" || isWorking);
+      elements.review.disabled = isWorking;
+      elements.review.textContent = isWorking ? "Reviewing sample…" : "Review routing suggestion";
+      elements.confirm.hidden = !hasRoute;
+      elements.escalate.hidden = !(hasRoute || hasException);
+
+      if (hasRoute) {
+        elements.routeDestination.textContent = item.route.destination;
+        elements.routeRationale.textContent = item.route.rationale;
+        fillList(elements.evidence, item.route.sources);
+      }
+      if (hasException) {
+        elements.exceptionReason.textContent = item.exception.reason;
+        fillList(elements.exceptionSources, item.exception.sources);
+      }
+      if (isComplete) {
+        const escalated = state === "escalated";
+        elements.completion.classList.toggle("escalated", escalated);
+        elements.completionTitle.textContent = escalated ? "Escalation staged for human review" : "Handoff staged for human follow-up";
+        elements.completionMessage.textContent = item.completion + " This is not a live transaction.";
+        elements.completionReceipt.textContent = "DEMO-ONLY · " + item.id + (escalated ? "-CLINICIAN" : "-COORDINATION");
+      }
+      elements.feedback.textContent = isWorking ? "Reviewing synthetic content. No external service is contacted." :
+        hasRoute ? "Suggestion ready. Human confirmation remains required." :
+        hasException ? "No suggestion was generated. Escalation is available." :
+        isComplete ? "State updated locally for this demo." :
+        state === "reset" ? "Review cleared." : "";
+    }
+
+    function reviewSuggestion() {
+      if (state !== "ready") return;
+      state = "working";
+      renderDecision();
+      reviewTimer = window.setTimeout(() => {
+        reviewTimer = 0;
+        state = activeCase().route ? "result" : "exception";
+        renderDecision();
+      }, 350);
+    }
+
+    elements.review.addEventListener("click", reviewSuggestion);
+    elements.confirm.addEventListener("click", () => {
+      if (state !== "result") return;
+      state = "done";
+      renderDecision();
+    });
+    elements.escalate.addEventListener("click", () => {
+      if (state !== "result" && state !== "exception") return;
+      state = "escalated";
+      renderDecision();
+    });
+    elements.reset.addEventListener("click", resetCase);
+
+    render();
+  </script>
+</body>
+</html>

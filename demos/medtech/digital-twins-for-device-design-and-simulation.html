@@ -1,0 +1,793 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#201f1e">
+  <title>Digital twin simulation workbench — illustrative demo</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* -------------------------- digital-twin workbench tokens and layout */
+body[data-subvertical="medtech"] {
+  --on-accent: #ffffff;
+  --demo-max: 1480px;
+  --demo-gap: 16px;
+  --demo-pad: 22px;
+}
+
+.page-shell { width: min(var(--demo-max), 100%); margin: 0 auto; padding: 20px var(--demo-pad) 32px; }
+.page-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin: 0 0 16px; }
+.page-heading h1 { margin: 2px 0 3px; font-size: clamp(20px, 2vw, 26px); line-height: 1.2; font-weight: 650; letter-spacing: -.02em; }
+.eyebrow { margin: 0; color: var(--muted); font-size: 12px; }
+.page-summary { margin: 0; max-width: 75ch; color: var(--ink-soft); font-size: 13.5px; }
+.heading-tools { display: flex; flex: none; align-items: center; gap: 8px; }
+.btn-primary { background: var(--accent-strong); border-color: var(--accent-strong); color: var(--on-accent); }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn:disabled { opacity: 1; color: var(--muted); background: var(--surface-2); border-color: var(--line); }
+.workbench { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(350px, .92fr); gap: var(--demo-gap); align-items: start; }
+.panel { min-width: 0; overflow: hidden; box-shadow: var(--shadow-1); }
+.panel-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 12px 15px; border-bottom: 1px solid var(--line-soft); }
+.panel-heading h2 { margin: 0; font-size: 14px; font-weight: 650; }
+.panel-heading p { margin: 0; color: var(--muted); font-size: 12px; }
+.panel-body { padding: 15px; }
+.work-id { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 8px 14px; margin-bottom: 14px; }
+.work-id h3 { margin: 0; font-size: 18px; line-height: 1.25; font-weight: 650; }
+.work-id p { margin: 3px 0 0; color: var(--muted); font-size: 12.5px; }
+.status-pill { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 999px; padding: 3px 9px; color: var(--ink-soft); background: var(--surface-2); font-size: 12px; white-space: nowrap; }
+.status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+.status-pill[data-tone="ready"] .status-dot { background: var(--accent); }
+.status-pill[data-tone="working"] .status-dot { background: var(--warn); }
+.status-pill[data-tone="result"] .status-dot,
+.status-pill[data-tone="reviewed"] .status-dot { background: var(--ok); }
+.status-pill[data-tone="exception"] .status-dot { background: var(--stop); }
+.assembly-view { border: 1px solid var(--line); background: var(--bg); border-radius: var(--radius); overflow: hidden; }
+.assembly-graphic { display: block; width: 100%; height: auto; min-height: 166px; }
+.assembly-caption { display: flex; justify-content: space-between; gap: 12px; padding: 8px 11px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11.5px; }
+.assembly-caption span:last-child { text-align: right; }
+.facts-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 18px; margin: 13px 0 0; }
+.fact { min-width: 0; padding: 9px 0; border-bottom: 1px solid var(--line-soft); }
+.fact dt { margin: 0 0 2px; color: var(--muted); font-size: 11.5px; }
+.fact dd { margin: 0; font-size: 13px; font-weight: 550; overflow-wrap: anywhere; }
+.section-label { margin: 0 0 8px; color: var(--muted); font-size: 12px; font-weight: 650; }
+.input-summary { margin-top: 15px; padding-top: 13px; border-top: 1px solid var(--line-soft); }
+.input-summary ul { margin: 0; padding-left: 19px; color: var(--ink-soft); font-size: 12.5px; }
+.input-summary li + li { margin-top: 4px; }
+.field { margin: 0 0 12px; }
+.field label { display: block; margin-bottom: 5px; color: var(--ink); font-size: 13px; font-weight: 600; }
+.field select { width: 100%; min-height: 42px; padding: 8px 34px 8px 10px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--ink); font: inherit; font-size: 13px; }
+.field-help { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
+.route-note { margin: 0 0 13px; padding: 9px 10px; border-left: 3px solid var(--accent); background: var(--bg); color: var(--ink-soft); font-size: 12.5px; }
+.primary-action { width: 100%; justify-content: center; min-height: 44px; }
+.run-context { display: grid; grid-template-columns: 1fr 1fr; gap: 9px 15px; margin: 13px 0 0; padding-top: 12px; border-top: 1px solid var(--line-soft); }
+.run-context div { min-width: 0; }
+.run-context dt { color: var(--muted); font-size: 11.5px; }
+.run-context dd { margin: 1px 0 0; font-size: 12.5px; font-weight: 550; overflow-wrap: anywhere; }
+.synthetic-note { margin: 12px 0 0; color: var(--muted); font-size: 11.5px; }
+.workflow-status { margin: 13px 0 0; padding: 9px 10px; min-height: 41px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); color: var(--ink-soft); font-size: 12.5px; }
+.result-panel, .exception-panel { margin-top: var(--demo-gap); }
+.result-panel .panel-body, .exception-panel .panel-body { display: grid; gap: 13px; }
+.result-lead { margin: 0; font-size: 14px; font-weight: 650; }
+.result-caveat { margin: 0; color: var(--muted); font-size: 12.5px; }
+.result-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 0; }
+.result-fact { min-width: 0; padding: 10px; border: 1px solid var(--line); border-radius: var(--radius); }
+.result-fact dt { color: var(--muted); font-size: 11.5px; }
+.result-fact dd { margin: 3px 0 0; font-size: 15px; font-weight: 650; overflow-wrap: anywhere; }
+.review-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 10px; padding-top: 12px; border-top: 1px solid var(--line-soft); }
+.review-form .field { margin: 0; }
+.review-form .field label { margin-bottom: 5px; }
+.review-form .btn { white-space: nowrap; }
+.review-help { grid-column: 1 / -1; margin: -4px 0 0; color: var(--muted); font-size: 12px; }
+.review-receipt { padding: 10px 12px; border: 1px solid #a7d9a7; border-radius: var(--radius); background: var(--ok-bg); color: #0b5c0b; font-size: 13px; }
+.exception-panel { border-color: #e5b4b7; }
+.exception-panel .panel-heading { background: var(--stop-bg); }
+.exception-title { margin: 0; color: #8b1f25; font-size: 15px; font-weight: 650; }
+.exception-copy { margin: 0; color: var(--ink-soft); font-size: 13px; }
+.exception-copy strong { color: var(--ink); }
+.decision-guardrail { margin-top: var(--demo-gap); padding: 12px 14px; border-left: 3px solid var(--accent); background: var(--surface); color: var(--ink-soft); font-size: 12.5px; }
+.decision-guardrail strong { color: var(--ink); }
+.catalog-value { margin: var(--demo-gap) 0 0; color: var(--muted); font-size: 12px; }
+.page-footer { margin-top: var(--demo-gap); padding: 12px 15px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.page-footer h2 { margin: 0 0 7px; font-size: 12px; font-weight: 650; }
+.workload-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.workload-chip { display: inline-flex; align-items: center; min-height: 27px; padding: 3px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface-2); color: var(--ink-soft); font-size: 11.5px; }
+.audit-log { margin-top: var(--demo-gap); }
+.audit-log .panel-body { padding-top: 11px; padding-bottom: 11px; }
+.audit-list { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+.audit-list li { display: grid; grid-template-columns: 78px 140px minmax(0, 1fr); gap: 9px; align-items: start; font-size: 12px; }
+.audit-list time { color: var(--muted); font-family: var(--mono); font-size: 11.5px; }
+.audit-actor { color: var(--ink); font-weight: 600; }
+.audit-detail { min-width: 0; color: var(--ink-soft); overflow-wrap: anywhere; }
+
+@media (max-width: 900px) {
+  .page-shell { padding-top: 16px; }
+  .workbench { grid-template-columns: minmax(0, 1fr); }
+  .run-panel { order: -1; }
+}
+
+@media (max-width: 600px) {
+  body[data-subvertical="medtech"] { --demo-pad: 12px; --demo-gap: 12px; }
+  .page-shell { padding-bottom: 22px; }
+  .page-heading { display: block; margin-bottom: 12px; }
+  .heading-tools { margin-top: 10px; }
+  .heading-tools .btn { min-height: 40px; }
+  .panel-heading { align-items: flex-start; flex-direction: column; gap: 2px; }
+  .panel-body { padding: 12px; }
+  .assembly-graphic { min-height: 130px; }
+  .facts-grid { gap: 0 12px; }
+  .result-facts { grid-template-columns: 1fr; }
+  .review-form { grid-template-columns: 1fr; }
+  .review-form .btn { width: 100%; justify-content: center; }
+  .review-help { grid-column: 1; }
+  .audit-list li { grid-template-columns: 66px minmax(0, 1fr); }
+  .audit-actor { grid-column: 2; grid-row: 1; }
+  .audit-detail { grid-column: 2; grid-row: 2; }
+  .audit-list time { grid-column: 1; grid-row: 1 / span 2; }
+  .run-context { grid-template-columns: 1fr 1fr; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .status-dot[data-pulse="true"] { animation: run-pulse 1s ease-in-out infinite alternate; }
+  @keyframes run-pulse { from { opacity: .45; } to { opacity: 1; } }
+}
+  </style>
+</head>
+<body data-subvertical="medtech">
+  <header class="appbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">◈</span>
+      <div>
+        <span class="brand-name">Engineering workbench</span>
+        <span class="brand-sub">Product innovation and R&amp;D · digital twin simulation</span>
+      </div>
+    </div>
+    <p class="disclosure"><span aria-hidden="true">●</span> Illustrative demo - synthetic data</p>
+    <p class="who"><b id="operator-name">Simulation lead</b> <span id="operator-role"></span></p>
+  </header>
+
+  <main id="main" class="page-shell">
+    <header class="page-heading">
+      <div>
+        <p class="eyebrow" id="program-context"></p>
+        <h1>Simulation run bench</h1>
+        <p class="page-summary">Review one design revision, select a run route, and keep engineering accountable for what happens next.</p>
+      </div>
+      <div class="heading-tools">
+        <button class="btn" id="reset-button" type="button" aria-label="Reset and replay the synthetic run">Reset run</button>
+      </div>
+    </header>
+
+    <div class="workbench" aria-label="Digital twin simulation workbench">
+      <section class="panel card" aria-labelledby="assembly-heading">
+        <div class="panel-heading">
+          <h2 id="assembly-heading">Active assembly</h2>
+          <p>Design record · synthetic fixture</p>
+        </div>
+        <div class="panel-body">
+          <div class="work-id">
+            <div>
+              <h3 id="device-name"></h3>
+              <p><span id="device-revision"></span> · <span id="device-id" class="mono"></span></p>
+            </div>
+            <span class="status-pill" data-tone="ready" id="run-state"><span class="status-dot" aria-hidden="true"></span><span id="run-state-label">Ready to run</span></span>
+          </div>
+
+          <figure class="assembly-view">
+            <svg class="assembly-graphic" viewBox="0 0 720 224" role="img" aria-labelledby="assembly-svg-title assembly-svg-desc">
+              <title id="assembly-svg-title">Illustrative handpiece assembly outline</title>
+              <desc id="assembly-svg-desc">A fictional engineering concept drawing showing a handle, neck, and contact tip with synthetic measurement points.</desc>
+              <rect x="0" y="0" width="720" height="224" fill="#faf9f8"></rect>
+              <path d="M138 103 C153 82 179 73 210 73 H354 C373 73 388 82 397 99 L419 141 C426 154 419 168 404 173 L347 190 H208 C175 190 150 178 138 158 Z" fill="#ffffff" stroke="#605e5c" stroke-width="3"></path>
+              <path d="M397 100 L477 94 Q495 94 504 108 L527 143 Q535 155 524 164 L420 171" fill="none" stroke="#605e5c" stroke-width="3"></path>
+              <path d="M501 108 L565 106 Q579 106 585 118 L598 142 Q603 153 591 159 L528 163" fill="none" stroke="#201f1e" stroke-width="4"></path>
+              <path d="M172 91 Q192 82 216 82 H319" fill="none" stroke="#e1dfdd" stroke-width="2"></path>
+              <path d="M174 164 Q192 179 216 179 H322" fill="none" stroke="#e1dfdd" stroke-width="2"></path>
+              <path d="M250 74 V187 M355 75 V188" stroke="#edebe9" stroke-width="2" stroke-dasharray="5 5"></path>
+              <circle cx="243" cy="130" r="8" fill="#ffffff" stroke="var(--accent-strong)" stroke-width="3"></circle>
+              <circle cx="355" cy="130" r="8" fill="#ffffff" stroke="var(--accent-strong)" stroke-width="3"></circle>
+              <circle cx="572" cy="133" r="8" fill="#ffffff" stroke="var(--accent-strong)" stroke-width="3"></circle>
+              <path d="M243 120 V54 H170" fill="none" stroke="#605e5c" stroke-width="1.5"></path>
+              <path d="M355 120 V42 H440" fill="none" stroke="#605e5c" stroke-width="1.5"></path>
+              <path d="M572 125 V68 H635" fill="none" stroke="#605e5c" stroke-width="1.5"></path>
+              <text x="164" y="47" fill="#3b3a39" font-family="Segoe UI, sans-serif" font-size="13">Handle mount</text>
+              <text x="445" y="47" fill="#3b3a39" font-family="Segoe UI, sans-serif" font-size="13">Neck transition</text>
+              <text x="595" y="62" fill="#3b3a39" font-family="Segoe UI, sans-serif" font-size="13">Contact tip</text>
+              <text x="26" y="208" fill="#605e5c" font-family="Segoe UI, sans-serif" font-size="12">Concept outline · not a validated device model</text>
+            </svg>
+            <figcaption class="assembly-caption">
+              <span>Concept outline · synthetic geometry</span>
+              <span id="assembly-description"></span>
+            </figcaption>
+          </figure>
+
+          <dl class="facts-grid" id="assembly-facts"></dl>
+          <div class="input-summary">
+            <h3 class="section-label">Run inputs in this fixture</h3>
+            <ul id="input-list"></ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel card run-panel" aria-labelledby="run-heading">
+        <div class="panel-heading">
+          <h2 id="run-heading">Run configuration</h2>
+          <p>Next action · engineer-controlled</p>
+        </div>
+        <div class="panel-body">
+          <div class="field">
+            <label for="run-route">Compute route</label>
+            <select id="run-route" aria-describedby="route-help">
+              <option value="hybrid">Burst-to-cloud hybrid model · sample profile</option>
+              <option value="local">On-prem solver bundle · portability not assessed</option>
+            </select>
+            <p class="field-help" id="route-help">Choosing the local bundle demonstrates a portability gate; no workload is submitted.</p>
+          </div>
+          <p class="route-note" id="route-note"></p>
+          <button class="btn btn-primary primary-action" id="run-button" type="button">Run virtual test</button>
+          <dl class="run-context">
+            <div><dt>Work item</dt><dd id="run-id" class="mono"></dd></div>
+            <div><dt>Test profile</dt><dd id="test-profile"></dd></div>
+          </dl>
+          <p class="synthetic-note">Sample operational inputs and outputs are fictional. This mock sends no job to compute.</p>
+          <p class="workflow-status" id="workflow-status" role="status" aria-live="polite">Ready. Review the fixture inputs, then start a synthetic run.</p>
+        </div>
+      </section>
+    </div>
+
+    <section class="panel card result-panel" id="result-panel" aria-labelledby="result-heading" hidden>
+      <div class="panel-heading">
+        <h2 id="result-heading">Run output · awaiting engineering review</h2>
+        <p id="result-run-id"></p>
+      </div>
+      <div class="panel-body">
+        <p class="result-lead" id="result-lead"></p>
+        <p class="result-caveat">Synthetic fixture output only. It is not validated engineering evidence, a safety finding, or a design-release decision.</p>
+        <dl class="result-facts" id="result-facts"></dl>
+        <form class="review-form" id="review-form">
+          <div class="field">
+            <label for="review-disposition">Engineer review rationale and disposition</label>
+            <select id="review-disposition" required>
+              <option value="">Choose a human review outcome</option>
+              <option value="correlation">Inputs reviewed; proceed to physical bench correlation</option>
+              <option value="escalate">Assumptions unresolved; escalate to simulation lead</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" id="record-review" type="submit" disabled>Record engineer review</button>
+          <p class="review-help" id="review-help">An engineer must choose and record a disposition; this does not approve or release a device.</p>
+        </form>
+        <div class="review-receipt" id="review-receipt" role="status" aria-live="polite" hidden></div>
+      </div>
+    </section>
+
+    <section class="panel card exception-panel" id="exception-panel" aria-labelledby="exception-heading" hidden>
+      <div class="panel-heading">
+        <h2 id="exception-heading" class="exception-title">Portability review required</h2>
+        <p>No simulation was submitted</p>
+      </div>
+      <div class="panel-body">
+        <p class="exception-copy" id="exception-copy"></p>
+        <p class="exception-copy"><strong>Human handoff:</strong> use the Architecture Workshop to assess solver portability and the burst-to-cloud hybrid model. A person owns the assessment; this demo does not migrate or run the workload.</p>
+        <button class="btn" id="assessment-button" type="button">Prepare HPC migration assessment handoff</button>
+      </div>
+    </section>
+
+    <aside class="decision-guardrail">
+      <strong>Engineering boundary.</strong> A synthetic run is not device validation or evidence of safety. A qualified engineer reviews assumptions and output; unresolved portability or design questions go to the simulation lead and the Architecture Workshop.
+    </aside>
+
+    <p class="catalog-value"><strong>Catalog business value:</strong> Design iterations up, physical prototyping cost down, time-to-validated-design reduced, first-pass design quality improved.</p>
+
+    <section class="page-footer" aria-labelledby="workloads-heading">
+      <h2 id="workloads-heading">Catalog workloads in scope</h2>
+      <div class="workload-list" id="workload-list"></div>
+    </section>
+
+    <section class="panel card audit-log" aria-labelledby="audit-heading">
+      <div class="panel-heading">
+        <h2 id="audit-heading">Work item activity</h2>
+        <p>Local to this page · clears on reset</p>
+      </div>
+      <div class="panel-body">
+        <ol class="audit-list" id="audit-list" aria-live="polite"></ol>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    "use strict";
+
+    const DIGITAL_TWIN_DEMO_FIXTURES = {
+      organization: "Aster Motion Instruments (fictional)",
+      operator: { name: "Ari Chen", role: "Simulation lead" },
+      program: "AsterSeal program · Product Innovation & R&D",
+      device: {
+        name: "AsterSeal surgical handpiece",
+        revision: "Revision C3",
+        id: "DT-FX-042",
+        description: "AsterSeal concept assembly · sample data",
+        classification: "Concept assembly · not for clinical use",
+        owner: "Mechanical systems team",
+        workstream: "Virtual design review",
+        profile: "Seal-cycle load case",
+        runId: "TWIN-FX-042"
+      },
+      inputs: [
+        "Contact load: 12 N · illustrative fixture input",
+        "Ambient condition: 22 °C · illustrative fixture input",
+        "Synthetic assembly profile: AS-C3-FX"
+      ],
+      outcomes: [
+        { label: "Tip deflection", value: "0.18 mm" },
+        { label: "Surface temperature", value: "34.6 °C" },
+        { label: "Solver steps", value: "42 synthetic steps" }
+      ],
+      routes: {
+        hybrid: "Burst-to-cloud hybrid model · the selected sample route",
+        local: "Local solver bundle · portability assessment is required"
+      },
+      workloads: [
+        "Azure High-Performance Computing",
+        "Azure Managed Lustre",
+        "Azure Machine Learning",
+        "Azure Storage"
+      ],
+      catalogBusinessValue: "Design iterations up, physical prototyping cost down, time-to-validated-design reduced, first-pass design quality improved."
+    };
+
+    const $ = (selector) => document.querySelector(selector);
+    const state = { phase: "ready", timer: 0, auditSequence: 0 };
+    const runRoute = $("#run-route");
+    const runButton = $("#run-button");
+    const runState = $("#run-state");
+    const runStateLabel = $("#run-state-label");
+    const workflowStatus = $("#workflow-status");
+    const resultPanel = $("#result-panel");
+    const exceptionPanel = $("#exception-panel");
+    const reviewDisposition = $("#review-disposition");
+    const recordReviewButton = $("#record-review");
+    const assessmentButton = $("#assessment-button");
+    const reviewReceipt = $("#review-receipt");
+
+    function setText(selector, value) {
+      $(selector).textContent = value;
+    }
+
+    function appendFact(container, label, value, className) {
+      const wrapper = document.createElement("div");
+      wrapper.className = className;
+      const term = document.createElement("dt");
+      term.textContent = label;
+      const description = document.createElement("dd");
+      description.textContent = value;
+      wrapper.append(term, description);
+      container.append(wrapper);
+    }
+
+    function renderFixtures() {
+      const fixture = DIGITAL_TWIN_DEMO_FIXTURES;
+      setText("#operator-name", fixture.operator.name);
+      setText("#operator-role", `· ${fixture.operator.role}`);
+      setText("#program-context", `${fixture.organization} · ${fixture.program}`);
+      setText("#device-name", fixture.device.name);
+      setText("#device-revision", fixture.device.revision);
+      setText("#device-id", fixture.device.id);
+      setText("#assembly-description", fixture.device.description);
+      setText("#run-id", fixture.device.runId);
+      setText("#test-profile", fixture.device.profile);
+      $("#assembly-facts").replaceChildren();
+      [
+        ["Program", fixture.program],
+        ["Assembly owner", fixture.device.owner],
+        ["Workstream", fixture.device.workstream],
+        ["Use boundary", fixture.device.classification]
+      ].forEach(([label, value]) => appendFact($("#assembly-facts"), label, value, "fact"));
+
+      const inputs = $("#input-list");
+      inputs.replaceChildren();
+      fixture.inputs.forEach((input) => {
+        const item = document.createElement("li");
+        item.textContent = input;
+        inputs.append(item);
+      });
+
+      const workloadList = $("#workload-list");
+      workloadList.replaceChildren();
+      fixture.workloads.forEach((workload) => {
+        const chip = document.createElement("span");
+        chip.className = "workload-chip";
+        chip.textContent = workload;
+        workloadList.append(chip);
+      });
+      $(".catalog-value strong").nextSibling.textContent = ` ${fixture.catalogBusinessValue}`;
+      addAudit("System", "Ready", `${fixture.device.runId} loaded from a synthetic fixture.`);
+    }
+
+    function updatePhase(phase, label) {
+      state.phase = phase;
+      runState.dataset.tone = phase;
+      runStateLabel.textContent = label;
+      const dot = runState.querySelector(".status-dot");
+      dot.dataset.pulse = phase === "working" ? "true" : "false";
+    }
+
+    function addAudit(actor, action, detail) {
+      const time = document.createElement("time");
+      const actorNode = document.createElement("span");
+      const detailNode = document.createElement("span");
+      const item = document.createElement("li");
+      state.auditSequence += 1;
+      time.textContent = `Step ${String(state.auditSequence).padStart(2, "0")}`;
+      actorNode.className = "audit-actor";
+      actorNode.textContent = `${actor} · ${action}`;
+      detailNode.className = "audit-detail";
+      detailNode.textContent = detail;
+      item.append(time, actorNode, detailNode);
+      $("#audit-list").append(item);
+    }
+
+    function showException() {
+      updatePhase("exception", "Portability gate");
+      resultPanel.hidden = true;
+      exceptionPanel.hidden = false;
+      setText("#exception-copy", `The selected "${DIGITAL_TWIN_DEMO_FIXTURES.routes.local}" profile has no completed portability assessment in this fictional work item. No job was created, and no output is available.`);
+      workflowStatus.textContent = "Exception: run held for a human-led HPC migration assessment. No job was submitted.";
+      assessmentButton.disabled = false;
+      assessmentButton.textContent = "Prepare HPC migration assessment handoff";
+      addAudit("System", "Run held", "Solver portability is unassessed; route to the Architecture Workshop.");
+      exceptionPanel.scrollIntoView({ block: "nearest" });
+    }
+
+    function renderResult() {
+      updatePhase("result", "Awaiting engineer review");
+      runButton.disabled = true;
+      runButton.textContent = "Synthetic run complete";
+      runRoute.disabled = true;
+      resultPanel.hidden = false;
+      setText("#result-run-id", DIGITAL_TWIN_DEMO_FIXTURES.device.runId);
+      setText("#result-lead", `Synthetic output for ${DIGITAL_TWIN_DEMO_FIXTURES.device.name} · ${DIGITAL_TWIN_DEMO_FIXTURES.device.revision}`);
+      const resultFacts = $("#result-facts");
+      resultFacts.replaceChildren();
+      DIGITAL_TWIN_DEMO_FIXTURES.outcomes.forEach((outcome) => appendFact(resultFacts, outcome.label, outcome.value, "result-fact"));
+      workflowStatus.textContent = "Synthetic run complete. Review the assumptions and choose a human disposition before continuing.";
+      addAudit("System", "Run complete", "Illustrative fixture output is ready for engineering review; no design was released.");
+      resultPanel.scrollIntoView({ block: "nearest" });
+    }
+
+    function startRun() {
+      if (state.phase === "working" || state.phase === "result" || state.phase === "reviewed") return;
+      if (runRoute.value === "local") {
+        showException();
+        return;
+      }
+      exceptionPanel.hidden = true;
+      updatePhase("working", "Synthetic run in progress");
+      runButton.disabled = true;
+      runButton.textContent = "Running synthetic test…";
+      runRoute.disabled = true;
+      workflowStatus.textContent = "Working. A deterministic local fixture is being evaluated; no network or compute job is used.";
+      addAudit(DIGITAL_TWIN_DEMO_FIXTURES.operator.name, "Started run", `${DIGITAL_TWIN_DEMO_FIXTURES.routes.hybrid}; synthetic fixture only.`);
+      state.timer = window.setTimeout(() => {
+        if (state.phase === "working") renderResult();
+      }, 850);
+    }
+
+    function prepareAssessment() {
+      if (state.phase !== "exception") return;
+      updatePhase("exception", "Handoff prepared");
+      assessmentButton.disabled = true;
+      assessmentButton.textContent = "Assessment handoff prepared";
+      workflowStatus.textContent = "Demo handoff prepared. No request was sent; an engineer owns the HPC migration assessment.";
+      addAudit(DIGITAL_TWIN_DEMO_FIXTURES.operator.name, "Prepared handoff", "Human next step: HPC migration assessment in the Architecture Workshop.");
+    }
+
+    function recordReview(event) {
+      event.preventDefault();
+      if (state.phase !== "result" || !reviewDisposition.value) return;
+      const disposition = reviewDisposition.selectedOptions[0].textContent;
+      updatePhase("reviewed", "Engineer review recorded");
+      recordReviewButton.disabled = true;
+      reviewDisposition.disabled = true;
+      setText("#review-help", "Review recorded for this page only. Reset clears the synthetic work item.");
+      reviewReceipt.hidden = false;
+      reviewReceipt.textContent = `Engineer disposition recorded: ${disposition}. Next step remains human-owned; no design-release decision was made.`;
+      workflowStatus.textContent = "Engineer review recorded. Continue only through the human-owned next step shown above.";
+      addAudit(DIGITAL_TWIN_DEMO_FIXTURES.operator.name, "Recorded review", disposition);
+    }
+
+    function resetRun() {
+      window.clearTimeout(state.timer);
+      state.timer = 0;
+      state.auditSequence = 0;
+      $("#audit-list").replaceChildren();
+      resultPanel.hidden = true;
+      exceptionPanel.hidden = true;
+      reviewReceipt.hidden = true;
+      reviewReceipt.textContent = "";
+      runRoute.disabled = false;
+      runRoute.value = "hybrid";
+      runButton.disabled = false;
+      runButton.textContent = "Run virtual test";
+      assessmentButton.disabled = false;
+      assessmentButton.textContent = "Prepare HPC migration assessment handoff";
+      reviewDisposition.disabled = false;
+      reviewDisposition.value = "";
+      recordReviewButton.disabled = true;
+      setText("#review-help", "An engineer must choose and record a disposition; this does not approve or release a device.");
+      updatePhase("ready", "Ready to run");
+      workflowStatus.textContent = "Ready. Review the fixture inputs, then start a synthetic run.";
+      addAudit("System", "Reset", `${DIGITAL_TWIN_DEMO_FIXTURES.device.runId} is ready to replay.`);
+    }
+
+    runButton.addEventListener("click", startRun);
+    assessmentButton.addEventListener("click", prepareAssessment);
+    $("#reset-button").addEventListener("click", resetRun);
+    $("#review-form").addEventListener("submit", recordReview);
+    reviewDisposition.addEventListener("change", () => {
+      recordReviewButton.disabled = !reviewDisposition.value || state.phase !== "result";
+    });
+    runRoute.addEventListener("change", () => {
+      if (state.phase === "exception") {
+        exceptionPanel.hidden = true;
+        updatePhase("ready", "Ready to run");
+        assessmentButton.disabled = false;
+        assessmentButton.textContent = "Prepare HPC migration assessment handoff";
+        workflowStatus.textContent = runRoute.value === "hybrid"
+          ? "Hybrid profile selected. Catalog mitigation for on-prem cluster investment: burst-to-cloud hybrid model; review the fixture inputs before starting."
+          : "Local solver selected. Starting will stop at the portability gate; no job will be submitted.";
+      }
+      setText("#route-note", runRoute.value === "hybrid"
+        ? "Capital already in on-prem clusters: catalog mitigation is a burst-to-cloud hybrid model. This mock previews a sample route only; it does not connect to on-prem compute."
+        : "Portability gate: Simulation workload portability is unresolved; mitigation in the catalog is an HPC migration assessment.");
+    });
+
+    renderFixtures();
+    setText("#route-note", DIGITAL_TWIN_DEMO_FIXTURES.routes.hybrid);
+  </script>
+</body>
+</html>

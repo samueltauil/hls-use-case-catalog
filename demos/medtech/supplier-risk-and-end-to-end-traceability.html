@@ -1,0 +1,759 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Supplier trace review — illustrative demo</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* ------------------------------------------------------- supplier workflow */
+body {
+  --on-accent: #ffffff;
+  --panel: #f3f2f1;
+  --quiet: var(--muted);
+}
+.appbar { min-height: 62px; }
+.page { width: min(1440px, 100%); margin: 0 auto; padding: 18px 24px 24px; }
+.page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 15px; }
+.eyebrow { margin: 0 0 3px; color: var(--muted); font-size: 12px; font-weight: 600; }
+.page-head h1 { margin: 0; font-size: clamp(22px, 2.2vw, 29px); line-height: 1.2; letter-spacing: -.025em; }
+.page-head p:last-child { margin: 5px 0 0; color: var(--muted); }
+.signal-id { text-align: right; color: var(--muted); font: 12px/1.5 var(--mono); }
+.signal-id .tag { margin-bottom: 4px; font-family: var(--font); }
+.alert-strip { display: flex; gap: 12px; align-items: center; padding: 10px 13px; margin-bottom: 14px; border: 1px solid #e6d08a; border-radius: var(--radius); background: var(--warn-bg); color: #684307; }
+.alert-symbol { display: grid; place-items: center; width: 27px; height: 27px; flex: none; border: 1px solid #d4b45f; border-radius: 50%; font-weight: 700; }
+.alert-copy { min-width: 0; }
+.alert-copy strong { display: block; font-size: 13.5px; }
+.alert-copy span { display: block; font-size: 12.5px; }
+.work-grid { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(270px, .76fr); gap: 16px; align-items: start; }
+.primary-column, .side-column { display: grid; gap: 14px; min-width: 0; }
+.object-card { overflow: hidden; }
+.object-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 15px 17px 12px; border-bottom: 1px solid var(--line-soft); }
+.object-head h2 { margin: 1px 0 3px; font-size: 20px; line-height: 1.25; }
+.object-head p { margin: 0; color: var(--muted); font-size: 13px; }
+.object-label { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.object-code { display: inline-block; margin-top: 7px; color: var(--ink-soft); font: 12px var(--mono); }
+.object-body { display: grid; gap: 13px; padding: 13px 17px 16px; }
+.signal-summary { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 12px; border-left: 3px solid var(--accent); background: var(--accent-soft); }
+.signal-summary strong { display: block; font-size: 13px; }
+.signal-summary p { margin: 2px 0 0; font-size: 12.5px; color: var(--ink-soft); }
+.sample-stamp { align-self: start; color: var(--muted); font-size: 11.5px; text-align: right; white-space: nowrap; }
+.facts { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 15px; }
+.facts dd { overflow-wrap: anywhere; }
+.selector-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: end; padding-top: 12px; border-top: 1px solid var(--line-soft); }
+.field { min-width: 0; }
+.field label { display: block; margin-bottom: 4px; color: var(--ink-soft); }
+.field select { width: 100%; min-height: 40px; padding: 8px 34px 8px 10px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--ink); font: inherit; }
+.help-text { display: block; margin-top: 4px; color: var(--muted); font-size: 11.5px; }
+.btn-primary { background: var(--accent-strong); border-color: var(--accent-strong); color: var(--on-accent); }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-reset { min-width: 83px; justify-content: center; }
+.side-card { padding: 14px 15px; }
+.side-card h2 { margin: 0 0 9px; font-size: 14px; }
+.side-card p { margin: 0 0 10px; color: var(--ink-soft); font-size: 13px; }
+.side-card p:last-child { margin-bottom: 0; }
+.route-list { margin: 0; padding-left: 18px; color: var(--ink-soft); font-size: 12.5px; }
+.route-list li + li { margin-top: 4px; }
+.side-divider { height: 1px; margin: 11px 0; border: 0; background: var(--line-soft); }
+.workload-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.workload-list span { padding: 3px 7px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface-2); color: var(--ink-soft); font-size: 11.5px; }
+.result-card { border-top: 3px solid var(--accent); }
+.result-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 15px; border-bottom: 1px solid var(--line-soft); }
+.result-head h2 { margin: 0; font-size: 15px; }
+.result-body { display: grid; gap: 12px; padding: 14px 15px; }
+.result-callout { display: flex; gap: 9px; align-items: flex-start; padding: 10px 11px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); font-size: 13px; }
+.result-callout strong { display: block; }
+.result-callout p { margin: 2px 0 0; color: var(--ink-soft); font-size: 12.5px; }
+.trace-path { display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
+.trace-node { position: relative; min-width: 0; padding: 9px 10px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.trace-node .node-kind { display: block; color: var(--muted); font-size: 11px; }
+.trace-node .node-name { display: block; margin-top: 2px; font-size: 12.5px; font-weight: 600; overflow-wrap: anywhere; }
+.trace-node .node-code { display: block; margin-top: 4px; color: var(--ink-soft); font: 11px/1.4 var(--mono); overflow-wrap: anywhere; }
+.trace-node.is-gap { border-style: dashed; border-color: #d4b45f; background: #fffaf0; }
+.trace-caption { margin: -4px 0 0; color: var(--muted); font-size: 11.5px; }
+.evidence-details { border-top: 1px solid var(--line-soft); padding-top: 10px; }
+.evidence-details summary { width: fit-content; color: var(--accent-strong); font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.evidence-details ul { margin: 8px 0 0; padding-left: 19px; color: var(--ink-soft); font-size: 12px; }
+.evidence-details li + li { margin-top: 4px; }
+.decision-box { display: grid; gap: 10px; padding-top: 12px; border-top: 1px solid var(--line-soft); }
+.decision-box h3 { margin: 0; font-size: 13.5px; }
+.decision-options { display: grid; gap: 7px; }
+.decision-option { display: flex; gap: 9px; align-items: flex-start; padding: 9px 10px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--ink-soft); font-size: 12.5px; cursor: pointer; }
+.decision-option:has(input:checked) { border-color: var(--accent-strong); background: var(--accent-soft); }
+.decision-option input { width: 17px; height: 17px; margin: 1px 0 0; accent-color: var(--accent-strong); flex: none; }
+.decision-option strong { display: block; color: var(--ink); font-size: 12.5px; }
+.decision-option small { display: block; margin-top: 2px; color: var(--muted); font-size: 11.5px; }
+.audit-result { padding: 10px 11px; border-left: 3px solid var(--ok); background: var(--ok-bg); color: #0b5c0b; font-size: 12.5px; }
+.audit-result strong { display: block; }
+.audit-result p { margin: 2px 0 0; }
+.exception .result-card { border-top-color: var(--warn); }
+.exception .result-callout { border-color: #e6d08a; background: var(--warn-bg); color: #684307; }
+.exception .result-callout p { color: #684307; }
+.exception .decision-option:has(input:checked) { border-color: #97620a; background: #fff7dc; }
+.policy-note { padding: 10px 11px; border-left: 3px solid var(--line); background: var(--surface-2); color: var(--muted); font-size: 12px; }
+.policy-note strong { color: var(--ink-soft); }
+.footer { gap: 8px 14px; }
+.footer .claim { max-width: 62ch; }
+
+@media (max-width: 920px) {
+  .work-grid { grid-template-columns: minmax(0, 1fr) 245px; gap: 12px; }
+  .page { padding: 16px 17px 22px; }
+  .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 700px) {
+  .page { padding: 14px 14px 20px; }
+  .page-head { align-items: flex-start; }
+  .page-head > div:first-child { min-width: 0; }
+  .page-head > div:first-child > p:last-child { max-width: 42ch; }
+  .signal-id { font-size: 11px; }
+  .work-grid { grid-template-columns: minmax(0, 1fr); }
+  .side-column { grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); }
+  .object-head { padding: 13px 14px 11px; }
+  .object-body { padding: 12px 14px 14px; }
+  .selector-row { grid-template-columns: minmax(0, 1fr); }
+  .selector-row .actions { align-items: center; }
+  .btn-reset { margin-left: auto; }
+  .trace-path { grid-template-columns: repeat(auto-fit, minmax(125px, 1fr)); }
+}
+@media (max-width: 420px) {
+  .page-head { display: block; }
+  .signal-id { margin-top: 8px; text-align: left; }
+  .alert-strip { align-items: flex-start; }
+  .alert-symbol { width: 24px; height: 24px; }
+  .signal-summary { grid-template-columns: minmax(0, 1fr); }
+  .sample-stamp { text-align: left; }
+  .facts { grid-template-columns: minmax(0, 1fr); }
+  .trace-path { grid-template-columns: minmax(0, 1fr); }
+  .footer { padding-inline: 14px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .result-card { animation: settle-in 180ms ease-out both; }
+  @keyframes settle-in { from { opacity: .7; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
+}
+  </style>
+</head>
+<body data-subvertical="medtech">
+  <header class="appbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">◆</span>
+      <div><span class="brand-name">Northstar Instrument Works</span><span class="brand-sub">Fictional supplier quality workspace</span></div>
+    </div>
+    <p class="disclosure"><span aria-hidden="true">●</span> Illustrative demo - synthetic data</p>
+    <p class="who">Signed in as <b>Maya Chen</b> · Supplier Quality Lead <span class="sr-only">(fictional identity)</span></p>
+  </header>
+
+  <main class="page">
+    <header class="page-head">
+      <div>
+        <p class="eyebrow">Manufacturing &amp; supply chain / Supplier quality</p>
+        <h1>Trace an affected component</h1>
+        <p>Review the supplier signal and downstream genealogy before choosing a next step.</p>
+      </div>
+      <div class="signal-id"><span class="tag tag-warn">Open signal · sample</span><br>Signal SYN-SQ-026</div>
+    </header>
+
+    <div class="alert-strip" role="note">
+      <span class="alert-symbol" aria-hidden="true">!</span>
+      <div class="alert-copy">
+        <strong>Supplier material-change notice needs review</strong>
+        <span>Fictional notice: declared material revision differs from the linked component record. No disposition has been made.</span>
+      </div>
+    </div>
+
+    <div class="work-grid">
+      <div class="primary-column">
+        <section class="card object-card" aria-labelledby="object-title">
+          <div class="object-head">
+            <div>
+              <span class="object-label">Affected component · sample record</span>
+              <h2 id="object-title">FlexSeal barrier compound</h2>
+              <p>Supplier Kestrel-01 <span aria-hidden="true">·</span> material revision review</p>
+              <span class="object-code" id="object-code">SYN-CMP-2609-A</span>
+            </div>
+            <span class="tag tag-warn">Human review required</span>
+          </div>
+          <div class="object-body">
+            <div class="signal-summary">
+              <div>
+                <strong>Why this record is in the queue</strong>
+                <p>A fictional supplier notice cites a revised material declaration. Check the related build lots before deciding how to escalate.</p>
+              </div>
+              <span class="sample-stamp">Synthetic notice<br>Sample fixture</span>
+            </div>
+
+            <dl class="facts">
+              <div><dt>Supplier</dt><dd>Kestrel-01 (fictional)</dd></div>
+              <div><dt>Material family</dt><dd>FlexSeal-3 (fictional)</dd></div>
+              <div><dt>Site</dt><dd>Plant North (fictional)</dd></div>
+            </dl>
+
+            <div class="selector-row">
+              <div class="field">
+                <label for="lot-select">Component lot to trace</label>
+                <select id="lot-select" aria-describedby="lot-help">
+                  <option value="complete">SYN-CMP-2609-A · linked genealogy</option>
+                  <option value="gap">SYN-CMP-2609-B · supplier link missing</option>
+                </select>
+                <span class="help-text" id="lot-help">The second sample record demonstrates an incomplete upstream link.</span>
+              </div>
+              <div class="actions">
+                <button class="btn btn-primary" id="trace-button" type="button">Trace downstream lots</button>
+                <button class="btn btn-reset" id="reset-button" type="button">Reset</button>
+              </div>
+            </div>
+            <p class="status-line" id="workflow-status" aria-live="polite">Ready. Review the sample component, then trace its downstream lots.</p>
+          </div>
+        </section>
+
+        <section class="card result-card" id="result-panel" aria-labelledby="result-title" hidden>
+          <div class="result-head">
+            <h2 id="result-title" tabindex="-1">Trace review</h2>
+            <span class="tag" id="result-state-label">Sample result</span>
+          </div>
+          <div class="result-body">
+            <div class="result-callout" id="result-callout">
+              <span aria-hidden="true">●</span>
+              <div><strong id="result-summary"></strong><p id="result-detail"></p></div>
+            </div>
+            <ol class="trace-path" id="trace-path" aria-label="Sample component genealogy"></ol>
+            <p class="trace-caption" id="trace-caption">Illustrative operational records only. These identifiers are synthetic and are not UDI values.</p>
+            <details class="evidence-details">
+              <summary>Inspect sample evidence references</summary>
+              <ul id="evidence-list"></ul>
+            </details>
+            <div class="policy-note"><strong>Human disposition stays with Quality.</strong> This sample trace is evidence for review, not a recall scope, product hold, release, or regulatory determination.</div>
+            <div class="decision-box" id="decision-box">
+              <h3 id="decision-heading">Choose the next review route</h3>
+              <div class="decision-options" id="decision-options">
+                <label class="decision-option">
+                  <input type="radio" name="review-route" value="vp-quality" checked>
+                  <span><strong>Escalate to VP Quality</strong><small>Ask the accountable quality leader to review the sample scope.</small></span>
+                </label>
+                <label class="decision-option">
+                  <input type="radio" name="review-route" value="supplier-quality">
+                  <span><strong>Request supplier evidence &amp; escalate</strong><small>Route the material declaration question for VP Quality review.</small></span>
+                </label>
+              </div>
+              <div class="actions" id="decision-actions">
+                <button class="btn btn-primary" id="record-button" type="button">Record review &amp; route</button>
+              </div>
+              <div class="audit-result" id="audit-result" hidden>
+                <strong id="audit-heading"></strong>
+                <p id="audit-detail"></p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="side-column" aria-label="Review context">
+        <section class="card side-card" aria-labelledby="guardrail-title">
+          <h2 id="guardrail-title">Review before disposition</h2>
+          <p>Supplier risk signals and component genealogy are decision support. A person must review evidence and decide whether to escalate.</p>
+          <hr class="side-divider">
+          <ul class="route-list">
+            <li>Compare the notice with linked source records.</li>
+            <li>Check which sample build lots reference the component.</li>
+            <li>Route uncertainty to VP Quality; do not infer a complete scope.</li>
+          </ul>
+        </section>
+        <section class="card side-card" aria-labelledby="sources-title">
+          <h2 id="sources-title">Evidence boundaries</h2>
+          <p>Supplier data sharing is represented as governed, fictional references—not exchanged records. A missing genealogy link stays visible as unknown.</p>
+          <p>For data gaps, stage phased capture priorities before treating a trace as complete.</p>
+          <hr class="side-divider">
+          <h2>Catalog workloads</h2>
+          <div class="workload-list" aria-label="Catalog workloads">
+            <span>Microsoft Fabric</span>
+            <span>Microsoft Purview</span>
+            <span>Azure Machine Learning</span>
+            <span>Power BI</span>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="built"><span>Catalog workloads:</span><span class="svc-chip">Microsoft Fabric</span><span class="svc-chip">Microsoft Purview</span><span class="svc-chip">Azure Machine Learning</span><span class="svc-chip">Power BI</span></div>
+    <div class="claim"><b>Illustrative pattern:</b> connected supplier and genealogy data with risk scoring and traceability analytics. All records here are fictional sample data.</div>
+  </footer>
+
+  <script>
+    "use strict";
+    // The only operational records in the demo are deterministic, fictional fixtures.
+    const SUPPLIER_TRACE_FIXTURES = {
+      complete: {
+        component: { id: "SYN-CMP-2609-A", name: "FlexSeal barrier compound", supplier: "Kestrel-01 (fictional)" },
+        summary: "Linked sample genealogy found",
+        detail: "The fixture links this component lot to three fictional build lots. Review the records before deciding whether to route the signal.",
+        nodes: [
+          { kind: "Supplier", name: "Kestrel-01 (fictional)", code: "SYN-SUP-01" },
+          { kind: "Component lot", name: "FlexSeal-3 compound", code: "SYN-CMP-2609-A" },
+          { kind: "Build lot", name: "Seal subassembly", code: "SYN-BLD-641" },
+          { kind: "Build lot", name: "Seal subassembly", code: "SYN-BLD-642" },
+          { kind: "Device trace lot", name: "Assembly group", code: "SYN-DEV-091" }
+        ],
+        sources: [
+          "Supplier material-change notice — synthetic sample reference",
+          "Inbound component lot record — SYN-CMP-2609-A (fictional)",
+          "Build genealogy links — SYN-BLD-641 and SYN-BLD-642 (fictional)",
+          "Downstream device trace group — SYN-DEV-091 (fictional; not a UDI)"
+        ],
+        stateLabel: "Linked sample path",
+        resultClass: "complete",
+        nextStep: "The sample trace is linked. Quality still decides whether the supplier signal warrants escalation."
+      },
+      gap: {
+        component: { id: "SYN-CMP-2609-B", name: "FlexSeal barrier compound", supplier: "Kestrel-01 (fictional)" },
+        summary: "Upstream supplier link is missing",
+        detail: "A downstream build reference is present, but the sample fixture has no source link tying this component lot to a supplier record. The origin and scope remain unresolved.",
+        nodes: [
+          { kind: "Supplier source", name: "Unknown — link absent", code: "No matching source record", gap: true },
+          { kind: "Component lot", name: "FlexSeal-3 compound", code: "SYN-CMP-2609-B" },
+          { kind: "Build lot", name: "Seal subassembly", code: "SYN-BLD-643" }
+        ],
+        sources: [
+          "Inbound component lot record — SYN-CMP-2609-B (fictional)",
+          "Build genealogy link — SYN-BLD-643 (fictional)",
+          "Supplier-origin relationship — missing from this sample fixture",
+          "No complete upstream trace can be inferred from these records"
+        ],
+        stateLabel: "Incomplete sample path",
+        resultClass: "exception",
+        nextStep: "Record a phased capture priority and route the unresolved origin to VP Quality."
+      }
+    };
+
+    // State model: ready -> working -> result | exception -> reviewed; reset returns to ready.
+    const controls = {
+      select: document.getElementById("lot-select"),
+      trace: document.getElementById("trace-button"),
+      reset: document.getElementById("reset-button"),
+      status: document.getElementById("workflow-status"),
+      panel: document.getElementById("result-panel"),
+      resultLabel: document.getElementById("result-state-label"),
+      resultTitle: document.getElementById("result-title"),
+      objectCode: document.getElementById("object-code"),
+      summary: document.getElementById("result-summary"),
+      detail: document.getElementById("result-detail"),
+      path: document.getElementById("trace-path"),
+      caption: document.getElementById("trace-caption"),
+      evidence: document.getElementById("evidence-list"),
+      decisionHeading: document.getElementById("decision-heading"),
+      record: document.getElementById("record-button"),
+      decisionActions: document.getElementById("decision-actions"),
+      audit: document.getElementById("audit-result"),
+      auditHeading: document.getElementById("audit-heading"),
+      auditDetail: document.getElementById("audit-detail")
+    };
+    let state = "ready";
+    let activeTimer = 0;
+
+    function setStatus(message) {
+      controls.status.textContent = message;
+    }
+
+    function bindAction(button, action) {
+      button.addEventListener("click", action);
+      button.addEventListener("keydown", (event) => {
+        if (event.repeat) return;
+        if (event.key === "Enter") {
+          event.preventDefault();
+          action();
+        } else if (event.key === " ") {
+          event.preventDefault();
+          button.dataset.spaceArmed = "true";
+        }
+      });
+      button.addEventListener("keyup", (event) => {
+        if (event.key === " " && button.dataset.spaceArmed === "true") {
+          delete button.dataset.spaceArmed;
+          action();
+        }
+      });
+      button.addEventListener("blur", () => {
+        delete button.dataset.spaceArmed;
+      });
+    }
+
+    function setState(next) {
+      state = next;
+      document.body.classList.toggle("exception", state === "exception");
+    }
+
+    function appendNode(node) {
+      const item = document.createElement("li");
+      item.className = "trace-node" + (node.gap ? " is-gap" : "");
+      const kind = document.createElement("span");
+      kind.className = "node-kind";
+      kind.textContent = node.kind;
+      const name = document.createElement("span");
+      name.className = "node-name";
+      name.textContent = node.name;
+      const code = document.createElement("span");
+      code.className = "node-code";
+      code.textContent = node.code;
+      item.append(kind, name, code);
+      controls.path.append(item);
+    }
+
+    function renderFixture(key) {
+      const fixture = SUPPLIER_TRACE_FIXTURES[key];
+      controls.objectCode.textContent = fixture.component.id;
+      controls.path.replaceChildren();
+      controls.evidence.replaceChildren();
+      fixture.nodes.forEach(appendNode);
+      fixture.sources.forEach((source) => {
+        const item = document.createElement("li");
+        item.textContent = source;
+        controls.evidence.append(item);
+      });
+      controls.resultLabel.textContent = fixture.stateLabel;
+      controls.summary.textContent = fixture.summary;
+      controls.detail.textContent = fixture.detail;
+      controls.caption.textContent = key === "gap"
+        ? "Known records are shown; the absent supplier link is an unknown, not evidence that no other lots are affected."
+        : "Illustrative operational records only. These identifiers are synthetic and are not UDI values.";
+      controls.decisionHeading.textContent = key === "gap"
+        ? "Human next step: stage the data-gap priority"
+        : "Choose the next review route";
+      controls.decisionActions.hidden = false;
+      controls.audit.hidden = true;
+      controls.record.hidden = false;
+      controls.record.textContent = key === "gap" ? "Record capture priority & escalate" : "Record review & route";
+      controls.panel.hidden = false;
+      setState(key === "gap" ? "exception" : "result");
+    }
+
+    function startTrace() {
+      if (state === "working") return;
+      const selected = controls.select.value;
+      setState("working");
+      controls.trace.disabled = true;
+      controls.select.disabled = true;
+      controls.panel.hidden = true;
+      setStatus("Tracing the selected synthetic genealogy…");
+      activeTimer = window.setTimeout(() => {
+        renderFixture(selected);
+        controls.trace.disabled = false;
+        controls.select.disabled = false;
+        setStatus(selected === "gap"
+          ? "Trace stopped at a missing supplier link. Review the known path and stage a capture priority."
+          : "Sample genealogy loaded. Review the linked lots and choose a human review route.");
+        controls.resultTitle.focus();
+        activeTimer = 0;
+      }, 320);
+    }
+
+    function recordReview() {
+      if (state !== "result" && state !== "exception") return;
+      const selected = controls.select.value;
+      const route = document.querySelector('input[name="review-route"]:checked');
+      const routeText = route && route.value === "supplier-quality"
+        ? "Supplier evidence request routed for VP Quality review in this local demo."
+        : "Escalation to VP Quality recorded in this local demo.";
+      if (selected === "gap") {
+        controls.auditHeading.textContent = "Phased capture priority recorded · synthetic review";
+        controls.auditDetail.textContent = "Upstream source link remains unresolved. " + routeText + " No external system was changed.";
+      } else {
+        controls.auditHeading.textContent = "Human review recorded · synthetic review";
+        controls.auditDetail.textContent = routeText + " No hold, recall, release, or external system update was made.";
+      }
+      controls.audit.hidden = false;
+      controls.decisionActions.hidden = true;
+      controls.decisionHeading.textContent = "Review outcome";
+      controls.record.hidden = true;
+      setState("reviewed");
+      setStatus(selected === "gap"
+        ? "Capture priority noted for this demo; supplier origin remains unknown and needs human follow-up."
+        : "Review route recorded in this page only. Quality retains disposition authority.");
+    }
+
+    function resetWorkflow() {
+      if (activeTimer) window.clearTimeout(activeTimer);
+      activeTimer = 0;
+      controls.select.value = "complete";
+      controls.objectCode.textContent = SUPPLIER_TRACE_FIXTURES.complete.component.id;
+      controls.select.disabled = false;
+      controls.trace.disabled = false;
+      controls.panel.hidden = true;
+      controls.path.replaceChildren();
+      controls.evidence.replaceChildren();
+      controls.audit.hidden = true;
+      controls.decisionActions.hidden = false;
+      controls.record.hidden = false;
+      document.querySelector('input[name="review-route"][value="vp-quality"]').checked = true;
+      setState("reset");
+      setStatus("Reset complete. Ready to review the linked synthetic genealogy.");
+      setState("ready");
+    }
+
+    bindAction(controls.trace, startTrace);
+    bindAction(controls.record, recordReview);
+    bindAction(controls.reset, resetWorkflow);
+    controls.select.addEventListener("change", () => {
+      if (state === "working") return;
+      controls.objectCode.textContent = SUPPLIER_TRACE_FIXTURES[controls.select.value].component.id;
+      controls.panel.hidden = true;
+      controls.path.replaceChildren();
+      controls.evidence.replaceChildren();
+      controls.audit.hidden = true;
+      controls.decisionActions.hidden = false;
+      controls.record.hidden = false;
+      setState("ready");
+      setStatus(controls.select.value === "gap"
+        ? "Incomplete-link sample selected. Trace it to inspect the exception."
+        : "Linked-genealogy sample selected. Trace it to inspect the downstream lots.");
+    });
+  </script>
+</body>
+</html>

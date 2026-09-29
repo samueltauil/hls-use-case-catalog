@@ -1,0 +1,727 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Edge release workbench - illustrative demo</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+  /* Demo-specific tokens are aliases only; the MedTech accent remains owned by the shell. */
+  body { --on-accent: #ffffff; }
+  .btn-primary { color: var(--on-accent); }
+
+  .appbar { gap: 12px 20px; }
+  .brand-mark {
+    display: grid; place-items: center; width: 28px; height: 28px;
+    border: 1px solid var(--muted); border-radius: 6px; color: var(--surface);
+    font-size: 12px; font-weight: 700;
+  }
+  .workbench { width: min(1440px, 100%); margin: 0 auto; padding: 20px clamp(14px, 2.5vw, 32px) 30px; }
+  .page-heading { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 10px 20px; margin-bottom: 16px; }
+  .eyebrow { margin: 0 0 3px; color: var(--muted); font-size: 12px; font-weight: 600; }
+  h1 { margin: 0; font-size: clamp(22px, 2.1vw, 29px); line-height: 1.2; letter-spacing: -.02em; }
+  .page-context { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
+  .session-tag { display: inline-flex; align-items: center; gap: 7px; color: var(--ink-soft); font-size: 12px; }
+  .session-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  .workspace-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(290px, .85fr); gap: 16px; align-items: start; }
+  .primary-column, .side-column { display: grid; gap: 14px; min-width: 0; }
+  .release-card { border-top: 3px solid var(--accent); box-shadow: var(--shadow-1); }
+  .release-head { align-items: center; }
+  .release-head h2 { font-size: 16px; }
+  .card-body { padding: 15px; }
+  .release-id { margin: 0 0 5px; color: var(--muted); font: 12px/1.5 var(--mono); overflow-wrap: anywhere; }
+  .release-name { margin: 0; font-size: clamp(19px, 2vw, 24px); line-height: 1.25; }
+  .release-purpose { max-width: 72ch; margin: 7px 0 15px; color: var(--ink-soft); font-size: 13px; }
+  .release-facts { grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 12px 0 13px; border-top: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft); }
+  .release-facts dd { font-weight: 600; }
+  .profile-row { display: grid; grid-template-columns: minmax(190px, .8fr) minmax(0, 1.2fr); gap: 14px 18px; align-items: end; margin-top: 14px; }
+  .field select { width: 100%; min-height: 40px; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--ink); font: inherit; }
+  .profile-reading { min-width: 0; }
+  .reading-title { display: flex; flex-wrap: wrap; gap: 7px 10px; align-items: center; margin-bottom: 4px; font-size: 13px; font-weight: 600; }
+  .reading-line { margin: 0; color: var(--ink-soft); font-size: 13px; }
+  .reading-line strong { color: var(--ink); }
+  .check-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: 14px; }
+  .check-actions .status-line { flex: 1 1 220px; }
+  .pattern-card .card-body { padding: 13px 15px 14px; }
+  .pattern-flow { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; }
+  .pattern-node { min-width: 0; padding: 10px 11px; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); }
+  .pattern-node b { display: block; font-size: 13px; }
+  .pattern-node span { display: block; margin-top: 2px; color: var(--muted); font-size: 12px; }
+  .flow-arrow { color: var(--muted); font-size: 18px; }
+  .pattern-caption { margin: 10px 0 0; color: var(--muted); font-size: 12px; }
+  .side-card .card-body { padding: 13px 15px; }
+  .sample-stamp { margin: 0 0 12px; color: var(--muted); font-size: 12px; }
+  .telemetry { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid var(--line-soft); }
+  .telemetry-item { padding: 11px 10px 9px 0; border-bottom: 1px solid var(--line-soft); }
+  .telemetry-item:nth-child(odd) { border-right: 1px solid var(--line-soft); }
+  .telemetry-item:nth-child(even) { padding-left: 12px; }
+  .telemetry-label { display: block; color: var(--muted); font-size: 11.5px; }
+  .telemetry-value { display: block; margin-top: 2px; font-size: 16px; font-weight: 600; }
+  .scope-note { margin: 12px 0 0; padding-left: 10px; border-left: 2px solid var(--accent); color: var(--ink-soft); font-size: 12.5px; }
+  .evidence-list { margin: 0; padding-left: 18px; color: var(--ink-soft); font-size: 12.5px; }
+  .evidence-list li + li { margin-top: 5px; }
+  .workload-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; }
+  .workload-list .svc-chip { font-size: 11.5px; }
+  .result-card { border-left: 3px solid var(--accent); }
+  .result-card[data-result="ready"] { border-left-color: var(--ok); }
+  .result-card[data-result="exception"] { border-left-color: var(--warn); }
+  .result-heading { margin: 0; font-size: 15px; }
+  .result-copy { margin: 5px 0 11px; color: var(--ink-soft); font-size: 13px; }
+  .decision-form { display: grid; gap: 11px; margin-top: 13px; padding-top: 12px; border-top: 1px solid var(--line-soft); }
+  .review-caption { margin: 0; color: var(--muted); font-size: 12.5px; }
+  .decision-form .attest { margin: 0; align-items: flex-start; }
+  .decision-form .attest label { cursor: pointer; }
+  .decision-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+  .decision-actions .status-line { flex: 1 1 210px; }
+  .completion { margin-top: 13px; padding: 12px; border: 1px solid #a7d9a7; border-radius: var(--radius); background: var(--ok-bg); color: #0b5c0b; }
+  .completion h3 { margin: 0; font-size: 14px; }
+  .completion p { margin: 4px 0 0; font-size: 13px; }
+  .audit-row { display: flex; flex-wrap: wrap; gap: 7px 12px; align-items: baseline; padding-top: 10px; margin-top: 10px; border-top: 1px solid rgba(11, 92, 11, .22); font-size: 12px; }
+  .audit-row time { font-family: var(--mono); }
+  .audit-row strong { font-weight: 700; }
+  .lower-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; margin-top: 14px; }
+  .footer { position: relative; }
+  .footer-note { max-width: 64ch; }
+  .reset-button { margin-left: auto; }
+  .sr-focus:focus { outline: 2px solid var(--accent-strong); outline-offset: 4px; }
+  @media (max-width: 820px) {
+    .workspace-grid { grid-template-columns: minmax(0, 1fr); }
+    .side-column { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 600px) {
+    .workbench { padding: 12px 12px 24px; }
+    .page-heading { align-items: start; margin-bottom: 12px; }
+    .workspace-grid, .side-column, .lower-grid { grid-template-columns: minmax(0, 1fr); }
+    .release-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .profile-row { grid-template-columns: minmax(125px, .8fr) minmax(0, 1.2fr); gap: 8px; align-items: center; }
+    .pattern-flow { grid-template-columns: minmax(0, 1fr); }
+    .flow-arrow { justify-self: center; transform: rotate(90deg); }
+    .check-actions, .decision-actions { align-items: stretch; }
+    .check-actions .btn, .decision-actions .btn { justify-content: center; width: 100%; }
+    .reset-button { margin-left: 0; }
+    .footer { padding: 11px 13px; }
+  }
+  </style>
+</head>
+<body data-subvertical="medtech">
+  <header class="appbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">ED</span>
+      <div><span class="brand-name">Edge release workbench</span><span class="brand-sub">Product Innovation &amp; R&amp;D · Envisioning Workshop</span></div>
+    </div>
+    <p class="disclosure"><span aria-hidden="true">●</span><span id="disclosure"></span></p>
+    <p class="who"><b id="operator-name"></b><span id="operator-role"></span><span id="operator-org"></span></p>
+  </header>
+
+  <main class="workbench">
+    <div class="page-heading">
+      <div>
+        <p class="eyebrow">Product Innovation &amp; R&amp;D · Envisioning Workshop</p>
+        <h1>Release candidate review</h1>
+        <p class="page-context">Inspect the sample envelope; record a human decision.</p>
+      </div>
+      <span class="session-tag"><span class="session-dot" aria-hidden="true"></span><span id="session-name"></span></span>
+    </div>
+
+    <div class="workspace-grid">
+      <div class="primary-column">
+        <section class="card release-card" aria-labelledby="candidate-heading">
+          <div class="card-head release-head">
+            <h2 id="candidate-heading">Selected model release</h2>
+            <span class="tag" id="release-status">Awaiting readiness check</span>
+          </div>
+          <div class="card-body">
+            <p class="release-id" id="release-id"></p>
+            <h3 class="release-name" id="model-name"></h3>
+            <p class="release-purpose" id="model-purpose"></p>
+            <dl class="facts release-facts">
+              <div><dt>Target device</dt><dd id="target-device"></dd></div>
+              <div><dt>Package footprint · sample</dt><dd id="package-size"></dd></div>
+              <div><dt>Decision owner</dt><dd id="decision-owner"></dd></div>
+            </dl>
+
+            <div class="profile-row">
+              <div class="field">
+                <label for="profile-select">Synthetic lab profile</label>
+                <select id="profile-select"></select>
+              </div>
+              <div class="profile-reading" aria-live="polite">
+                <div class="reading-title"><span id="profile-label"></span><span class="tag" id="profile-state"></span></div>
+                <p class="reading-line" id="profile-reading"></p>
+              </div>
+            </div>
+            <div class="check-actions">
+              <button class="btn btn-primary" id="run-check" type="button">Run readiness check</button>
+              <p class="status-line" id="workflow-status" role="status" aria-live="polite">Ready. Local simulation; no device contact.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="card result-card" id="result-card" data-result="" aria-labelledby="result-heading" hidden>
+          <div class="card-head">
+            <h2 id="result-heading" tabindex="-1">Readiness result</h2>
+            <span class="tag" id="result-badge"></span>
+          </div>
+          <div class="card-body">
+            <p class="result-heading" id="result-title"></p>
+            <p class="result-copy" id="result-copy"></p>
+            <p class="evidence" id="result-evidence"></p>
+
+            <form class="decision-form" id="decision-form">
+              <p class="review-caption">Human review required · <span id="reviewer-name"></span> remains accountable. The recommendation is not an authorization to deploy.</p>
+              <label class="attest" for="review-attestation">
+                <input id="review-attestation" type="checkbox" required>
+                <span>I reviewed the synthetic evidence and will own this decision.</span>
+              </label>
+              <div class="field">
+                <label for="rationale-select">Decision rationale</label>
+                <select id="rationale-select" required></select>
+              </div>
+              <div class="decision-actions">
+                <button class="btn btn-primary" id="decision-button" type="submit"></button>
+                <p class="status-line" id="decision-status" role="status" aria-live="polite">Choose a rationale and confirm your review to continue.</p>
+              </div>
+            </form>
+
+            <div class="completion" id="completion" aria-live="polite" hidden>
+              <h3 id="completion-title"></h3>
+              <p id="completion-copy"></p>
+              <div class="audit-row"><time id="audit-time"></time><strong id="audit-actor"></strong><span id="audit-action"></span></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="side-column" aria-label="Candidate context">
+        <section class="card side-card" aria-labelledby="profile-heading">
+          <div class="card-head"><h2 id="profile-heading">Lab device envelope</h2><span class="card-note">synthetic telemetry</span></div>
+          <div class="card-body">
+            <p class="sample-stamp" id="device-cohort"></p>
+            <div class="telemetry">
+              <div class="telemetry-item"><span class="telemetry-label">Sample package</span><span class="telemetry-value" id="telemetry-package"></span></div>
+              <div class="telemetry-item"><span class="telemetry-label">Selected budget</span><span class="telemetry-value" id="telemetry-budget"></span></div>
+              <div class="telemetry-item"><span class="telemetry-label">Remaining headroom</span><span class="telemetry-value" id="telemetry-headroom"></span></div>
+              <div class="telemetry-item"><span class="telemetry-label">Lab units in scope</span><span class="telemetry-value" id="telemetry-units"></span></div>
+            </div>
+            <p class="scope-note" id="scope-note"></p>
+          </div>
+        </section>
+
+        <section class="card side-card" aria-labelledby="evidence-heading">
+          <div class="card-head"><h2 id="evidence-heading">Review packet</h2><span class="card-note">sample sources</span></div>
+          <div class="card-body"><ul class="evidence-list" id="source-list"></ul></div>
+        </section>
+      </aside>
+    </div>
+
+    <div class="lower-grid">
+      <section class="card pattern-card" aria-labelledby="pattern-heading">
+        <div class="card-head"><h2 id="pattern-heading">Workshop pattern · draft only</h2><span class="card-note">no service connection</span></div>
+        <div class="card-body">
+          <div class="pattern-flow">
+            <div class="pattern-node"><b>On-device inference</b><span>Hybrid edge/cloud split · catalog mitigation</span></div>
+            <span class="flow-arrow" aria-hidden="true">↔</span>
+            <div class="pattern-node"><b>Cloud-side training and management</b><span>Modernization pattern from the catalog</span></div>
+          </div>
+          <p class="pattern-caption">Workloads to explore in the Envisioning Workshop; labels do not imply an active deployment or assign product capabilities.</p>
+        </div>
+      </section>
+      <section class="card side-card" aria-labelledby="workloads-heading">
+        <div class="card-head"><h2 id="workloads-heading">Workloads in the catalog record</h2></div>
+        <div class="card-body"><ul class="workload-list" id="workload-list" aria-label="Canonical workload names"></ul></div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <span class="footer-note">Simulation only · no model executes, no device is contacted, and no rollout is authorized here.</span>
+    <button class="btn reset-button" id="reset-button" type="button">Reset / replay</button>
+  </footer>
+
+  <script>
+    "use strict";
+
+    // All names, identifiers, operational values, evidence, and state copy below
+    // are invented fixtures. Outcomes are deterministic and local to this file.
+    const DEMO_FIXTURES = {
+      operator: {
+        name: "Mina Chen",
+        role: " · Director Embedded Engineering",
+        organization: " · Northstar Device Works (fictional)",
+        session: "Workshop 04 · SAMPLE session",
+        disclosure: "Illustrative demo - synthetic data"
+      },
+      release: {
+        id: "SAMPLE-EDGE-014 · release candidate",
+        model: "Context cue model · build 0.8.4",
+        purpose: "A fictional, non-clinical model concept for a badge menu shortcut. The sample uses no patient information and does not guide care.",
+        target: "LumaBadge B4 · lab board",
+        packageMb: 48,
+        owner: "Mina Chen",
+        cohort: "SAMPLE-LAB-07 · fictional lab cohort",
+        units: "24 sample units",
+        evidence: [
+          "Device envelope SAMPLE-ENV-04 · illustrative only",
+          "Model card SAMPLE-MC-18 · draft, not approved",
+          "Owner notes · Envisioning Workshop 04"
+        ],
+        workloads: [
+          "Azure IoT",
+          "Azure Machine Learning",
+          "Azure Container Apps",
+          "Azure OpenAI in Azure AI Foundry Models"
+        ],
+        auditTime: "SAMPLE · 09:42"
+      },
+      profiles: {
+        balanced: {
+          label: "Balanced lab profile",
+          budgetMb: 64,
+          headroomMb: 16,
+          outcome: "result",
+          stateLabel: "Within sample budget",
+          evidence: "Sample package 48 MB; selected lab budget 64 MB; 16 MB remaining headroom. This is a fictional comparison, not measured product performance.",
+          resultTitle: "Ready for human review",
+          resultCopy: "The sample package fits this fictional lab envelope. A supervised pilot request can be recorded for discussion; nothing will be deployed.",
+          rationale: "Sample budget fits; a supervised pilot request still needs human review.",
+          action: "Record supervised pilot request",
+          finalTitle: "Supervised pilot request recorded",
+          finalCopy: "Simulation record only. No devices were contacted, no model was deployed, and this is not a release authorization."
+        },
+        constrained: {
+          label: "Constrained lab profile",
+          budgetMb: 44,
+          headroomMb: -4,
+          outcome: "exception",
+          stateLabel: "Below sample budget",
+          evidence: "Sample package 48 MB; selected lab budget 44 MB; 4 MB over the fictional envelope. Do not treat this candidate as ready for an on-device pilot.",
+          resultTitle: "Exception · on-device budget is not met",
+          resultCopy: "Do not proceed with a pilot request on this profile. Keep the hybrid edge/cloud split under review and route the compute constraint to the architecture owner.",
+          rationale: "Constrained sample profile is 4 MB over budget; architecture review is required.",
+          action: "Escalate for architecture review",
+          finalTitle: "Architecture review escalation recorded",
+          finalCopy: "Simulation record only. The constrained candidate remains on hold; no deployment or release approval was created."
+        }
+      }
+    };
+
+    const byId = (id) => document.getElementById(id);
+    const state = { value: "ready", profile: "balanced", timer: null };
+
+    function setText(id, value) {
+      byId(id).textContent = String(value);
+    }
+
+    function appendTextItem(list, text, className) {
+      const item = document.createElement("li");
+      if (className) item.className = className;
+      item.textContent = text;
+      list.append(item);
+    }
+
+    function hydrateFixtureContent() {
+      const { operator, release, profiles } = DEMO_FIXTURES;
+      setText("disclosure", operator.disclosure);
+      setText("operator-name", operator.name);
+      setText("operator-role", operator.role);
+      setText("operator-org", operator.organization);
+      setText("session-name", operator.session);
+      setText("release-id", release.id);
+      setText("model-name", release.model);
+      setText("model-purpose", release.purpose);
+      setText("target-device", release.target);
+      setText("package-size", `${release.packageMb} MB · fictional sample`);
+      setText("decision-owner", release.owner);
+      setText("reviewer-name", release.owner);
+      setText("device-cohort", release.cohort);
+      setText("telemetry-package", `${release.packageMb} MB`);
+      setText("telemetry-units", release.units);
+
+      const profileSelect = byId("profile-select");
+      Object.entries(profiles).forEach(([key, profile]) => {
+        const option = document.createElement("option");
+        option.value = key;
+        option.textContent = profile.label;
+        profileSelect.append(option);
+      });
+      release.evidence.forEach((source) => appendTextItem(byId("source-list"), source));
+      release.workloads.forEach((name) => appendTextItem(byId("workload-list"), name, "svc-chip"));
+      renderProfile();
+    }
+
+    function renderProfile() {
+      const profile = DEMO_FIXTURES.profiles[state.profile];
+      const enough = profile.headroomMb >= 0;
+      const profileState = byId("profile-state");
+      setText("profile-label", profile.label);
+      setText("profile-reading", `Sample package: ${DEMO_FIXTURES.release.packageMb} MB · sample budget: ${profile.budgetMb} MB`);
+      setText("telemetry-budget", `${profile.budgetMb} MB`);
+      setText("telemetry-headroom", `${profile.headroomMb < 0 ? "−" + Math.abs(profile.headroomMb) : profile.headroomMb} MB`);
+      setText("scope-note", enough
+        ? "Readiness is not approval. A person must review the sample evidence before any pilot planning."
+        : "Exception path: the sample package exceeds this profile. Hold the pilot request and escalate for human review.");
+      profileState.className = enough ? "tag tag-ok" : "tag tag-warn";
+      setText("profile-state", profile.stateLabel);
+      byId("telemetry-headroom").className = enough ? "telemetry-value" : "telemetry-value st-warn";
+    }
+
+    function showResult(profileKey) {
+      const profile = DEMO_FIXTURES.profiles[profileKey];
+      const isException = profile.outcome === "exception";
+      state.value = profile.outcome;
+      const card = byId("result-card");
+      card.hidden = false;
+      card.dataset.result = profile.outcome;
+      setText("result-heading", isException ? "Exception review" : "Readiness result");
+      setText("result-badge", isException ? "Hold · escalate" : "Within sample budget");
+      byId("result-badge").className = isException ? "tag tag-warn" : "tag tag-ok";
+      setText("result-title", profile.resultTitle);
+      setText("result-copy", profile.resultCopy);
+      setText("result-evidence", profile.evidence);
+      setText("decision-button", profile.action);
+      setText("decision-status", "Choose a rationale and confirm your review to continue.");
+      byId("review-attestation").checked = false;
+      byId("completion").hidden = true;
+      byId("decision-form").hidden = false;
+      byId("release-status").className = isException ? "tag tag-warn" : "tag tag-ok";
+      setText("release-status", isException ? "Held · human escalation required" : "Ready for human review");
+
+      const rationale = byId("rationale-select");
+      rationale.replaceChildren();
+      const placeholder = document.createElement("option");
+      placeholder.value = "";
+      placeholder.textContent = "Choose a rationale…";
+      placeholder.disabled = true;
+      placeholder.selected = true;
+      rationale.append(placeholder);
+      const rationaleOption = document.createElement("option");
+      rationaleOption.value = profile.rationale;
+      rationaleOption.textContent = profile.rationale;
+      rationale.append(rationaleOption);
+      byId("workflow-status").textContent = isException
+        ? "Readiness check found a constraint. No pilot can be requested on this profile."
+        : "Readiness check complete. Review the evidence before recording a supervised pilot request.";
+      byId("result-heading").focus();
+    }
+
+    function runReadinessCheck() {
+      if (state.value === "working" || state.value === "completed") return;
+      window.clearTimeout(state.timer);
+      state.value = "working";
+      byId("run-check").disabled = true;
+      byId("profile-select").disabled = true;
+      byId("result-card").hidden = true;
+      setText("release-status", "Checking sample envelope…");
+      byId("release-status").className = "tag";
+      setText("workflow-status", "Checking the selected synthetic profile…");
+      state.timer = window.setTimeout(() => {
+        byId("run-check").disabled = false;
+        byId("profile-select").disabled = false;
+        showResult(state.profile);
+      }, 420);
+    }
+
+    function recordDecision(event) {
+      event.preventDefault();
+      if (state.value !== "result" && state.value !== "exception") return;
+      const form = byId("decision-form");
+      if (!form.reportValidity()) return;
+      const profile = DEMO_FIXTURES.profiles[state.profile];
+      state.value = "completed";
+      form.hidden = true;
+      setText("completion-title", profile.finalTitle);
+      setText("completion-copy", profile.finalCopy);
+      setText("audit-time", DEMO_FIXTURES.release.auditTime);
+      setText("audit-actor", DEMO_FIXTURES.release.owner);
+      setText("audit-action", byId("rationale-select").value);
+      byId("completion").hidden = false;
+      setText("release-status", profile.outcome === "exception" ? "Escalated · held" : "Pilot request · simulation only");
+      byId("release-status").className = profile.outcome === "exception" ? "tag tag-warn" : "tag tag-ok";
+      setText("workflow-status", "Decision recorded in this local simulation. Reset to replay.");
+      setText("decision-status", "Decision recorded.");
+    }
+
+    function resetWorkflow() {
+      window.clearTimeout(state.timer);
+      state.value = "reset";
+      state.profile = "balanced";
+      byId("profile-select").value = state.profile;
+      byId("profile-select").disabled = false;
+      byId("run-check").disabled = false;
+      byId("result-card").hidden = true;
+      byId("decision-form").reset();
+      byId("decision-form").hidden = false;
+      byId("completion").hidden = true;
+      byId("release-status").className = "tag";
+      setText("release-status", "Awaiting readiness check");
+      setText("workflow-status", "Reset complete. Ready to run a fresh synthetic check.");
+      renderProfile();
+    }
+
+    byId("profile-select").addEventListener("change", (event) => {
+      state.profile = event.currentTarget.value;
+      if (state.value === "result" || state.value === "exception" || state.value === "completed") {
+        byId("result-card").hidden = true;
+        byId("decision-form").hidden = false;
+        byId("completion").hidden = true;
+        setText("release-status", "Awaiting readiness check");
+        byId("release-status").className = "tag";
+        setText("workflow-status", "Profile changed. Run the readiness check again.");
+      }
+      state.value = "ready";
+      renderProfile();
+    });
+    byId("run-check").addEventListener("click", runReadinessCheck);
+    byId("decision-form").addEventListener("submit", recordDecision);
+    byId("reset-button").addEventListener("click", resetWorkflow);
+    hydrateFixtureContent();
+  </script>
+</body>
+</html>

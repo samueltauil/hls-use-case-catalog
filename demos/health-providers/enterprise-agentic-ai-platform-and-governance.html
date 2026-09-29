@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent governance review | Health Providers demo</title>
+<style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* Governance workbench */
+main { max-width: 1720px; margin: auto; padding: 22px clamp(14px, 2vw, 32px) 32px; }
+.page-head { display: flex; justify-content: space-between; align-items: start; gap: 12px; margin-bottom: 18px; }
+.eyebrow { color: var(--accent-strong); font-size: 13px; font-weight: 700; margin: 0 0 3px; }
+h1 { font-size: clamp(21px, 2vw, 27px); line-height: 1.25; margin: 0; }
+.subhead { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+.workbench { display: grid; grid-template-columns: minmax(195px, 235px) minmax(0, 1fr) minmax(260px, 320px); align-items: start; gap: 14px; }
+.workbench > * { min-width: 0; }
+.queue-list { display: grid; }
+.queue-item { font: inherit; text-align: left; color: var(--ink); border: 0; border-bottom: 1px solid var(--line-soft); border-left: 3px solid transparent; background: var(--surface); padding: 13px; cursor: pointer; min-height: 84px; width: 100%; }
+.queue-item:last-child { border-bottom: 0; }
+.queue-item:hover { background: var(--bg); }
+.queue-item[aria-current="true"] { border-left-color: var(--accent); background: var(--accent-soft); }
+.queue-item strong, .queue-item small { display: block; overflow-wrap: anywhere; }
+.queue-item strong { font-size: 13.5px; line-height: 1.35; }
+.queue-item small { font-size: 12px; color: var(--muted); margin: 4px 0; }
+.queue-item .tag { margin-top: 3px; }
+.object-head { padding: 17px 18px 14px; border-bottom: 1px solid var(--line); }
+.object-head h2 { margin: 4px 0 6px; font-size: 20px; line-height: 1.3; overflow-wrap: anywhere; }
+.object-head p { margin: 0; color: var(--muted); font-size: 13px; }
+.object-top { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 7px; align-items: center; }
+.object-id { font: 12px var(--mono); color: var(--muted); }
+.case-body { padding: 15px 18px 18px; display: grid; gap: 16px; }
+.section-title { margin: 0 0 9px; font-size: 14px; }
+.trace { list-style: none; margin: 0; padding: 0; display: grid; }
+.trace li { padding: 0 0 13px 25px; border-left: 2px solid var(--accent-line); margin-left: 6px; position: relative; }
+.trace li:last-child { padding-bottom: 0; border-left-color: transparent; }
+.trace li::before { content: ""; position: absolute; left: -7px; top: 3px; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); }
+.trace li.gate::before { background: var(--surface); border: 2px solid var(--warn); }
+.trace strong, .trace span { display: block; }
+.trace strong { font-size: 13px; }
+.trace span { font-size: 12.5px; color: var(--muted); }
+.source-list { display: grid; gap: 7px; }
+details { border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 11px; background: var(--bg); font-size: 13px; }
+summary { cursor: pointer; font-weight: 600; }
+details p { margin: 7px 0 0; color: var(--ink-soft); overflow-wrap: anywhere; }
+.source-meta { font-size: 12px; color: var(--muted); }
+.decision-body { display: grid; gap: 12px; }
+.decision-body > p { margin: 0; font-size: 13px; color: var(--ink-soft); }
+.decision-body .btn { justify-content: center; width: 100%; }
+.decision-body .status-line { overflow-wrap: anywhere; }
+.decision-body .notice { display: block; }
+.audit-wrap { border-top: 1px solid var(--line); padding-top: 12px; }
+.audit li { grid-template-columns: 44px minmax(0, 1fr); }
+.footer { margin-top: 12px; }
+.footer .built { max-width: 100%; }
+.svc-chip { overflow-wrap: anywhere; }
+@media (max-width: 1070px) {
+  .workbench { grid-template-columns: minmax(0, 1fr) minmax(250px, 33%); }
+  .queue { grid-column: 1 / -1; }
+  .queue-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .queue-item { border-bottom: 0; }
+  .queue-item + .queue-item { border-left: 1px solid var(--line-soft); }
+  .decision { grid-column: 2; }
+}
+@media (max-width: 700px) {
+  main { padding-top: 15px; }
+  .page-head { align-items: stretch; }
+  .page-head .btn { align-self: start; }
+  .workbench { display: flex; flex-direction: column; }
+  .workbench > * { width: 100%; }
+  .case { display: contents; }
+  .object-head { order: 1; width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+  .decision { order: 2; }
+  .case-body { order: 3; width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+  .queue { order: 4; }
+  .queue-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .queue-item { border-bottom: 0; min-height: 105px; }
+  .queue-item + .queue-item { border-left: 1px solid var(--line-soft); }
+}
+@media (max-width: 430px) {
+  .page-head { flex-wrap: wrap; }
+  .case-body { padding: 13px; }
+  .object-head { padding: 13px; }
+}
+</style>
+</head>
+<body data-subvertical="health-providers">
+<header class="appbar">
+  <div class="brand"><span class="brand-mark" aria-hidden="true">◆</span><span class="brand-name">Fablewick Health / Agent control room<span class="brand-sub">Architecture workshop · governance review</span></span></div>
+  <p class="disclosure">Illustrative demo - synthetic data</p>
+  <p class="who">Review owner <b>Chief AI Officer</b></p>
+</header>
+<main>
+  <div class="page-head">
+    <div><p class="eyebrow">Shared agent platform / intake</p><h1>Review agent onboarding</h1><p class="subhead">Unify existing assistants through a proposed control plane; no agent is deployed by this demo.</p></div>
+    <button class="btn" id="reset" type="button">Reset demo</button>
+  </div>
+  <div class="workbench">
+    <nav class="card queue" aria-label="Agent proposals">
+      <div class="card-head"><h2>Review queue</h2><span class="card-note">Sample proposals</span></div>
+      <div class="queue-list" id="queue"></div>
+    </nav>
+    <section class="card case" aria-labelledby="case-title">
+      <div class="object-head">
+        <div class="object-top"><span class="object-id" id="object-id"></span><span class="tag" id="object-status"></span></div>
+        <h2 id="case-title"></h2><p id="object-description"></p>
+      </div>
+      <div class="case-body">
+        <dl class="facts">
+          <div><dt>Workflow owner</dt><dd id="workflow-owner"></dd></div>
+          <div><dt>Requested scope</dt><dd id="workflow-scope"></dd></div>
+          <div><dt>Integration stance</dt><dd>Connect existing tools, do not replace</dd></div>
+        </dl>
+        <section aria-labelledby="trace-title">
+          <h3 class="section-title" id="trace-title">Proposed orchestration trace · sample design</h3>
+          <ol class="trace" id="trace"></ol>
+        </section>
+        <section aria-labelledby="source-title">
+          <h3 class="section-title" id="source-title">Evidence for review</h3>
+          <div class="source-list" id="sources"></div>
+        </section>
+      </div>
+    </section>
+    <aside class="card decision" aria-labelledby="decision-title">
+      <div class="card-head"><h2 id="decision-title">Human decision gate</h2><span class="card-note">Pilot only</span></div>
+      <div class="card-body decision-body">
+        <div class="notice" id="finding"></div>
+        <p id="rationale"></p>
+        <button class="btn btn-primary" id="check" type="button">Run simulated control check</button>
+        <button class="btn" id="approve" type="button" hidden>Review for pilot approval</button>
+        <button class="btn" id="escalate" type="button" hidden>Escalate to architecture &amp; security</button>
+        <p class="status-line" id="status" role="status" aria-live="polite"></p>
+        <div class="audit-wrap"><h3 class="section-title">Review log · sample</h3><ol class="audit" id="audit"></ol></div>
+      </div>
+    </aside>
+  </div>
+</main>
+<footer class="footer">
+  <div class="built"><span>Catalog workloads:</span><span class="svc-chip">Azure OpenAI in Azure AI Foundry Models</span><span class="svc-chip">Azure AI Foundry</span><span class="svc-chip">Azure AI Search</span><span class="svc-chip">Microsoft Copilot Studio</span><span class="svc-chip">Microsoft Defender for Cloud</span></div>
+  <span class="claim">Illustrative control-plane design, not a product integration or measured result.</span>
+</footer>
+<dialog id="review-dialog" aria-labelledby="dialog-title">
+  <div class="dlg-head"><div><h2 id="dialog-title">Confirm pilot review</h2><span class="dlg-sub" id="dialog-sub"></span></div></div>
+  <div class="dlg-body">
+    <div class="notice notice-warn">This records a simulated governance decision only. It does not publish an agent or approve any clinical, coverage, or payment action.</div>
+    <p id="dialog-rationale"></p>
+    <p>Confirming records the Chief AI Officer as the accountable reviewer. Inspect the source and trace before recording this sample decision.</p>
+  </div>
+  <div class="dlg-foot"><button class="btn" id="cancel" type="button">Cancel</button><button class="btn btn-primary" id="confirm" type="button">Record pilot approval</button></div>
+</dialog>
+<script>
+(() => {
+  "use strict";
+  const fixtures = {
+    organization: "Fablewick Health (fictional)",
+    proposals: [
+      {
+        id: "SIM-AG-014", name: "RCM denial evidence assistant", owner: "Revenue cycle architecture",
+        scope: "Draft evidence packet for biller review",
+        description: "Reuse the existing revenue cycle assistant inside a shared orchestration and oversight proposal.",
+        steps: [
+          ["Intake", "Receive a fictional denied-claim task from the existing assistant."],
+          ["Ground", "Retrieve sample denial guidance and attach a dated source reference."],
+          ["Observe", "Propose a run trace and handoff reason for operations review."],
+          ["Human gate", "A biller reviews any packet before a claim-related action."]
+        ],
+        sources: [
+          ["Denial desk guide · revision 2026-08-12", "Sample source: instructions for assembling an evidence packet. The guide does not authorize resubmission."],
+          ["Agent inventory · revision 2026-09-08", "Sample source: existing RCM assistant registered for reuse, with revenue cycle architecture as owner."]
+        ],
+        finding: "Source owner, dated guide and biller gate are present in the sample design.",
+        rationale: "The sample control check supports a limited pilot review, not production release. A biller still decides what to do with every packet.",
+        pass: true
+      },
+      {
+        id: "SIM-AG-027", name: "Clinical routing assistant", owner: "Clinical informatics",
+        scope: "Suggest a routing destination for staff review",
+        description: "A second point tool is proposed for reuse, but its approved source binding is not documented.",
+        steps: [
+          ["Intake", "Receive a fictional staff routing request; no patient record is used."],
+          ["Ground", "Proposed routing reference has no approved owner or effective date."],
+          ["Observe", "Flag unsupported grounding in the sample run trace."],
+          ["Human gate", "Clinical informatics reviews any route; no clinical advice is generated."]
+        ],
+        sources: [
+          ["Routing draft · undated", "Sample source: an unapproved draft with no named owner or effective date. Do not rely on this for routing."],
+          ["Agent inventory · revision 2026-09-08", "Sample source: clinical routing tool listed as a candidate, not cleared for shared use."]
+        ],
+        finding: "Blocked: the routing reference has no approved owner or effective date.",
+        rationale: "Do not approve the pilot. Escalate the missing source binding to clinical informatics, architecture and security for review.",
+        pass: false
+      }
+    ]
+  };
+  const $ = (id) => document.getElementById(id);
+  const state = { selected: 0, checked: [false, false], decisions: [null, null], timer: null };
+
+  function node(tag, text, className) {
+    const element = document.createElement(tag);
+    element.textContent = text;
+    if (className) element.className = className;
+    return element;
+  }
+  function appendAudit(label, human) {
+    const li = document.createElement("li");
+    const time = node("time", human ? "09:42" : "09:40");
+    const message = node("span", label);
+    message.prepend(node("span", human ? "Reviewer · " : "Simulated check · ", "actor " + (human ? "is-human" : "is-system")));
+    li.append(time, message);
+    $("audit").append(li);
+  }
+  function render() {
+    const proposal = fixtures.proposals[state.selected];
+    const decision = state.decisions[state.selected];
+    const checked = state.checked[state.selected];
+    $("queue").replaceChildren();
+    fixtures.proposals.forEach((item, index) => {
+      const button = node("button", "", "queue-item");
+      button.type = "button";
+      button.setAttribute("aria-current", String(index === state.selected));
+      button.append(node("strong", item.name), node("small", item.id + " · " + item.owner));
+      const label = state.decisions[index] === "approved" ? "Pilot reviewed" : state.decisions[index] === "escalated" ? "Escalated" : "Needs review";
+      button.append(node("span", label, "tag"));
+      button.addEventListener("click", () => {
+        if (state.timer) { clearTimeout(state.timer); state.timer = null; }
+        state.selected = index;
+        render();
+      });
+      $("queue").append(button);
+    });
+    $("object-id").textContent = proposal.id + " · " + fixtures.organization;
+    $("object-status").textContent = decision === "approved" ? "Pilot reviewed" : decision === "escalated" ? "Escalated" : "Pending governance";
+    $("case-title").textContent = proposal.name;
+    $("object-description").textContent = proposal.description;
+    $("workflow-owner").textContent = proposal.owner;
+    $("workflow-scope").textContent = proposal.scope;
+    $("trace").replaceChildren();
+    proposal.steps.forEach(([title, detail], index) => {
+      const li = document.createElement("li");
+      if (index === 3) li.className = "gate";
+      li.append(node("strong", title), node("span", detail));
+      $("trace").append(li);
+    });
+    $("sources").replaceChildren();
+    proposal.sources.forEach(([title, detail]) => {
+      const disclosure = document.createElement("details");
+      disclosure.append(node("summary", title), node("p", detail));
+      $("sources").append(disclosure);
+    });
+    $("finding").textContent = checked ? proposal.finding : "Control check not run. Inspect the sample sources, then evaluate the proposed handoff.";
+    $("finding").className = "notice" + (checked ? proposal.pass ? " notice-ok" : " notice-stop" : "");
+    $("rationale").textContent = checked ? proposal.rationale : "No simulated approval or escalation occurs without a human review.";
+    $("check").hidden = Boolean(decision);
+    $("check").disabled = false;
+    $("approve").hidden = !checked || !proposal.pass || Boolean(decision);
+    $("escalate").hidden = !checked || proposal.pass || Boolean(decision);
+    $("status").textContent = decision === "approved" ? "Pilot review recorded; no agent deployed." : decision === "escalated" ? "Escalation recorded; pilot remains blocked." : checked ? proposal.pass ? "Ready for human pilot review." : "Exception requires escalation." : "Awaiting simulated check.";
+    $("audit").replaceChildren();
+    appendAudit("Proposal registered for governance review.", false);
+    if (checked) appendAudit(proposal.pass ? "Controls present; human gate retained." : "Source binding missing; pilot blocked.", false);
+    if (decision) appendAudit(decision === "approved" ? "Pilot review recorded; no deployment." : "Sent to architecture & security; pilot blocked.", true);
+  }
+  $("check").addEventListener("click", () => {
+    const index = state.selected;
+    $("check").disabled = true;
+    $("status").textContent = "Running simulated control check…";
+    state.timer = setTimeout(() => {
+      state.timer = null;
+      state.checked[index] = true;
+      render();
+    }, 450);
+  });
+  $("approve").addEventListener("click", () => {
+    const proposal = fixtures.proposals[state.selected];
+    $("dialog-sub").textContent = proposal.id + " · " + proposal.name;
+    $("dialog-rationale").textContent = proposal.rationale;
+    $("review-dialog").showModal();
+  });
+  $("cancel").addEventListener("click", () => $("review-dialog").close());
+  $("confirm").addEventListener("click", () => {
+    if (!state.checked[state.selected] || !fixtures.proposals[state.selected].pass) return;
+    state.decisions[state.selected] = "approved";
+    $("review-dialog").close();
+    render();
+  });
+  $("escalate").addEventListener("click", () => {
+    if (!state.checked[state.selected] || fixtures.proposals[state.selected].pass) return;
+    state.decisions[state.selected] = "escalated";
+    render();
+  });
+  $("reset").addEventListener("click", () => {
+    if (state.timer) { clearTimeout(state.timer); state.timer = null; }
+    if ($("review-dialog").open) $("review-dialog").close();
+    state.selected = 0;
+    state.checked = [false, false];
+    state.decisions = [null, null];
+    render();
+    $("status").textContent = "Demo reset. Awaiting simulated check.";
+  });
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Migration wave review · Juniper Vale Health Network</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 1px;
+  min-height: 44px; display: inline-flex; align-items: center; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* ---------------------------------------------------------- workbench */
+.page-wrap {
+  width: min(1480px, calc(100% - 36px));
+  margin: 0 auto;
+  padding: 18px 0 24px;
+}
+.page-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 24px;
+  margin-bottom: 14px;
+}
+.page-heading h1 {
+  margin: 1px 0 2px;
+  font-size: clamp(22px, 2vw, 27px);
+  line-height: 1.18;
+  letter-spacing: -.02em;
+}
+.eyebrow {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.context-line {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+.heading-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 7px;
+  padding-bottom: 2px;
+}
+.meta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  color: var(--ink-soft);
+  background: var(--surface);
+  font-size: 12px;
+}
+.workbench-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(310px, .88fr);
+  gap: 14px;
+  align-items: start;
+}
+.proposal-card {
+  border-top: 3px solid var(--accent);
+  box-shadow: var(--shadow-1);
+}
+.proposal-card .card-head {
+  align-items: flex-start;
+  padding-top: 11px;
+}
+.proposal-title-wrap { min-width: 0; }
+.proposal-title-wrap h2 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.3;
+}
+.proposal-subline {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.proposal-status {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+}
+.proposal-id {
+  color: var(--muted);
+  font: 11.5px var(--mono);
+  overflow-wrap: anywhere;
+}
+.card-body { padding: 12px 15px 14px; }
+.solution-line {
+  margin: 0 0 12px;
+  padding: 9px 11px;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  color: var(--ink);
+  font-size: 13px;
+}
+.section-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 10px;
+  margin: 0 0 6px;
+}
+.section-label h3 {
+  margin: 0;
+  font-size: 13.5px;
+}
+.section-label p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11.5px;
+}
+.inventory {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-top: 1px solid var(--line-soft);
+}
+.inventory-row {
+  display: grid;
+  grid-template-columns: minmax(145px, 1.1fr) minmax(145px, 1fr) minmax(125px, .85fr);
+  gap: 10px;
+  align-items: center;
+  padding: 8px 2px;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 12.5px;
+}
+.source-name { font-weight: 600; }
+.source-id {
+  display: block;
+  margin-top: 1px;
+  color: var(--muted);
+  font: 10.5px var(--mono);
+  overflow-wrap: anywhere;
+}
+.source-evidence {
+  display: block;
+  color: var(--ink-soft);
+}
+.source-evidence small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+}
+.row-state {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.scope-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--ink-soft);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+.scope-state::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--muted-soft);
+}
+.scope-state.included::before { background: var(--ok); }
+.scope-state.held::before { background: var(--warn); }
+.exception-row { background: var(--bg); }
+.exception-row .btn-link {
+  white-space: normal;
+  text-align: left;
+}
+.wave-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 12px;
+  padding-top: 11px;
+}
+.wave-block h3 {
+  margin: 0 0 4px;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+}
+.wave-block p {
+  margin: 0;
+  font-size: 12.5px;
+}
+.workload-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.workload-item {
+  padding: 3px 7px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface-2);
+  color: var(--ink-soft);
+  font-size: 11px;
+  line-height: 1.35;
+}
+.input-not-supplied {
+  margin: 11px 0 0;
+  padding-top: 9px;
+  border-top: 1px solid var(--line-soft);
+  color: var(--muted);
+  font-size: 11.5px;
+}
+.input-not-supplied strong { color: var(--ink-soft); }
+.side-stack {
+  display: grid;
+  gap: 12px;
+}
+.next-card {
+  border-top: 3px solid var(--accent-strong);
+  box-shadow: var(--shadow-1);
+}
+.next-card .card-body { display: grid; gap: 10px; }
+.step-kicker {
+  margin: 0;
+  color: var(--accent-strong);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+.next-card h2 {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.3;
+}
+.next-description {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+.next-card .actions { margin-top: 2px; }
+.next-card .btn-primary { width: 100%; justify-content: center; }
+.reset-row {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid var(--line-soft);
+  padding-top: 9px;
+}
+.progress-note {
+  margin: 0;
+  min-height: 20px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.review-panel, .result-panel {
+  border-top: 3px solid var(--accent-line);
+}
+.review-panel .card-body, .result-panel .card-body {
+  display: grid;
+  gap: 10px;
+}
+.evidence-block {
+  margin: 0;
+  padding: 9px 10px;
+  border-left: 3px solid var(--accent);
+  background: var(--bg);
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+.evidence-block strong { color: var(--ink); }
+.checklist {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 7px;
+}
+.checklist li {
+  position: relative;
+  padding: 0 0 0 22px;
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+.checklist li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: var(--ok);
+  font-weight: 700;
+}
+.exception-summary {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11.5px;
+}
+.review-panel .btn-primary { width: 100%; justify-content: center; }
+.result-panel .notice { display: block; }
+.result-panel .notice strong { display: block; }
+.result-panel .notice p { margin: 3px 0 0; }
+.audit-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.audit-list li {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 8px;
+  font-size: 11.5px;
+}
+.audit-time {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 10.5px;
+}
+.audit-actor {
+  display: block;
+  color: var(--accent-strong);
+  font-weight: 600;
+}
+.audit-note { color: var(--ink-soft); }
+.review-route {
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border-radius: var(--radius);
+}
+.review-route h3 {
+  margin: 0 0 4px;
+  font-size: 12.5px;
+}
+.review-route p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+.footer { margin-top: 14px; }
+.claim { max-width: 70ch; }
+
+@media (max-width: 900px) {
+  .workbench-grid { grid-template-columns: minmax(0, 1.35fr) minmax(270px, .9fr); }
+  .inventory-row { grid-template-columns: minmax(120px, 1fr) minmax(115px, .9fr) minmax(100px, .85fr); gap: 7px; }
+  .row-state { align-items: flex-start; }
+}
+@media (max-width: 700px) {
+  .page-wrap { width: min(100% - 24px, 560px); padding-top: 14px; }
+  .page-heading { align-items: flex-start; flex-direction: column; gap: 8px; }
+  .heading-meta { justify-content: flex-start; }
+  .workbench-grid { grid-template-columns: minmax(0, 1fr); }
+  .side-stack { display: contents; }
+  .next-card { grid-row: 1; }
+  .proposal-card { grid-row: 2; }
+  .review-panel, .result-panel, .audit-card { grid-column: 1; }
+  .inventory-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, .9fr);
+    gap: 5px 9px;
+    padding: 9px 3px;
+  }
+  .source-evidence { grid-column: 1; }
+  .row-state { grid-column: 2; grid-row: 1 / span 2; align-content: center; }
+  .wave-summary { grid-template-columns: 1fr; gap: 10px; }
+  .proposal-card .card-head { padding: 11px 12px; }
+  .card-body { padding: 11px 12px 13px; }
+  .proposal-status { align-items: end; }
+  .proposal-status .tag { white-space: normal; text-align: right; }
+}
+@media (max-width: 390px) {
+  .page-wrap { width: calc(100% - 20px); }
+  .appbar { padding-inline: 10px; }
+  .brand { margin-right: 0; }
+  .disclosure { font-size: 11px; padding-inline: 7px; }
+  .who { width: 100%; }
+  .proposal-title-wrap h2 { font-size: 16px; }
+  .meta-pill { font-size: 11px; }
+  .inventory-row { grid-template-columns: minmax(0, 1fr) minmax(0, .82fr); }
+  .row-state { gap: 4px; }
+}
+  </style>
+</head>
+<body data-subvertical="health-providers">
+  <header class="appbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">◆</span>
+      <div>
+        <span class="brand-name" id="orgName">Data foundation workbench</span>
+        <span class="brand-sub">Fictional workshop tenant · illustrative sample data</span>
+      </div>
+    </div>
+    <p class="who"><b>Chief Data Officer</b> · Architecture workshop</p>
+    <p class="disclosure">Illustrative demo - synthetic data.</p>
+  </header>
+
+  <main class="page-wrap">
+    <div class="page-heading">
+      <div>
+        <p class="eyebrow">Health Providers / Data, AI &amp; Platform Foundation</p>
+        <h1>Migration wave review</h1>
+        <p class="context-line"><span id="contextOrg"></span> · Fictional organization · proposed coexistence and validation phase</p>
+      </div>
+      <div class="heading-meta" aria-label="Proposal context">
+        <span class="meta-pill">Starting motion: Architecture Workshop</span>
+        <span class="meta-pill">Human review required</span>
+      </div>
+    </div>
+
+    <div class="workbench-grid">
+      <article class="card proposal-card" aria-labelledby="proposalHeading">
+        <div class="card-head">
+          <div class="proposal-title-wrap">
+            <h2 id="proposalHeading">Proposed wave: clinical + claims foundation</h2>
+            <p class="proposal-subline">Bounded source-domain scope · synthetic workshop proposal</p>
+          </div>
+          <div class="proposal-status">
+            <span class="tag tag-warn" id="proposalStatus">Draft · review not requested</span>
+            <span class="proposal-id" id="proposalId"></span>
+          </div>
+        </div>
+        <div class="card-body">
+          <p class="solution-line">Data - OneLake-centered unified data foundation consolidating clinical, claims, and operational data.</p>
+          <div class="section-label">
+            <h3>Source-domain inventory</h3>
+            <p>Every identifier and status is illustrative sample data</p>
+          </div>
+          <ul class="inventory" id="sourceInventory" aria-label="Illustrative source-domain inventory"></ul>
+          <div class="wave-summary">
+            <div class="wave-block">
+              <h3>Proposed wave boundary</h3>
+              <p id="scopeSummary"></p>
+            </div>
+            <div class="wave-block">
+              <h3>Catalog workloads under consideration</h3>
+              <div class="workload-list" id="workloadList"></div>
+            </div>
+          </div>
+          <p class="input-not-supplied">
+            <strong>Workshop inputs:</strong> annual Teradata / legacy cost — not supplied;
+            share of data used for analytics — not supplied. Silo blockers and blocked analytics / AABA use cases — to be scoped in the workshop.
+          </p>
+        </div>
+      </article>
+
+      <div class="side-stack">
+        <section class="card next-card" aria-labelledby="nextHeading">
+          <div class="card-head">
+            <h2 id="nextHeading">Next action</h2>
+            <span class="card-note" id="stepCount">Step 1 of 3</span>
+          </div>
+          <div class="card-body">
+            <p class="step-kicker" id="stepKicker">Ready for evidence review</p>
+            <h2 id="nextTitle">Inspect the scoped wave</h2>
+            <p class="next-description" id="nextDescription">Review ownership, lineage, and the proposed phase safeguards before routing a human architecture review request.</p>
+            <div class="actions">
+              <button class="btn btn-primary" type="button" id="reviewButton">Review evidence &amp; phase plan</button>
+            </div>
+            <p class="progress-note" id="progressNote" role="status" aria-live="polite">No migration or cutover is authorized by this workbench.</p>
+            <div class="reset-row">
+              <button class="btn-link" type="button" id="resetButton">Reset / replay</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="card review-panel" id="reviewPanel" aria-labelledby="reviewHeading" hidden>
+          <div class="card-head">
+            <h2 id="reviewHeading">Evidence and phase safeguards</h2>
+            <span class="card-note">Human confirmation</span>
+          </div>
+          <div class="card-body">
+            <p class="evidence-block" id="evidenceProvenance"></p>
+            <p class="evidence-block" id="reviewRationale"></p>
+            <ul class="checklist" id="phaseChecklist" aria-label="Proposed phase safeguards"></ul>
+            <p class="exception-summary" id="exceptionSummary"></p>
+            <button class="btn btn-primary" type="button" id="confirmButton">Confirm this phase plan</button>
+          </div>
+        </section>
+
+        <section class="card result-panel" id="resultPanel" aria-labelledby="resultHeading" hidden>
+          <div class="card-head">
+            <h2 id="resultHeading" tabindex="-1">Review request recorded</h2>
+            <span class="tag tag-ok">Awaiting human review</span>
+          </div>
+          <div class="card-body">
+            <div class="notice notice-ok">
+              <strong>Simulated handoff complete</strong>
+              <p>The proposed coexistence / validation phase was sent to the fictional architecture-review queue. No migration, access change, or Teradata retirement occurred.</p>
+            </div>
+            <div class="review-route">
+              <h3>Review and escalation</h3>
+              <p id="reviewDestination"></p>
+            </div>
+          </div>
+        </section>
+
+        <section class="card audit-card" aria-labelledby="auditHeading">
+          <div class="card-head">
+            <h2 id="auditHeading">Workshop audit trail</h2>
+            <span class="card-note">Local simulation</span>
+          </div>
+          <div class="card-body">
+            <ul class="audit-list" id="auditList" aria-live="polite"></ul>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <div class="built" aria-label="Catalog-aligned workload names">
+        <span>Catalog labels</span>
+        <span class="svc-chip">Microsoft Fabric</span>
+        <span class="svc-chip">Azure Databricks</span>
+        <span class="svc-chip">Microsoft Purview</span>
+        <span class="svc-chip">Azure Storage</span>
+        <span class="svc-chip">OneLake</span>
+      </div>
+    </footer>
+  </main>
+
+  <p class="sr-only" id="liveAnnouncement" role="status" aria-live="polite"></p>
+
+  <script>
+    "use strict";
+
+    const DEMO_FIXTURE = {
+      organization: "Juniper Vale Health Network",
+      proposalId: "SYN-HP-WAVE-026",
+      sourceProvenance: "Illustrative sample data · synthetic workshop inventory SYN-HP-SOURCE-026 · prepared for this demo; no live source is connected.",
+      reviewRationale: "The proposed wave keeps the synthetic clinical and claims domains in scope because this sample lists accountable owner roles and an evidence reference. The operations registry stays outside the wave: no accountable owner is assigned and its lineage is not verifiable in the sample.",
+      scopeSummary: "Included: clinical encounters and claims remittance. Excluded and held: operations equipment registry until ownership and lineage evidence are supplied.",
+      reviewDestination: "Request destination: Architecture Review (fictional) · reviewers: Operations Domain Owner (fictional role) and Governance Reviewer (fictional role). Escalation: return the held source to its accountable domain owner and governance reviewers; a human architecture reviewer decides whether the phase may advance.",
+      exceptionRationale: "Missing accountable owner and verifiable lineage. Keep this source out of the proposed wave; route it to the fictional Operations Domain Owner and Governance Reviewer.",
+      phaseSafeguards: [
+        "Coexistence: keep legacy and proposed-phase scope visible together; this request does not authorize cutover.",
+        "Validation: agree evidence and review criteria with the human architecture reviewer before any phase advances.",
+        "Cutover criteria: require explicit human sign-off against agreed validation evidence; no cutover is initiated here.",
+        "Enablement: pair any future migration planning with enablement and governed templates."
+      ],
+      workloads: [
+        "Microsoft Fabric · Analytics Migration / New Analytics",
+        "Azure Databricks · Analytics Migration / New",
+        "Microsoft Purview · Unified Data Governance",
+        "Azure Storage · Files / Blob / ADLS / Disk"
+      ],
+      sources: [
+        {
+          name: "Clinical encounters",
+          id: "SYN-HP-DOM-101",
+          owner: "Clinical Data Steward (fictional role)",
+          evidence: "Owner and lineage reference listed",
+          evidenceSource: "Illustrative sample workshop inventory",
+          included: true
+        },
+        {
+          name: "Claims remittance",
+          id: "SYN-HP-DOM-102",
+          owner: "Revenue Data Steward (fictional role)",
+          evidence: "Owner and lineage reference listed",
+          evidenceSource: "Illustrative sample workshop inventory",
+          included: true
+        },
+        {
+          name: "Operations equipment registry",
+          id: "SYN-HP-DOM-103",
+          owner: "Not assigned",
+          evidence: "Lineage not verifiable",
+          evidenceSource: "Illustrative sample workshop inventory",
+          included: false,
+          exception: true
+        }
+      ],
+      initialAudit: {
+        time: "Workshop",
+        actor: "System · illustrative",
+        note: "Synthetic proposal assembled for review; no connected systems."
+      }
+    };
+
+    const state = {
+      step: "ready",
+      exceptionRouted: false,
+      audit: [DEMO_FIXTURE.initialAudit],
+      busy: false
+    };
+
+    const elements = {
+      orgName: document.getElementById("orgName"),
+      contextOrg: document.getElementById("contextOrg"),
+      proposalId: document.getElementById("proposalId"),
+      sourceInventory: document.getElementById("sourceInventory"),
+      scopeSummary: document.getElementById("scopeSummary"),
+      workloadList: document.getElementById("workloadList"),
+      proposalStatus: document.getElementById("proposalStatus"),
+      stepCount: document.getElementById("stepCount"),
+      stepKicker: document.getElementById("stepKicker"),
+      nextTitle: document.getElementById("nextTitle"),
+      nextDescription: document.getElementById("nextDescription"),
+      reviewButton: document.getElementById("reviewButton"),
+      progressNote: document.getElementById("progressNote"),
+      reviewPanel: document.getElementById("reviewPanel"),
+      evidenceProvenance: document.getElementById("evidenceProvenance"),
+      reviewRationale: document.getElementById("reviewRationale"),
+      phaseChecklist: document.getElementById("phaseChecklist"),
+      exceptionSummary: document.getElementById("exceptionSummary"),
+      confirmButton: document.getElementById("confirmButton"),
+      resultPanel: document.getElementById("resultPanel"),
+      reviewDestination: document.getElementById("reviewDestination"),
+      auditList: document.getElementById("auditList"),
+      liveAnnouncement: document.getElementById("liveAnnouncement"),
+      resetButton: document.getElementById("resetButton")
+    };
+
+    function addTextElement(parent, tag, className, text) {
+      const element = document.createElement(tag);
+      if (className) element.className = className;
+      element.textContent = text;
+      parent.append(element);
+      return element;
+    }
+
+    function renderInventory() {
+      elements.sourceInventory.replaceChildren();
+      DEMO_FIXTURE.sources.forEach((source) => {
+        const row = document.createElement("li");
+        row.className = `inventory-row${source.exception ? " exception-row" : ""}`;
+
+        const nameCell = document.createElement("div");
+        addTextElement(nameCell, "span", "source-name", source.name);
+        addTextElement(nameCell, "span", "source-id", source.id);
+        row.append(nameCell);
+
+        const evidenceCell = document.createElement("div");
+        addTextElement(evidenceCell, "span", "source-evidence", source.owner);
+        addTextElement(evidenceCell, "small", "", source.evidence);
+        addTextElement(evidenceCell, "small", "", source.evidenceSource);
+        row.append(evidenceCell);
+
+        const stateCell = document.createElement("div");
+        stateCell.className = "row-state";
+        const scope = addTextElement(
+          stateCell,
+          "span",
+          `scope-state ${source.included ? "included" : "held"}`,
+          source.included ? "In proposed wave" : "Outside wave"
+        );
+        if (source.exception) {
+          const routeButton = document.createElement("button");
+          routeButton.type = "button";
+          routeButton.className = "btn-link";
+          routeButton.id = "routeExceptionButton";
+          routeButton.textContent = "Hold & route exception";
+          routeButton.setAttribute("aria-describedby", "exceptionDescription");
+          routeButton.addEventListener("click", routeException);
+          stateCell.append(routeButton);
+          const exceptionDescription = document.createElement("span");
+          exceptionDescription.className = "sr-only";
+          exceptionDescription.id = "exceptionDescription";
+          exceptionDescription.textContent = DEMO_FIXTURE.exceptionRationale;
+          stateCell.append(exceptionDescription);
+          const routed = addTextElement(stateCell, "span", "tag tag-warn", "Needs owner + lineage");
+          routed.id = "exceptionRouteStatus";
+          scope.textContent = "Excluded from wave";
+          scope.id = "exceptionScopeState";
+        }
+        row.append(stateCell);
+        elements.sourceInventory.append(row);
+      });
+    }
+
+    function renderWorkloads() {
+      elements.workloadList.replaceChildren();
+      DEMO_FIXTURE.workloads.forEach((workload) => {
+        addTextElement(elements.workloadList, "span", "workload-item", workload);
+      });
+    }
+
+    function renderEvidence() {
+      elements.evidenceProvenance.replaceChildren();
+      addTextElement(elements.evidenceProvenance, "strong", "", "Provenance · ");
+      elements.evidenceProvenance.append(document.createTextNode(DEMO_FIXTURE.sourceProvenance));
+
+      elements.reviewRationale.replaceChildren();
+      addTextElement(elements.reviewRationale, "strong", "", "Review rationale · ");
+      elements.reviewRationale.append(document.createTextNode(DEMO_FIXTURE.reviewRationale));
+
+      elements.phaseChecklist.replaceChildren();
+      DEMO_FIXTURE.phaseSafeguards.forEach((item) => {
+        addTextElement(elements.phaseChecklist, "li", "", item);
+      });
+      elements.exceptionSummary.textContent = `Exception path · ${DEMO_FIXTURE.exceptionRationale}`;
+      elements.reviewDestination.textContent = DEMO_FIXTURE.reviewDestination;
+    }
+
+    function renderAudit() {
+      elements.auditList.replaceChildren();
+      state.audit.forEach((entry) => {
+        const row = document.createElement("li");
+        addTextElement(row, "span", "audit-time", entry.time);
+        const detail = document.createElement("span");
+        addTextElement(detail, "span", "audit-actor", entry.actor);
+        addTextElement(detail, "span", "audit-note", entry.note);
+        row.append(detail);
+        elements.auditList.append(row);
+      });
+    }
+
+    function addAudit(actor, note) {
+      state.audit.push({ time: "Workshop", actor, note });
+      renderAudit();
+    }
+
+    function renderState() {
+      const isReady = state.step === "ready";
+      const isEvidence = state.step === "evidence";
+      const isConfirmed = state.step === "confirmed";
+      const isWorking = state.step === "working";
+      const isComplete = state.step === "result";
+
+      elements.reviewPanel.hidden = !(isEvidence || isConfirmed);
+      elements.resultPanel.hidden = !isComplete;
+      elements.confirmButton.hidden = !isEvidence;
+      elements.confirmButton.disabled = state.busy;
+      elements.reviewButton.disabled = state.busy || isWorking || isComplete;
+      elements.proposalStatus.className = isComplete ? "tag tag-ok" : "tag tag-warn";
+      elements.proposalStatus.textContent = isComplete ? "Review requested · awaiting human" : (isConfirmed ? "Plan confirmed · request pending" : "Draft · review not requested");
+
+      if (isReady) {
+        elements.stepCount.textContent = "Step 1 of 3";
+        elements.stepKicker.textContent = "Ready for evidence review";
+        elements.nextTitle.textContent = "Inspect the scoped wave";
+        elements.nextDescription.textContent = "Review ownership, lineage, and the proposed phase safeguards before routing a human architecture review request.";
+        elements.reviewButton.hidden = false;
+        elements.reviewButton.textContent = "Review evidence & phase plan";
+        elements.progressNote.textContent = "No migration or cutover is authorized by this workbench.";
+      } else if (isEvidence) {
+        elements.stepCount.textContent = "Step 2 of 3";
+        elements.stepKicker.textContent = "Evidence is open";
+        elements.nextTitle.textContent = "Confirm the safeguards";
+        elements.nextDescription.textContent = "Check the coexistence, validation, cutover-criteria, and enablement plan before requesting human review.";
+        elements.reviewButton.hidden = true;
+        elements.progressNote.textContent = "Scope remains fixed: the operations registry is excluded from this wave.";
+      } else if (isConfirmed) {
+        elements.stepCount.textContent = "Step 3 of 3";
+        elements.stepKicker.textContent = "Plan confirmed by workshop user";
+        elements.nextTitle.textContent = "Request architecture review";
+        elements.nextDescription.textContent = "Record a request for a human to review this proposed coexistence / validation phase. This is not a migration approval.";
+        elements.reviewButton.hidden = false;
+        elements.reviewButton.textContent = "Request human architecture review";
+        elements.progressNote.textContent = "Submission records a simulated review request only.";
+      } else if (isWorking) {
+        elements.stepCount.textContent = "Step 3 of 3";
+        elements.stepKicker.textContent = "Recording request";
+        elements.nextTitle.textContent = "Sending to the review queue";
+        elements.nextDescription.textContent = "Local simulation in progress; no network request is made.";
+        elements.reviewButton.hidden = false;
+        elements.reviewButton.textContent = "Recording review request…";
+        elements.progressNote.textContent = "A deterministic local state change is in progress.";
+      } else {
+        elements.stepCount.textContent = "Complete · human review pending";
+        elements.stepKicker.textContent = "Request recorded";
+        elements.nextTitle.textContent = "Waiting for human architecture review";
+        elements.nextDescription.textContent = "The proposed phase remains unapproved. A human reviewer must decide whether it may advance.";
+        elements.reviewButton.hidden = true;
+        elements.progressNote.textContent = "No migration, access change, or Teradata retirement occurred.";
+      }
+    }
+
+    function reviewEvidence() {
+      if (state.step !== "ready" || state.busy) return;
+      state.step = "evidence";
+      renderState();
+      addAudit("Chief Data Officer · simulated", "Opened sample ownership, lineage, provenance, and phase safeguards.");
+      elements.liveAnnouncement.textContent = "Evidence and phase safeguards are open. Review the proposal, then confirm the phase plan.";
+      elements.confirmButton.focus();
+    }
+
+    function confirmPlan() {
+      if (state.step !== "evidence" || state.busy) return;
+      state.step = "confirmed";
+      renderState();
+      addAudit("Chief Data Officer · simulated", "Confirmed the proposed coexistence, validation, cutover-criteria, and enablement checklist.");
+      elements.liveAnnouncement.textContent = "Phase plan confirmed. The next action is to request human architecture review.";
+      elements.reviewButton.focus();
+    }
+
+    function requestReview() {
+      if (state.step !== "confirmed" || state.busy) return;
+      state.step = "working";
+      state.busy = true;
+      renderState();
+      addAudit("System · local simulation", "Review request entered local processing; no external system was contacted.");
+      elements.liveAnnouncement.textContent = "Recording a human architecture review request.";
+
+      activeTimer = window.setTimeout(() => {
+        state.busy = false;
+        state.step = "result";
+        renderState();
+        addAudit("System · local simulation", "Review request recorded for fictional architecture reviewers; migration and cutover remain unapproved.");
+        elements.liveAnnouncement.textContent = "Review request recorded. Human architecture review is pending; no migration or cutover was approved.";
+        activeTimer = null;
+        document.getElementById("resultHeading").focus();
+      }, 550);
+    }
+
+    function routeException() {
+      if (state.exceptionRouted) return;
+      state.exceptionRouted = true;
+      const routeButton = document.getElementById("routeExceptionButton");
+      if (routeButton) {
+        routeButton.disabled = true;
+        routeButton.textContent = "Held · route recorded";
+      }
+      const status = document.getElementById("exceptionRouteStatus");
+      if (status) {
+        status.className = "tag tag-ok";
+        status.textContent = "Held · routing recorded";
+      }
+      const scope = document.getElementById("exceptionScopeState");
+      if (scope) scope.textContent = "Outside wave · held";
+      addAudit("Chief Data Officer · simulated", "Held the operations registry outside scope and routed the ownership / lineage gap to fictional domain-owner and governance reviewers.");
+      elements.liveAnnouncement.textContent = "Operations equipment registry remains outside the wave. The ownership and lineage exception was held and routed to fictional reviewers.";
+    }
+
+    function resetDemo() {
+      window.clearTimeout(activeTimer);
+      state.step = "ready";
+      state.exceptionRouted = false;
+      state.busy = false;
+      state.audit = [DEMO_FIXTURE.initialAudit];
+      activeTimer = null;
+      renderInventory();
+      renderState();
+      renderAudit();
+      elements.liveAnnouncement.textContent = "Demo reset. The proposed wave is ready for evidence review.";
+      elements.reviewButton.focus();
+    }
+
+    let activeTimer = null;
+
+    // The primary path is deliberately fixture-driven and has no external side effects.
+    elements.reviewButton.addEventListener("click", () => {
+      if (state.step === "ready") reviewEvidence();
+      else if (state.step === "confirmed") requestReview();
+    });
+    elements.confirmButton.addEventListener("click", confirmPlan);
+    elements.resetButton.addEventListener("click", resetDemo);
+
+    elements.orgName.textContent = DEMO_FIXTURE.organization;
+    elements.contextOrg.textContent = DEMO_FIXTURE.organization;
+    elements.proposalId.textContent = DEMO_FIXTURE.proposalId;
+    elements.scopeSummary.textContent = DEMO_FIXTURE.scopeSummary;
+    renderInventory();
+    renderWorkloads();
+    renderEvidence();
+    renderState();
+    renderAudit();
+  </script>
+</body>
+</html>

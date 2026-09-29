@@ -1,0 +1,1066 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Patient statement inquiry | Wrenmoor Health demo</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+body[data-subvertical="health-providers"] {
+  --workspace-max: 1520px;
+  --content-gutter: 22px;
+  --column-gap: 15px;
+  height: auto;
+  min-height: 100%;
+}
+
+main { width: min(var(--workspace-max), calc(100% - (var(--content-gutter) * 2))); margin: 0 auto; }
+.workspace { padding: 16px 0 24px; }
+.page-head {
+  display: flex; align-items: end; justify-content: space-between; gap: 14px;
+  margin-bottom: 13px;
+}
+.eyebrow { margin: 0 0 2px; color: var(--muted); font-size: 12px; }
+h1 { margin: 0; font-size: clamp(21px, 2vw, 27px); line-height: 1.2; letter-spacing: -.02em; }
+.case-picker { display: grid; gap: 4px; min-width: min(350px, 100%); }
+.case-picker label { color: var(--muted); font-size: 12px; font-weight: 600; }
+.case-picker select {
+  width: 100%; min-height: 38px; border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 6px 34px 6px 10px; color: var(--ink); background: var(--surface); font: inherit; font-size: 13px;
+}
+.layout { display: grid; grid-template-columns: minmax(0, 1.06fr) minmax(350px, .94fr); gap: var(--column-gap); align-items: start; }
+.statement-card, .casework { min-width: 0; }
+.case-card-head { align-items: flex-start; }
+.case-card-head h2 { font-size: 16px; }
+.case-id { display: block; margin-top: 2px; color: var(--muted); font: 12px/1.4 var(--mono); overflow-wrap: anywhere; }
+.statement-body { display: grid; gap: 13px; padding: 13px 15px 15px; }
+.record-meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 13px; margin: 0; }
+.record-meta div { min-width: 0; }
+.record-meta dt { color: var(--muted); font-size: 11.5px; }
+.record-meta dd { margin: 0; font-size: 13px; overflow-wrap: anywhere; }
+.ledger-wrap { min-width: 0; }
+.ledger-label { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 0 0 6px; }
+.ledger-label h3 { margin: 0; font-size: 13.5px; }
+.ledger-label span { color: var(--muted); font-size: 11.5px; }
+#ledger-table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 12.5px; }
+#ledger-table th, #ledger-table td { border-bottom: 1px solid var(--line-soft); padding: 7px 5px; text-align: left; vertical-align: top; }
+#ledger-table th { color: var(--muted); font-size: 11px; font-weight: 600; }
+#ledger-table th:first-child, #ledger-table td:first-child { width: 53%; padding-left: 0; }
+#ledger-table th:nth-child(2), #ledger-table td:nth-child(2) { width: 21%; text-align: right; white-space: nowrap; }
+#ledger-table th:last-child, #ledger-table td:last-child { width: 26%; padding-right: 0; }
+#ledger-table td.amount { font-variant-numeric: tabular-nums; font-weight: 600; }
+.source-tag { display: block; width: fit-content; margin-top: 3px; color: var(--muted); font-size: 10.5px; line-height: 1.35; }
+.ledger-total td { border-bottom: 0 !important; font-weight: 700; }
+.ledger-total td:nth-child(2) { color: var(--accent-strong); font-size: 14px; }
+.reconcile {
+  display: grid; gap: 4px;
+  padding: 9px 11px; border: 1px solid var(--accent-line); border-radius: var(--radius);
+  background: var(--accent-soft); font-size: 12px;
+}
+.reconcile-line { display: flex; flex-wrap: wrap; gap: 2px 7px; }
+.reconcile-line span { color: var(--ink-soft); }
+.reconcile-line strong { font-variant-numeric: tabular-nums; }
+.casework { overflow: hidden; }
+.case-section { padding: 12px 14px; }
+.case-section + .case-section { border-top: 1px solid var(--line-soft); }
+.inquiry-message { margin: 7px 0 0; padding-left: 11px; border-left: 2px solid var(--line); color: var(--ink-soft); font-size: 13px; }
+.case-context { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: start; gap: 4px 10px; }
+.case-context h2 { margin: 0; font-size: 14.5px; }
+.context-meta { margin: 2px 0 0; color: var(--muted); font-size: 11.5px; }
+.draft-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 5px 10px; }
+.draft-heading h3, .source-heading, .route-group legend, .exception-actions h3, .audit-heading { margin: 0; font-size: 13px; font-weight: 600; }
+.draft-copy { margin: 7px 0 8px; padding: 9px 10px; border-left: 3px solid var(--accent); background: var(--bg); font-size: 12.5px; line-height: 1.48; }
+.citation-row { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 9px; font-size: 11.5px; }
+.citation-row > span { color: var(--muted); }
+.citation-row .btn-link { font-size: 11.5px; }
+.evidence-disclosure { margin-top: 7px; border-top: 1px solid var(--line-soft); }
+.evidence-disclosure > summary { padding: 6px 1px; cursor: pointer; font-size: 11.5px; font-weight: 600; }
+.evidence-disclosure > summary::marker { color: var(--accent-strong); }
+.evidence-disclosure .source-list { margin-top: 0; border-top: 0; }
+.source-list { margin-top: 8px; border-top: 1px solid var(--line-soft); }
+.source-list details { border-bottom: 1px solid var(--line-soft); }
+.source-list summary { padding: 6px 1px; cursor: pointer; font-size: 11.5px; font-weight: 600; overflow-wrap: anywhere; }
+.source-list summary::marker { color: var(--accent-strong); }
+.source-list p { margin: 0 0 8px 17px; color: var(--ink-soft); font-size: 11.5px; }
+.action-section { background: var(--surface); }
+.route-group { margin: 0; padding: 0; border: 0; min-width: 0; }
+.route-group legend { margin-bottom: 7px; }
+.route-options { display: grid; gap: 6px; }
+.route-option {
+  display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 8px; align-items: start;
+  padding: 8px 9px; border: 1px solid var(--line); border-radius: var(--radius); cursor: pointer;
+}
+.route-option:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.route-option input { width: 17px; height: 17px; margin: 2px 0 0; }
+.route-option span { display: block; font-size: 12px; font-weight: 600; }
+.route-option small { display: block; margin-top: 1px; color: var(--muted); font-size: 11.5px; font-weight: 400; }
+.terms-note { margin: 7px 0 9px; color: var(--muted); font-size: 11.5px; }
+.review-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.review-actions .btn-primary { min-width: 190px; justify-content: center; }
+.local-only { margin: 7px 0 0; color: var(--muted); font-size: 11px; }
+.completion { margin-top: 10px; padding: 9px 10px; border: 1px solid #a7d9a7; border-radius: var(--radius); background: var(--ok-bg); color: #0b5c0b; font-size: 12px; }
+.completion strong { display: block; margin-bottom: 3px; color: #0b5c0b; }
+.completion p { margin: 0; }
+.approved-copy { margin-top: 7px !important; padding-top: 7px; border-top: 1px solid #a7d9a7; color: #0b5c0b; }
+.audit-line { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 3px 8px; margin-top: 7px !important; font-size: 11px; }
+.audit-time { font-family: var(--mono); }
+.exception-notice { margin-top: 10px; }
+.exception-detail { margin: 8px 0 0; padding: 8px 10px; border-left: 3px solid var(--warn); background: var(--warn-bg); color: #7a4e08; font-size: 12px; }
+.exception-actions { display: grid; gap: 8px; }
+.exception-actions p { margin: 0; color: var(--muted); font-size: 12px; }
+.exception-actions .btn { justify-content: center; width: 100%; }
+.supervisor-note { margin: 8px 0 0; color: var(--ink-soft); font-size: 12px; }
+.case-audit { margin-top: 9px; padding-top: 8px; border-top: 1px solid var(--line-soft); }
+.case-audit .audit-heading { margin-bottom: 5px; }
+.case-audit-list { margin: 0; padding-left: 17px; font-size: 11.5px; }
+.case-audit-list li + li { margin-top: 4px; }
+.case-audit-list time { font-family: var(--mono); }
+.footer { margin-top: 4px; }
+.workload-label { color: var(--muted); font-size: 11.5px; }
+.built { gap: 5px; }
+.svc-chip { color: var(--ink-soft); font-size: 11.5px; }
+dialog { max-height: min(88vh, 740px); overflow: auto; }
+.review-context { margin: 0; color: var(--muted); font-size: 12.5px; }
+.review-choice { margin: 0; font-size: 13px; }
+.field textarea { min-height: 120px; width: 100%; }
+.dialog-disclosure { margin: 0; color: var(--muted); font-size: 12px; }
+.completed-actions { margin-top: 8px; }
+.exception-draft-heading { margin-top: 12px; }
+.noscript-warning { margin: 12px; }
+
+@media (max-width: 900px) {
+  body[data-subvertical="health-providers"] { --content-gutter: 16px; }
+  .layout { grid-template-columns: minmax(0, 1fr) minmax(330px, .95fr); }
+}
+
+@media (max-width: 700px) {
+  .page-head { align-items: stretch; flex-direction: column; gap: 10px; }
+  .case-picker { min-width: 0; }
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .casework { order: -1; }
+  .footer { padding-inline: 14px; }
+}
+
+@media (max-width: 600px) {
+  main { width: calc(100% - 24px); }
+  body[data-subvertical="health-providers"] { --content-gutter: 12px; }
+  .workspace { padding-top: 12px; }
+  .record-meta { grid-template-columns: minmax(0, 1fr); }
+  #ledger-table, #ledger-table tbody { display: block; }
+  #ledger-table thead { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+  #ledger-table tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 8px; padding: 7px 0; border-bottom: 1px solid var(--line-soft); }
+  #ledger-table td { display: block; min-width: 0; border: 0; padding: 0; }
+  #ledger-table td:first-child { width: auto; grid-column: 1; grid-row: 1; padding: 0; }
+  #ledger-table td:nth-child(2) { width: auto; grid-column: 2; grid-row: 1; padding: 0; text-align: right; }
+  #ledger-table td:last-child { width: auto; grid-column: 1 / -1; grid-row: 2; padding: 0; }
+  #ledger-table td:last-child::before { content: "Source: "; color: var(--muted); font-size: 10.5px; }
+  #ledger-table .ledger-total { border-bottom: 0; }
+  #ledger-table .ledger-total td:last-child::before { content: ""; }
+  .ledger-label { align-items: flex-start; flex-direction: column; gap: 0; }
+  .review-actions { align-items: stretch; flex-direction: column; }
+  .review-actions .btn-primary { width: 100%; }
+  .dlg-foot { justify-content: stretch; }
+  .dlg-foot .btn { flex: 1 1 auto; justify-content: center; }
+}
+
+@media (max-width: 380px) {
+  .appbar { align-items: flex-start; }
+  .brand { margin-right: 0; }
+  .who { flex-basis: 100%; }
+  .disclosure { order: 2; }
+  .case-section { padding-inline: 11px; }
+  .statement-body { padding-inline: 11px; }
+  .reconcile { align-items: flex-start; flex-direction: column; }
+}
+  </style>
+</head>
+<body data-subvertical="health-providers">
+  <header class="appbar">
+    <div class="brand">
+      <span id="organization-name" class="brand-name"></span>
+      <span id="brand-sub" class="brand-sub"></span>
+    </div>
+    <p class="disclosure">Illustrative demo - synthetic data</p>
+    <p class="who"><b id="actor-name"></b><br><span id="actor-role"></span></p>
+  </header>
+
+  <main class="workspace">
+    <div class="page-head">
+      <div>
+        <p class="eyebrow">Revenue cycle / Statement inquiries</p>
+        <h1>Patient statement inquiry</h1>
+      </div>
+      <div class="case-picker">
+        <label for="inquiry-select">Open inquiry</label>
+        <select id="inquiry-select"></select>
+      </div>
+    </div>
+
+    <div class="layout">
+      <section class="card statement-card" aria-labelledby="record-heading">
+        <header class="card-head case-card-head">
+          <div>
+            <h2 id="record-heading">Statement record</h2>
+            <span id="record-id" class="case-id"></span>
+          </div>
+          <span id="record-status" class="tag"></span>
+        </header>
+        <div id="record-content" class="statement-body">
+          <dl id="record-meta" class="record-meta"></dl>
+          <div id="ledger-view" class="ledger-wrap">
+            <div class="ledger-label">
+              <h3>Statement and remittance reconciliation</h3>
+              <span>Sample figures · USD</span>
+            </div>
+            <table id="ledger-table">
+              <thead><tr><th scope="col">Line item</th><th scope="col">Amount</th><th scope="col">Source</th></tr></thead>
+              <tbody id="ledger-rows"></tbody>
+            </table>
+            <div id="reconcile" class="reconcile"></div>
+          </div>
+          <div id="exception-record" hidden></div>
+        </div>
+      </section>
+
+      <section class="card casework" aria-labelledby="case-heading">
+        <div class="case-section">
+          <div class="case-context">
+            <div>
+              <h2 id="case-heading" tabindex="-1">Inquiry</h2>
+              <p id="case-meta" class="context-meta"></p>
+            </div>
+            <span id="case-status" class="tag"></span>
+          </div>
+          <blockquote id="case-message" class="inquiry-message"></blockquote>
+        </div>
+
+        <div id="happy-panel">
+          <section class="case-section" aria-labelledby="draft-heading">
+            <div class="draft-heading">
+              <h3 id="draft-heading">Prepared explanation draft</h3>
+              <span id="draft-status" class="tag tag-warn">Draft · human review required</span>
+            </div>
+            <p id="draft-copy" class="draft-copy"></p>
+            <div class="citation-row">
+              <span>Sources:</span>
+              <div id="citation-buttons" class="citation-row" role="group" aria-label="Open cited source excerpts"></div>
+            </div>
+            <details class="evidence-disclosure">
+              <summary>Inspect cited source excerpts</summary>
+              <div id="source-list" class="source-list" role="group" aria-label="Source evidence"></div>
+            </details>
+          </section>
+
+          <section class="case-section action-section" aria-labelledby="next-action-heading">
+            <fieldset id="route-group" class="route-group">
+              <legend id="next-action-heading">Choose a next step</legend>
+              <div id="route-options" class="route-options"></div>
+            </fieldset>
+            <p id="terms-note" class="terms-note"></p>
+            <div id="ready-actions" class="review-actions">
+              <button id="review-button" class="btn btn-primary" type="button" disabled>Review patient response</button>
+              <button id="reset-button" class="btn" type="button">Reset demo</button>
+            </div>
+            <p class="local-only">Approval records a local simulation only. No payment is taken and no message is sent.</p>
+            <div id="happy-completion" class="completion" hidden>
+              <strong id="happy-result-title"></strong>
+              <p id="happy-result-copy"></p>
+              <p id="approved-copy" class="approved-copy"></p>
+              <p class="audit-line"><span><b>Audit actor:</b> <span id="happy-audit-actor"></span></span><span class="audit-time" id="happy-audit-time"></span></p>
+              <div class="review-actions completed-actions">
+                <button id="undo-happy" class="btn" type="button">Undo simulated action</button>
+                <button id="reset-after-happy" class="btn" type="button">Reset demo</button>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div id="exception-panel" hidden>
+          <section class="case-section" aria-labelledby="exception-heading">
+            <div class="draft-heading">
+              <h3 id="exception-heading">Insurance follow-up required</h3>
+              <span class="tag tag-warn">Balance not final</span>
+            </div>
+            <p id="exception-reason" class="exception-detail"></p>
+            <h3 class="source-heading exception-draft-heading">Neutral response draft · not approved</h3>
+            <p id="exception-draft" class="draft-copy"></p>
+            <div class="citation-row" aria-label="Exception source reference">
+              <span>Source:</span>
+              <div id="exception-citation" class="citation-row"></div>
+            </div>
+            <div id="exception-source-list" class="source-list" role="group" aria-label="Insurance status evidence"></div>
+          </section>
+          <section class="case-section action-section">
+            <div class="exception-actions">
+              <h3>Next safe action</h3>
+              <p>No final balance or payment option is available while this item is pending.</p>
+              <button id="route-exception" class="btn btn-primary" type="button">Hold and route to insurance follow-up</button>
+              <button id="supervisor-button" class="btn" type="button">Request supervisor review</button>
+              <button id="reset-exception" class="btn" type="button">Reset demo</button>
+            </div>
+            <p id="supervisor-note" class="supervisor-note" hidden></p>
+            <div id="exception-completion" class="completion exception-notice" hidden>
+              <strong>Case status updated · simulated</strong>
+              <p id="exception-result-copy"></p>
+              <p class="audit-line"><span><b>Audit actor:</b> <span id="exception-audit-actor"></span></span><span class="audit-time" id="exception-audit-time"></span></p>
+              <div class="review-actions completed-actions">
+                <button id="undo-exception" class="btn" type="button">Undo hold and route</button>
+                <button id="reset-after-exception" class="btn" type="button">Reset demo</button>
+              </div>
+            </div>
+          </section>
+        </div>
+        <p id="live-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true">Sample inquiry ready for review.</p>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <span class="workload-label">Catalog workloads:</span>
+    <div class="built" aria-label="Catalog product names">
+      <span class="svc-chip">Azure App Service</span>
+      <span class="svc-chip">Azure OpenAI in Azure AI Foundry Models</span>
+      <span class="svc-chip">Azure Cosmos DB</span>
+      <span class="svc-chip">Azure Database for PostgreSQL</span>
+    </div>
+  </footer>
+
+  <dialog id="review-dialog" aria-labelledby="dialog-heading">
+    <form id="review-form">
+      <div class="dlg-head">
+        <div>
+          <h2 id="dialog-heading">Review patient-facing response</h2>
+          <span class="dlg-sub">Human approval is required before recording this simulated action.</span>
+        </div>
+        <button id="close-dialog" class="btn" type="button" aria-label="Close review">Close</button>
+      </div>
+      <div class="dlg-body">
+        <p id="dialog-context" class="review-context"></p>
+        <p id="dialog-choice" class="review-choice"></p>
+        <label class="field" for="response-text">
+          <span>Patient-facing response draft</span>
+          <textarea id="response-text" required></textarea>
+        </label>
+        <p id="dialog-error" class="dlg-error" aria-live="polite"></p>
+        <p class="dialog-disclosure">Illustrative demo - synthetic data. Review the listed sample sources before approval. This records a local demonstration event only; it does not send a message or make a payment.</p>
+      </div>
+      <div class="dlg-foot">
+        <button id="cancel-review" class="btn" type="button">Return to inquiry</button>
+        <button id="approve-button" class="btn btn-primary" type="submit">Approve and record simulation</button>
+      </div>
+    </form>
+  </dialog>
+  <noscript><p class="notice notice-warn noscript-warning">JavaScript is needed for this local interactive sample. No information is transmitted.</p></noscript>
+
+  <script>
+    const DEMO_FIXTURES = {
+      actor: {
+        name: "Priya Nair",
+        role: "Patient Financial Services",
+        counselor: "Omar Haddad"
+      },
+      organization: {
+        name: "Wrenmoor Health",
+        application: "Statement inquiries"
+      },
+      audit: {
+        time: "2026-09-28 14:22",
+        timeLabel: "2026-09-28 14:22 · demo time",
+        dateTime: "2026-09-28T14:22"
+      },
+      inquiries: {
+        statement: {
+          key: "statement",
+          id: "INQ-DEMO-5521",
+          title: "Statement explanation",
+          person: "Jordan Vale",
+          personRole: "Synthetic guarantor",
+          accountId: "ACCT-DEMO-88310",
+          guarantorId: "GUA-DEMO-40217",
+          statementId: "STM-DEMO-0914-07",
+          date: "2026-09-28",
+          statementDate: "2026-09-14",
+          message: "I’m trying to understand how the insurer payment and my statement amount fit together. What are the sample payment choices?",
+          status: "Reconciled sample",
+          statusClass: "tag-ok",
+          charges: "$1,284.00",
+          adjustment: "−$542.00",
+          allowed: "$742.00",
+          deductible: "$150.00",
+          coinsurance: "$118.40",
+          coinsuranceBasis: "20% of $592.00",
+          insurerPaid: "−$473.60",
+          balance: "$268.40",
+          patientShare: "$150.00 + $118.40 = $268.40",
+          chargeMath: "$1,284.00 − $542.00 = $742.00",
+          reconciliation: "$473.60 insurer payment + $268.40 patient balance = $742.00 allowed",
+          lines: [
+            { label: "Gross charges", amount: "$1,284.00", source: "Internal sample charge reference" },
+            { label: "Statement adjustment", amount: "−$542.00", source: "Statement" },
+            { label: "Allowed amount", amount: "$742.00", source: "Statement" },
+            { label: "Deductible share", amount: "$150.00", source: "Remittance" },
+            { label: "Coinsurance share", amount: "$118.40", note: "20% of $592.00", source: "Remittance" },
+            { label: "Insurer payment", amount: "−$473.60", source: "Remittance" },
+            { label: "Sample patient balance", amount: "$268.40", source: "Statement + remittance", total: true }
+          ],
+          sources: [
+            {
+              key: "statement",
+              type: "Statement",
+              id: "STM-DEMO-0914-07",
+              date: "2026-09-14",
+              text: "Sample statement lines: gross charges $1,284.00; statement adjustment −$542.00; allowed amount $742.00; sample patient balance $268.40."
+            },
+            {
+              key: "remittance",
+              type: "Remittance",
+              id: "REM-DEMO-0915-03",
+              date: "2026-09-15",
+              text: "Sample remittance lines: deductible $150.00; coinsurance 20% of $592.00 = $118.40; insurer payment $473.60. The sample patient share is $150.00 + $118.40 = $268.40."
+            },
+            {
+              key: "charge",
+              type: "Internal sample charge reference",
+              id: "CHG-DEMO-0812-04",
+              date: "2026-08-12",
+              text: "Fictional charge reference supporting sample gross charges of $1,284.00. This is internal sample data, not a clinical record."
+            }
+          ],
+          baseDraft: "Your sample statement lists $1,284.00 in charges and a $542.00 adjustment, leaving $742.00 allowed. The sample remittance lists $473.60 paid by the insurer and $268.40 as the patient balance. The patient share is $150.00 deductible plus $118.40 coinsurance. These sample figures reconcile to the $742.00 allowed amount.",
+          options: [
+            {
+              value: "illustrative-plan",
+              label: "Explain one illustrative payment option",
+              detail: "4 installments of $67.10 · 0% sample terms · $268.40 total. Illustrative only; no payment is taken.",
+              actionLabel: "Include the illustrative payment option in the response",
+              draft: "Your sample statement lists $268.40 as the patient balance. One illustrative option for this demo is 4 installments of $67.10 at 0% sample terms, totaling $268.40. This is an example only, not an enrolled plan or payment request."
+            },
+            {
+              value: "counselor",
+              label: "Route the question to a patient financial counselor",
+              detail: "Human follow-up by fictional counselor Omar Haddad; no financial option is selected.",
+              actionLabel: "Request counselor follow-up",
+              draft: "Your sample statement lists $268.40 as the patient balance. I can route your question to patient financial counselor Omar Haddad for review. No payment action has been taken."
+            }
+          ]
+        },
+        insurance: {
+          key: "insurance",
+          id: "INQ-DEMO-5522",
+          title: "Secondary insurance pending",
+          person: "Jordan Vale",
+          personRole: "Synthetic guarantor",
+          accountId: "ACCT-DEMO-88310",
+          guarantorId: "GUA-DEMO-40217",
+          statementId: "STM-DEMO-0914-08",
+          date: "2026-09-28",
+          statementDate: "2026-09-14",
+          message: "A second insurance item may still be under review. Can you tell me what I owe?",
+          status: "Pending insurance item",
+          statusClass: "tag-warn",
+          reason: "A secondary insurance item is marked pending in the sample status record. The final balance is not established in this inquiry. Do not state an amount or offer a payment choice.",
+          neutralDraft: "We are reviewing an additional insurance item for this statement. A final amount is not available to discuss yet. Your question can be held for insurance follow-up.",
+          source: {
+            key: "pending",
+            type: "Internal sample insurance status",
+            id: "INS-DEMO-1182",
+            date: "2026-09-28",
+            text: "Sample status: secondary insurance item pending review as of 2026-09-28. No final balance or payment option is present in this status record."
+          }
+        }
+      }
+    };
+
+    const state = {
+      activeInquiry: "statement",
+      statement: { route: "", approved: false, response: "" },
+      insurance: { routed: false, supervisorRequested: false }
+    };
+
+    const byId = (id) => document.getElementById(id);
+    const inquirySelect = byId("inquiry-select");
+    const reviewDialog = byId("review-dialog");
+    const responseText = byId("response-text");
+    const liveStatus = byId("live-status");
+
+    function setText(id, value) {
+      byId(id).textContent = value;
+    }
+
+    function makeOption(value, label) {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = label;
+      return option;
+    }
+
+    function makeElement(tag, className, text) {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text !== undefined) node.textContent = text;
+      return node;
+    }
+
+    function renderPicker() {
+      const statement = DEMO_FIXTURES.inquiries.statement;
+      const insurance = DEMO_FIXTURES.inquiries.insurance;
+      inquirySelect.replaceChildren(
+        makeOption(statement.key, `${statement.id} · ${statement.title}`),
+        makeOption(insurance.key, `${insurance.id} · ${insurance.title}`)
+      );
+      inquirySelect.value = state.activeInquiry;
+    }
+
+    function appendMeta(term, value) {
+      const item = document.createElement("div");
+      const dt = makeElement("dt", "", term);
+      const dd = makeElement("dd", "", value);
+      item.append(dt, dd);
+      byId("record-meta").append(item);
+    }
+
+    function renderSources(containerId, sources) {
+      const container = byId(containerId);
+      container.replaceChildren();
+      sources.forEach((source) => {
+        const details = document.createElement("details");
+        details.id = `source-${source.key}`;
+        const summary = document.createElement("summary");
+        summary.textContent = `${source.type} · ${source.id} · ${source.date}`;
+        const excerpt = makeElement("p", "", source.text);
+        details.append(summary, excerpt);
+        container.append(details);
+      });
+    }
+
+    function renderCitations(containerId, sources) {
+      const container = byId(containerId);
+      container.replaceChildren();
+      sources.forEach((source) => {
+        const button = makeElement("button", "btn-link", `${source.type} · ${source.id}`);
+        button.type = "button";
+        button.dataset.sourceKey = source.key;
+        button.addEventListener("click", () => {
+          const details = byId(`source-${source.key}`);
+          if (!details) return;
+          const disclosure = details.closest(".evidence-disclosure");
+          if (disclosure) disclosure.open = true;
+          details.open = true;
+          details.querySelector("summary").focus();
+        });
+        container.append(button);
+      });
+    }
+
+    function reconcileLine(label, value) {
+      const line = makeElement("div", "reconcile-line");
+      line.append(makeElement("span", "", `${label}:`), makeElement("strong", "", value));
+      return line;
+    }
+
+    function renderLedger(record) {
+      const tbody = byId("ledger-rows");
+      tbody.replaceChildren();
+      record.lines.forEach((line) => {
+        const row = document.createElement("tr");
+        if (line.total) row.className = "ledger-total";
+        const labelCell = document.createElement("td");
+        labelCell.textContent = line.label;
+        if (line.note) {
+          const note = makeElement("span", "source-tag", line.note);
+          labelCell.append(note);
+        }
+        const amountCell = makeElement("td", "amount", line.amount);
+        const sourceCell = document.createElement("td");
+        sourceCell.textContent = line.source;
+        row.append(labelCell, amountCell, sourceCell);
+        tbody.append(row);
+      });
+      byId("reconcile").replaceChildren(
+        reconcileLine("Charges less adjustment", record.chargeMath),
+        reconcileLine("Deductible + coinsurance", record.patientShare),
+        reconcileLine("Allowed amount split", record.reconciliation)
+      );
+    }
+
+    function currentRoute() {
+      const record = DEMO_FIXTURES.inquiries.statement;
+      return record.options.find((item) => item.value === state.statement.route);
+    }
+
+    function updateStatusTags(record) {
+      const recordStatus = byId("record-status");
+      recordStatus.className = `tag ${record.statusClass}`;
+      recordStatus.textContent = record.status;
+      const caseStatus = byId("case-status");
+      caseStatus.className = `tag ${record.statusClass}`;
+      caseStatus.textContent = record.status;
+    }
+
+    function renderStatement() {
+      const record = DEMO_FIXTURES.inquiries.statement;
+      byId("ledger-view").hidden = false;
+      byId("exception-record").hidden = true;
+      byId("happy-panel").hidden = false;
+      byId("exception-panel").hidden = true;
+      setText("record-heading", `Statement record · ${record.person}`);
+      setText("record-id", record.statementId);
+      setText("case-heading", record.title);
+      setText("case-meta", `${record.id} · Received ${record.date} · ${record.person}, ${record.personRole.toLowerCase()}`);
+      byId("case-message").textContent = record.message;
+      updateStatusTags(record);
+      const meta = byId("record-meta");
+      meta.replaceChildren();
+      appendMeta("Guarantor ID", record.guarantorId);
+      appendMeta("Account ID", record.accountId);
+      appendMeta("Statement date", record.statementDate);
+      appendMeta("Sample patient balance", record.balance);
+      renderLedger(record);
+      const selectedRoute = currentRoute();
+      setText("draft-copy", selectedRoute ? selectedRoute.draft : record.baseDraft);
+      setText("draft-status", state.statement.approved ? "Approved · simulated" : "Draft · human review required");
+      byId("draft-status").className = `tag ${state.statement.approved ? "tag-ok" : "tag-warn"}`;
+      renderCitations("citation-buttons", record.sources);
+      renderSources("source-list", record.sources);
+      const routes = byId("route-options");
+      routes.replaceChildren();
+      record.options.forEach((optionData) => {
+        const label = makeElement("label", "route-option");
+        const input = document.createElement("input");
+        input.type = "radio";
+        input.name = "statement-route";
+        input.value = optionData.value;
+        input.checked = state.statement.route === optionData.value;
+        input.disabled = state.statement.approved;
+        input.addEventListener("change", () => {
+          state.statement.route = input.value;
+          renderStatement();
+          liveStatus.textContent = `${optionData.label} selected. Review the draft before approving.`;
+          byId("review-button").focus();
+        });
+        const optionText = document.createElement("span");
+        optionText.append(makeElement("span", "", optionData.label));
+        optionText.append(makeElement("small", "", optionData.detail));
+        label.append(input, optionText);
+        routes.append(label);
+      });
+      byId("terms-note").textContent = "Any installment terms shown are illustrative sample terms only; no plan is created.";
+      byId("review-button").disabled = !state.statement.route || state.statement.approved;
+      byId("ready-actions").hidden = state.statement.approved;
+      byId("happy-completion").hidden = !state.statement.approved;
+      if (state.statement.approved) {
+        setText("happy-result-title", "Response approved · simulation only");
+        setText("happy-result-copy", `${selectedRoute.actionLabel}. No message was sent and no payment was made.`);
+        setText("approved-copy", state.statement.response);
+        setText("happy-audit-actor", DEMO_FIXTURES.actor.name);
+        setText("happy-audit-time", DEMO_FIXTURES.audit.timeLabel);
+      }
+      liveStatus.textContent = state.statement.approved
+        ? "Response approved in the local simulation. No message was sent and no payment was made."
+        : state.statement.route
+          ? "Sample statement ready. A route is selected; human review and approval are required."
+          : "Sample statement ready for review.";
+      setText("record-status", state.statement.approved ? "Approved · simulated" : record.status);
+      byId("record-status").className = `tag ${state.statement.approved ? "tag-ok" : record.statusClass}`;
+      setText("case-status", state.statement.approved ? "Approved · simulated" : record.status);
+      byId("case-status").className = `tag ${state.statement.approved ? "tag-ok" : record.statusClass}`;
+    }
+
+    function renderInsurance() {
+      const record = DEMO_FIXTURES.inquiries.insurance;
+      byId("ledger-view").hidden = true;
+      byId("exception-record").hidden = false;
+      byId("happy-panel").hidden = true;
+      byId("exception-panel").hidden = false;
+      setText("record-heading", "Insurance follow-up case");
+      setText("record-id", record.statementId);
+      setText("case-heading", record.title);
+      setText("case-meta", `${record.id} · Received ${record.date} · ${record.person}, ${record.personRole.toLowerCase()}`);
+      byId("case-message").textContent = record.message;
+      updateStatusTags(record);
+      const meta = byId("record-meta");
+      meta.replaceChildren();
+      appendMeta("Guarantor ID", record.guarantorId);
+      appendMeta("Account ID", record.accountId);
+      appendMeta("Statement reference", record.statementId);
+      appendMeta("Sample status date", record.date);
+      setText("exception-reason", record.reason);
+      setText("exception-draft", record.neutralDraft);
+      renderCitations("exception-citation", [record.source]);
+      renderSources("exception-source-list", [record.source]);
+      byId("route-exception").hidden = state.insurance.routed;
+      byId("supervisor-button").textContent = state.insurance.supervisorRequested
+        ? "Undo supervisor review request"
+        : "Request supervisor review";
+      byId("supervisor-note").hidden = !state.insurance.supervisorRequested;
+      setText("supervisor-note", state.insurance.supervisorRequested
+        ? `Supervisor review request recorded by ${DEMO_FIXTURES.actor.name} at ${DEMO_FIXTURES.audit.timeLabel}; no person or queue was notified.`
+        : "");
+      byId("exception-completion").hidden = !state.insurance.routed;
+      if (state.insurance.routed) {
+        setText("exception-result-copy", "Held for insurance follow-up in this local simulation. No final balance is stated and no live queue was updated.");
+        setText("exception-audit-actor", DEMO_FIXTURES.actor.name);
+        setText("exception-audit-time", DEMO_FIXTURES.audit.timeLabel);
+      }
+      liveStatus.textContent = state.insurance.routed
+        ? "Case held and routed for insurance follow-up in the local simulation. No balance or payment choice was offered."
+        : "Secondary insurance is pending. Do not state a final balance or offer a payment choice.";
+      setText("record-status", state.insurance.routed ? "Held · simulated" : record.status);
+      byId("record-status").className = `tag ${state.insurance.routed ? "tag-warn" : record.statusClass}`;
+      setText("case-status", state.insurance.routed ? "Held · simulated" : record.status);
+      byId("case-status").className = `tag ${state.insurance.routed ? "tag-warn" : record.statusClass}`;
+    }
+
+    function render() {
+      setText("organization-name", DEMO_FIXTURES.organization.name);
+      setText("brand-sub", `${DEMO_FIXTURES.actor.role} · ${DEMO_FIXTURES.organization.application}`);
+      setText("actor-name", DEMO_FIXTURES.actor.name);
+      setText("actor-role", DEMO_FIXTURES.actor.role);
+      renderPicker();
+      if (state.activeInquiry === "statement") renderStatement();
+      else renderInsurance();
+    }
+
+    function responseDraft() {
+      const route = currentRoute();
+      if (!route) return "";
+      return route.draft;
+    }
+
+    function openReview() {
+      const route = currentRoute();
+      if (!route || state.statement.approved) return;
+      setText("dialog-context", `Inquiry ${DEMO_FIXTURES.inquiries.statement.id} · Jordan Vale · sample sources: ${DEMO_FIXTURES.inquiries.statement.sources.map((source) => `${source.type} ${source.id}`).join("; ")}.`);
+      setText("dialog-choice", `Selected next step: ${route.actionLabel}.`);
+      responseText.value = responseDraft();
+      setText("dialog-error", "");
+      if (typeof reviewDialog.showModal === "function") reviewDialog.showModal();
+      else reviewDialog.setAttribute("open", "");
+      responseText.focus();
+    }
+
+    function closeReview() {
+      if (typeof reviewDialog.close === "function" && reviewDialog.open) reviewDialog.close();
+      else reviewDialog.removeAttribute("open");
+    }
+
+    function resetDemo() {
+      state.activeInquiry = "statement";
+      state.statement = { route: "", approved: false, response: "" };
+      state.insurance = { routed: false, supervisorRequested: false };
+      closeReview();
+      render();
+      liveStatus.textContent = "Demo reset. Sample statement ready for review.";
+      inquirySelect.focus();
+    }
+
+    inquirySelect.addEventListener("change", () => {
+      state.activeInquiry = inquirySelect.value;
+      render();
+      liveStatus.textContent = state.activeInquiry === "insurance"
+        ? "Secondary insurance inquiry opened. No final balance or payment choice is available."
+        : "Statement inquiry opened.";
+    });
+
+    byId("review-button").addEventListener("click", openReview);
+    byId("close-dialog").addEventListener("click", closeReview);
+    byId("cancel-review").addEventListener("click", closeReview);
+    responseText.addEventListener("input", () => setText("dialog-error", ""));
+    byId("review-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      if (!responseText.value.trim()) {
+        setText("dialog-error", "Enter a patient-facing response before approval.");
+        responseText.focus();
+        return;
+      }
+      state.statement.response = responseText.value.trim();
+      state.statement.approved = true;
+      closeReview();
+      render();
+      byId("undo-happy").focus();
+    });
+    byId("undo-happy").addEventListener("click", () => {
+      state.statement.approved = false;
+      state.statement.response = "";
+      render();
+      liveStatus.textContent = "Simulated approval undone. The response is again a draft requiring review.";
+      byId("review-button").focus();
+    });
+    byId("route-exception").addEventListener("click", () => {
+      state.insurance.routed = !state.insurance.routed;
+      render();
+      liveStatus.textContent = state.insurance.routed
+        ? "Case held and routed for insurance follow-up in the local simulation."
+        : "Simulated hold and route undone. The pending insurance item remains unresolved.";
+      byId(state.insurance.routed ? "undo-exception" : "route-exception").focus();
+    });
+    byId("supervisor-button").addEventListener("click", () => {
+      state.insurance.supervisorRequested = !state.insurance.supervisorRequested;
+      render();
+      liveStatus.textContent = state.insurance.supervisorRequested
+        ? "Supervisor review request recorded in the local simulation. No person was notified."
+        : "Simulated supervisor review request removed.";
+      byId("supervisor-button").focus();
+    });
+    byId("undo-exception").addEventListener("click", () => {
+      state.insurance.routed = false;
+      render();
+      liveStatus.textContent = "Simulated hold and route undone. The pending insurance item remains unresolved.";
+      byId("route-exception").focus();
+    });
+    [byId("reset-button"), byId("reset-after-happy"), byId("reset-after-exception"), byId("reset-exception")].forEach((button) => {
+      button.addEventListener("click", resetDemo);
+    });
+
+    render();
+  </script>
+</body>
+</html>

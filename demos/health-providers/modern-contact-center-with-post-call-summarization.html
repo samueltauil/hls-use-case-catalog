@@ -1,0 +1,1017 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Contact center agent desk | Illustrative demo</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* ---------------------------------------------------------- demo layout */
+body {
+  --desk-gap: clamp(12px, 1.6vw, 22px);
+  --rail-width: clamp(218px, 18vw, 274px);
+  --review-width: clamp(260px, 22vw, 340px);
+}
+
+.desk-wrap { width: min(1920px, 100%); margin: 0 auto; padding: 18px clamp(14px, 2.2vw, 30px) 26px; }
+.desk-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+.desk-heading h1 { margin: 0; font-size: clamp(20px, 2.1vw, 28px); line-height: 1.15; letter-spacing: -0.02em; }
+.eyebrow { margin: 0 0 4px; color: var(--accent-strong); font-size: 12px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; }
+.heading-note { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+.heading-actions { display: flex; gap: 9px; align-items: center; flex: none; }
+.desk-layout { display: grid; grid-template-columns: var(--rail-width) minmax(0, 1fr) var(--review-width); gap: var(--desk-gap); align-items: start; }
+.appbar { position: sticky; top: 0; }
+.stack { display: grid; gap: 12px; min-width: 0; }
+.card-body > :first-child { margin-top: 0; }
+.card-body > :last-child { margin-bottom: 0; }
+.call-card { border-top: 3px solid var(--accent); }
+.context-status { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 13px; }
+.context-status strong { display: block; font-size: 16px; }
+.context-status small { display: block; color: var(--muted); margin-top: 2px; }
+.signal { width: 11px; height: 11px; flex: none; margin-top: 5px; border-radius: 50%; background: var(--muted-soft); box-shadow: 0 0 0 4px var(--surface-2); }
+.signal.live { background: var(--ok); box-shadow: 0 0 0 4px var(--ok-bg); }
+.signal.warn { background: var(--warn); box-shadow: 0 0 0 4px var(--warn-bg); }
+.context-list { display: grid; gap: 10px; margin: 0; }
+.context-list dt { color: var(--muted); font-size: 11.5px; }
+.context-list dd { margin: 1px 0 0; font-size: 13.5px; overflow-wrap: anywhere; }
+.context-list .mono { font-size: 12px; }
+.context-divider { border: 0; border-top: 1px solid var(--line-soft); margin: 14px 0; }
+.call-actions { display: grid; gap: 8px; margin-top: 15px; }
+.call-actions .btn { justify-content: center; width: 100%; }
+.microcopy { color: var(--muted); font-size: 12px; margin: 9px 0 0; }
+.transcript { display: grid; gap: 12px; }
+.transcript-row { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line-soft); }
+.transcript-row:last-child { padding-bottom: 0; border-bottom: 0; }
+.speaker { color: var(--muted); font-size: 12px; font-weight: 700; }
+.speaker span { display: block; font-weight: 400; margin-top: 2px; }
+.utterance { margin: 0; color: var(--ink-soft); }
+.empty-object { border: 1px dashed var(--line); padding: 18px; color: var(--muted); background: var(--bg); }
+.empty-object strong { display: block; color: var(--ink-soft); margin-bottom: 3px; }
+.state-banner { margin-bottom: 12px; }
+.state-banner[hidden] { display: none !important; }
+.guidance { border-left: 3px solid var(--accent); }
+.guidance h3 { margin: 0 0 5px; font-size: 14px; }
+.guidance p { margin: 0; }
+.source-line { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 9px; color: var(--muted); font-size: 12px; }
+.source-line strong { color: var(--ink-soft); font-weight: 600; }
+.guidance-actions { margin-top: 12px; }
+.review-rail { display: grid; gap: 12px; }
+.next-action { border-top: 3px solid var(--accent); }
+.next-action h2 { font-size: 16px; }
+.next-action .btn { width: 100%; justify-content: center; margin-top: 12px; }
+.next-action p { margin: 0; color: var(--muted); font-size: 13px; }
+.next-action .status-line { margin-top: 10px; color: var(--ink-soft); }
+.boundary { font-size: 12.5px; }
+.boundary strong { color: var(--ink-soft); }
+.note-card { scroll-margin-top: 76px; }
+.note-head { align-items: flex-start; }
+.note-title { display: grid; gap: 3px; }
+.note-title h2 { font-size: 16px; }
+.generated-label { color: var(--warn); font-size: 12px; font-weight: 700; }
+.note-form { display: grid; gap: 13px; }
+.note-form .field { min-width: 0; }
+.note-form textarea { min-height: 58px; }
+.note-form input[type="text"] { width: 100%; font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line); border-radius: var(--radius); color: var(--ink); background: var(--surface); }
+.field-help { color: var(--muted); font-size: 12px; margin: 0; }
+.field-label-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+.field-label-row label { margin: 0; }
+.source-box { display: grid; gap: 6px; padding-top: 2px; }
+.source-box h3 { margin: 0; font-size: 13px; }
+.source-box .evidence { margin: 0; }
+.note-actions { display: flex; flex-wrap: wrap; gap: 9px; padding-top: 2px; }
+.review-lock { font-size: 12.5px; color: var(--muted); margin: 0; }
+.audit-status { border-left: 3px solid var(--accent); }
+.audit-status h3 { margin: 0 0 7px; font-size: 14px; }
+.audit-status p { margin: 0; font-size: 13px; }
+.audit-status .tag { margin-bottom: 8px; }
+.right-audit .card-body { padding-top: 12px; }
+.architecture-note { border-top: 1px solid var(--line-soft); margin-top: 12px; padding-top: 11px; color: var(--muted); font-size: 12px; }
+.architecture-note strong { color: var(--ink-soft); }
+
+@media (max-width: 1060px) {
+  .desk-layout { grid-template-columns: minmax(210px, .85fr) minmax(0, 1.5fr); }
+  .review-rail { grid-column: 1 / -1; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+  .review-rail .audit-card { grid-column: 1 / -1; }
+}
+
+@media (max-width: 700px) {
+  .desk-wrap { padding: 14px 12px 22px; }
+  .desk-heading { align-items: flex-start; flex-direction: column; gap: 11px; }
+  .heading-actions { width: 100%; justify-content: flex-end; }
+  .disclosure {
+    position: fixed; left: 12px; right: 12px; bottom: 10px; z-index: 50;
+    justify-content: center; max-width: calc(100vw - 24px);
+    background: var(--ink); border-color: var(--accent-line); box-shadow: var(--shadow-1);
+  }
+  .desk-layout { display: flex; flex-direction: column; }
+  .review-rail { display: contents; }
+  .next-action { order: -1; width: 100%; }
+  .boundary { order: 2; width: 100%; }
+  .audit-card { order: 3; width: 100%; }
+  .transcript-row { grid-template-columns: 1fr; gap: 3px; }
+  .card-head, .card-body { padding-left: 13px; padding-right: 13px; }
+}
+
+@media (max-width: 400px) {
+  .disclosure { max-width: 100%; white-space: normal; }
+  .heading-actions, .heading-actions .btn { width: 100%; }
+  .heading-actions .btn { justify-content: center; }
+}
+  </style>
+</head>
+<body data-subvertical="health-providers">
+  <header class="appbar">
+    <div class="brand">
+      <svg class="brand-mark" width="25" height="25" viewBox="0 0 25 25" aria-hidden="true">
+        <path fill="currentColor" d="M12.5 2.2 21 5.4v6.1c0 5.2-3.4 9.5-8.5 11.3C7.4 21 4 16.7 4 11.5V5.4l8.5-3.2Zm0 3.1L7 7.4v4.1c0 3.7 2.2 6.9 5.5 8.5 3.3-1.6 5.5-4.8 5.5-8.5V7.4l-5.5-2.1Z"/>
+        <path fill="currentColor" d="M11.3 8h2.4v3.3H17v2.4h-3.3V17h-2.4v-3.3H8v-2.4h3.3V8Z"/>
+      </svg>
+      <div>
+        <span class="brand-name">Cedar Arc Access Desk</span>
+        <span class="brand-sub">Cedar Arc Health Network - Demo · agent assist workspace</span>
+      </div>
+    </div>
+    <p class="disclosure" aria-label="Synthetic data disclosure">Illustrative demo - synthetic data</p>
+    <p class="who">Signed in as <b>Rina Solano</b> · <span class="mono">DEMO-AGENT-17</span></p>
+  </header>
+
+  <main id="main-content">
+    <div class="desk-wrap">
+      <div class="desk-heading">
+        <div>
+          <p class="eyebrow">Access &amp; Patient Engagement · inbound work</p>
+          <h1>Contact center agent desk</h1>
+          <p class="heading-note">Review call context, use grounded guidance, and leave a reviewable access note.</p>
+        </div>
+        <div class="heading-actions">
+          <span id="mode-chip" class="tag">Ready for call</span>
+          <button id="reset-button" class="btn" type="button">Reset demo</button>
+        </div>
+      </div>
+
+      <div id="live-status" class="notice notice-note state-banner" role="status" aria-live="polite">
+        <span aria-hidden="true">●</span>
+        <div><strong>Next safe action:</strong> accept the synthetic inbound call to load context and transcript.</div>
+      </div>
+
+      <div class="desk-layout">
+        <aside class="stack" aria-label="Caller and call context">
+          <section class="card call-card">
+            <div class="card-head">
+              <h2>Active call context</h2>
+              <span id="call-state-tag" class="tag tag-warn">Incoming</span>
+            </div>
+            <div class="card-body">
+              <div class="context-status">
+                <div>
+                  <strong id="caller-name">Jordan Vale</strong>
+                  <small id="caller-state">Synthetic caller · waiting to connect</small>
+                </div>
+                <span id="call-signal" class="signal" aria-hidden="true"></span>
+              </div>
+              <dl class="context-list">
+                <div>
+                  <dt>Call reference</dt>
+                  <dd class="mono">CALL-DEMO-0287</dd>
+                </div>
+                <div>
+                  <dt>Caller reference</dt>
+                  <dd class="mono">PAT-DEMO-042</dd>
+                </div>
+                <div>
+                  <dt>Access request</dt>
+                  <dd>Appointment scheduling</dd>
+                </div>
+                <div>
+                  <dt>Appointment request</dt>
+                  <dd class="mono">APPT-DEMO-771</dd>
+                </div>
+                <div>
+                  <dt>Access policy reference</dt>
+                  <dd class="mono">POL-DEMO-014</dd>
+                </div>
+              </dl>
+              <hr class="context-divider">
+              <p class="rule"><span aria-hidden="true">i</span><span>Scope is access and scheduling only. Do not provide diagnosis or treatment guidance.</span></p>
+              <div class="call-actions">
+                <button id="accept-button" class="btn btn-primary" type="button">Accept call</button>
+                <button id="low-confidence-button" class="btn" type="button">Try low-confidence call</button>
+              </div>
+              <p class="microcopy">Existing telephony stays in place; this desk is an agent-assist layer for the illustrative workflow.</p>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="card-head">
+              <h2>Pre-interaction context</h2>
+              <span class="tag">Source text</span>
+            </div>
+            <div class="card-body">
+              <p id="context-summary" class="status-line">Context will be available after the call is accepted.</p>
+              <div id="context-source" class="source-line" hidden>
+                <span>Source:</span><strong>Cedar Arc access queue · Demo</strong>
+              </div>
+            </div>
+          </section>
+        </aside>
+
+        <section class="stack" aria-label="Call and post-call workspace">
+          <section class="card">
+            <div class="card-head">
+              <h2>Call transcript</h2>
+              <span id="transcript-status" class="card-note">Awaiting acceptance</span>
+            </div>
+            <div class="card-body">
+              <div id="transcript-object" class="empty-object">
+                <strong>Synthetic transcript object</strong>
+                Accept the call to load the reviewable conversation.
+              </div>
+              <div id="transcript" class="transcript" hidden></div>
+            </div>
+          </section>
+
+          <section id="note-card" class="card note-card" hidden aria-labelledby="note-heading">
+            <div class="card-head note-head">
+              <div class="note-title">
+                <h2 id="note-heading">Post-call note</h2>
+                <span class="generated-label">Generated draft · review required</span>
+              </div>
+              <span id="note-status-tag" class="tag tag-warn">Draft</span>
+            </div>
+            <div class="card-body">
+              <div id="note-warning" class="notice notice-warn" hidden>
+                <span aria-hidden="true">!</span>
+                <div><strong>Appointment date needs review.</strong> Two dates were heard in overlapping speech. Edit the field to one confirmed date, or discard/escalate this draft.</div>
+              </div>
+              <div class="note-form" aria-describedby="review-lock">
+                <div class="field">
+                  <div class="field-label-row">
+                    <label for="request-field">Caller request</label>
+                    <span class="tag tag-warn">Generated</span>
+                  </div>
+                  <textarea id="request-field" rows="2"></textarea>
+                </div>
+                <div class="field">
+                  <div class="field-label-row">
+                    <label for="action-field">Action taken</label>
+                    <span class="tag tag-warn">Generated</span>
+                  </div>
+                  <textarea id="action-field" rows="2"></textarea>
+                </div>
+                <div class="field">
+                  <div class="field-label-row">
+                    <label for="date-field">Appointment date</label>
+                    <span id="date-tag" class="tag tag-ok">Confirmed in source</span>
+                  </div>
+                  <input id="date-field" type="text" autocomplete="off">
+                  <p id="date-help" class="field-help">Review against the transcript before saving the note.</p>
+                </div>
+                <div class="field">
+                  <div class="field-label-row">
+                    <label for="follow-up-field">Follow-up</label>
+                    <span class="tag tag-warn">Generated</span>
+                  </div>
+                  <textarea id="follow-up-field" rows="2"></textarea>
+                </div>
+                <div class="field">
+                  <div class="field-label-row">
+                    <label for="unresolved-field">Unresolved items</label>
+                    <span class="tag tag-warn">Generated</span>
+                  </div>
+                  <textarea id="unresolved-field" rows="2"></textarea>
+                </div>
+                <div class="source-box">
+                  <h3>Source evidence · confirmed text</h3>
+                  <p id="evidence-field" class="evidence"></p>
+                  <div class="source-line">
+                    <span>Named synthetic source:</span><strong id="evidence-source"></strong>
+                    <span>·</span><span id="evidence-time" class="mono"></span>
+                  </div>
+                </div>
+                <p id="review-lock" class="review-lock">Save is a human-reviewed action. It records Rina's review status only; it does not write back to a record of truth.</p>
+                <div class="note-actions">
+                  <button id="save-button" class="btn btn-primary" type="button">Save reviewed note</button>
+                  <button id="discard-button" class="btn" type="button">Discard draft</button>
+                  <button id="escalate-button" class="btn-link" type="button">Escalate for agent review</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="card guidance">
+            <div class="card-head">
+              <h2>Grounded guidance</h2>
+              <span id="guidance-tag" class="tag">Waiting</span>
+            </div>
+            <div class="card-body">
+              <p id="guidance-copy">Accept the call to see one access-only suggestion with its named synthetic source.</p>
+              <div id="guidance-source" class="source-line" hidden>
+                <span>Source:</span><strong>Cedar Arc Access Playbook — Demo, rev. 3</strong>
+                <span>·</span><span id="guidance-confidence">Illustrative confidence: source-backed</span>
+              </div>
+              <div class="guidance-actions">
+                <button id="unsupported-button" class="btn-link" type="button" disabled>Escalate unsupported question</button>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <aside class="review-rail" aria-label="Review rail">
+          <section class="card next-action">
+            <div class="card-head">
+              <h2>Next safe action</h2>
+              <span id="next-action-tag" class="tag tag-warn">Required</span>
+            </div>
+            <div class="card-body">
+              <p id="next-action-copy">Accept the call before using context or guidance.</p>
+              <button id="next-action-button" class="btn btn-primary" type="button">Accept call</button>
+              <p id="next-action-status" class="status-line" role="status" aria-live="polite"></p>
+            </div>
+          </section>
+
+          <section class="card boundary">
+            <div class="card-head">
+              <h2>Review boundary</h2>
+              <span class="tag">Human in loop</span>
+            </div>
+            <div class="card-body">
+              <p><strong>Access and scheduling only.</strong> AI output is a draft, not diagnosis, treatment, or an authoritative patient record.</p>
+              <p class="architecture-note"><strong>Trust check:</strong> validate summary accuracy with agent review before any record-of-truth use.</p>
+            </div>
+          </section>
+
+          <section class="card audit-card right-audit">
+            <div class="card-head">
+              <h2>Audit trail</h2>
+              <span class="card-note">Synthetic time</span>
+            </div>
+            <div class="card-body">
+              <ol id="audit-list" class="audit">
+                <li><time>09:13:42</time><span><span class="actor is-system">System</span> · Call queued for Rina</span></li>
+              </ol>
+              <div id="audit-outcome" class="audit-status architecture-note" hidden>
+                <span id="audit-outcome-tag" class="tag"></span>
+                <h3 id="audit-outcome-heading"></h3>
+                <p id="audit-outcome-copy"></p>
+              </div>
+            </div>
+          </section>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="built">
+      <span>Catalog architecture:</span>
+      <span class="svc-chip">Azure OpenAI in Azure AI Foundry Models</span>
+      <span class="svc-chip">Azure AI Speech</span>
+      <span class="svc-chip">Azure AI Bot Service</span>
+      <span class="svc-chip">Microsoft Copilot Studio</span>
+    </div>
+    <p class="claim"><b>Illustrative demo.</b> No automatic EHR write-back or measured outcomes are represented.</p>
+  </footer>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const DEMO_FIXTURES = {
+        standard: {
+          caller: "Jordan Vale",
+          callerState: "Synthetic caller · connected",
+          context: "Caller wants help scheduling an access appointment and asks what to expect next.",
+          transcript: [
+            { speaker: "Caller", time: "09:14:08", text: "Hi, I am calling to schedule an access appointment. I want to know what I should have ready." },
+            { speaker: "Rina", time: "09:14:21", text: "I can help with scheduling and access information. I will check the request context first so you do not have to repeat it." },
+            { speaker: "Caller", time: "09:14:36", text: "That is right. Tue 06 Oct 2026 in the request works for me, and I would like the preparation steps." }
+          ],
+          note: {
+            request: "Caller requested help scheduling an access appointment and asked what to have ready.",
+            action: "Reviewed the synthetic access request context and provided access-only preparation guidance.",
+            date: "Tue 06 Oct 2026",
+            followUp: "Confirm the appointment request details through the existing scheduling workflow.",
+            unresolved: "None stated in the call; agent to verify final scheduling status in the existing workflow.",
+            evidence: "Caller: “Tue 06 Oct 2026 in the request works for me, and I would like the preparation steps.”",
+            source: "CALL-DEMO-0287 transcript · synthetic source text",
+            time: "09:14:36"
+          }
+        },
+        lowConfidence: {
+          caller: "Jordan Vale",
+          callerState: "Synthetic caller · connected · overlapping speakers detected",
+          context: "Caller asks about an access appointment; overlapping speech creates two possible dates.",
+          transcript: [
+            { speaker: "Caller", time: "09:15:02", text: "I can do Tuesday the sixth—no, Thursday the eighth works better." },
+            { speaker: "Background speaker", time: "09:15:04", text: "Tuesday is the one we discussed." },
+            { speaker: "Rina", time: "09:15:19", text: "I heard two dates. I will not treat either as confirmed until we review it together." }
+          ],
+          note: {
+            request: "Caller requested help with an access appointment; the preferred date is unclear.",
+            action: "Paused date confirmation and identified the conflicting appointment dates for agent review.",
+            date: "Tue 06 Oct 2026 / Thu 08 Oct 2026",
+            followUp: "Confirm one appointment date with the caller before any scheduling action.",
+            unresolved: "Appointment date is unresolved because speakers overlap in the transcript.",
+            evidence: "Caller: “I can do Tuesday the sixth—no, Thursday the eighth works better.”\nBackground speaker: “Tuesday is the one we discussed.”",
+            source: "CALL-DEMO-0287 transcript · low-confidence synthetic variant",
+            time: "09:15:04"
+          }
+        }
+      };
+
+      const els = {
+        modeChip: document.getElementById("mode-chip"),
+        liveStatus: document.getElementById("live-status"),
+        callStateTag: document.getElementById("call-state-tag"),
+        callerName: document.getElementById("caller-name"),
+        callerState: document.getElementById("caller-state"),
+        callSignal: document.getElementById("call-signal"),
+        contextSummary: document.getElementById("context-summary"),
+        contextSource: document.getElementById("context-source"),
+        transcriptStatus: document.getElementById("transcript-status"),
+        transcriptObject: document.getElementById("transcript-object"),
+        transcript: document.getElementById("transcript"),
+        noteCard: document.getElementById("note-card"),
+        noteWarning: document.getElementById("note-warning"),
+        noteStatusTag: document.getElementById("note-status-tag"),
+        requestField: document.getElementById("request-field"),
+        actionField: document.getElementById("action-field"),
+        dateField: document.getElementById("date-field"),
+        dateTag: document.getElementById("date-tag"),
+        dateHelp: document.getElementById("date-help"),
+        followUpField: document.getElementById("follow-up-field"),
+        unresolvedField: document.getElementById("unresolved-field"),
+        evidenceField: document.getElementById("evidence-field"),
+        evidenceSource: document.getElementById("evidence-source"),
+        evidenceTime: document.getElementById("evidence-time"),
+        guidanceTag: document.getElementById("guidance-tag"),
+        guidanceCopy: document.getElementById("guidance-copy"),
+        guidanceSource: document.getElementById("guidance-source"),
+        guidanceConfidence: document.getElementById("guidance-confidence"),
+        unsupportedButton: document.getElementById("unsupported-button"),
+        nextActionTag: document.getElementById("next-action-tag"),
+        nextActionCopy: document.getElementById("next-action-copy"),
+        nextActionButton: document.getElementById("next-action-button"),
+        nextActionStatus: document.getElementById("next-action-status"),
+        auditList: document.getElementById("audit-list"),
+        auditOutcome: document.getElementById("audit-outcome"),
+        auditOutcomeTag: document.getElementById("audit-outcome-tag"),
+        auditOutcomeHeading: document.getElementById("audit-outcome-heading"),
+        auditOutcomeCopy: document.getElementById("audit-outcome-copy"),
+        acceptButton: document.getElementById("accept-button"),
+        lowConfidenceButton: document.getElementById("low-confidence-button"),
+        saveButton: document.getElementById("save-button"),
+        discardButton: document.getElementById("discard-button"),
+        escalateButton: document.getElementById("escalate-button"),
+        resetButton: document.getElementById("reset-button")
+      };
+
+      let state = "ready";
+      let scenario = "standard";
+      let dateEdited = false;
+      let unsupportedRaised = false;
+      let timer = null;
+      let audit = [{ time: "09:13:42", actor: "System", message: "Call queued for Rina" }];
+      const noteFields = [els.requestField, els.actionField, els.dateField, els.followUpField, els.unresolvedField];
+
+      function setText(element, value) {
+        element.textContent = value;
+      }
+
+      function fixture() {
+        return DEMO_FIXTURES[scenario];
+      }
+
+      function addAudit(actor, time, message, human) {
+        audit.push({ actor, time, message, human: Boolean(human) });
+        renderAudit();
+      }
+
+      function renderAudit() {
+        els.auditList.replaceChildren();
+        audit.forEach((item) => {
+          const li = document.createElement("li");
+          const time = document.createElement("time");
+          const detail = document.createElement("span");
+          const actor = document.createElement("span");
+          setText(time, item.time);
+          setText(actor, item.actor);
+          actor.className = item.human ? "actor is-human" : "actor is-system";
+          detail.append(actor, document.createTextNode(" · " + item.message));
+          li.append(time, detail);
+          els.auditList.append(li);
+        });
+      }
+
+      function renderTranscript() {
+        const data = fixture();
+        els.transcript.replaceChildren();
+        data.transcript.forEach((line) => {
+          const row = document.createElement("div");
+          const speaker = document.createElement("div");
+          const text = document.createElement("p");
+          const speakerName = document.createElement("strong");
+          const time = document.createElement("span");
+          row.className = "transcript-row";
+          speaker.className = "speaker";
+          setText(speakerName, line.speaker);
+          setText(time, line.time);
+          setText(text, line.text);
+          speaker.append(speakerName, time);
+          row.append(speaker, text);
+          els.transcript.append(row);
+        });
+      }
+
+      function loadNoteFields() {
+        const note = fixture().note;
+        els.requestField.value = note.request;
+        els.actionField.value = note.action;
+        els.dateField.value = note.date;
+        els.followUpField.value = note.followUp;
+        els.unresolvedField.value = note.unresolved;
+        setText(els.evidenceField, note.evidence);
+        setText(els.evidenceSource, note.source);
+        setText(els.evidenceTime, "Source time " + note.time);
+        dateEdited = false;
+      }
+
+      function isConfirmedDate(value) {
+        return ["Tue 06 Oct 2026", "Thu 08 Oct 2026"].includes(value.trim());
+      }
+
+      function announce(message, type) {
+        els.liveStatus.className = "notice state-banner" + (type ? " notice-" + type : "");
+        const icon = document.createElement("span");
+        const copy = document.createElement("div");
+        icon.setAttribute("aria-hidden", "true");
+        setText(icon, type === "ok" ? "✓" : type === "warn" ? "!" : "●");
+        setText(copy, message);
+        els.liveStatus.replaceChildren(icon, copy);
+      }
+
+      function setBusy(isBusy, label) {
+        els.acceptButton.disabled = isBusy;
+        els.lowConfidenceButton.disabled = isBusy;
+        els.nextActionButton.disabled = isBusy;
+        els.saveButton.disabled = isBusy || (scenario === "lowConfidence" && !dateEdited);
+        if (label) setText(els.nextActionStatus, label);
+      }
+
+      function updateControls() {
+        const data = fixture();
+        const hasCall = ["working-call", "call-ready", "drafting", "drafted", "saving", "saved", "escalated", "unsupported"].includes(state);
+        const hasDraft = ["drafting", "drafted", "saving"].includes(state);
+        const isFinished = ["saved", "escalated"].includes(state);
+        setText(els.callerName, data.caller);
+        setText(els.callerState, state === "ready" ? (scenario === "lowConfidence" ? "Synthetic caller · low-confidence preview" : "Synthetic caller · waiting to connect") : data.callerState);
+        els.callSignal.className = "signal" + (hasCall ? (scenario === "lowConfidence" ? " warn" : " live") : "");
+        els.contextSource.hidden = !hasCall;
+        setText(els.contextSummary, hasCall ? data.context : (scenario === "lowConfidence" ? "Low-confidence preview is loaded. Accept to inspect the overlapping-speaker transcript." : "Context will be available after the call is accepted."));
+        setText(els.callStateTag, state === "ready" ? (scenario === "lowConfidence" ? "Preview" : "Incoming") : state === "saved" ? "Complete" : scenario === "lowConfidence" ? "Needs review" : "Connected");
+        els.callStateTag.className = "tag " + (scenario === "lowConfidence" && !isFinished ? "tag-warn" : isFinished ? "tag-ok" : "tag-ok");
+        setText(els.modeChip, state === "ready" ? "Ready for call" : state === "working-call" ? "Loading context" : state === "call-ready" ? "Call in progress" : state === "drafting" ? "Drafting note" : state === "drafted" ? "Review required" : state === "saving" ? "Saving review" : state === "saved" ? "Reviewed note saved" : state === "escalated" ? "Escalated" : "Unsupported question");
+        els.modeChip.className = "tag " + (state === "saved" ? "tag-ok" : ["drafted", "drafting", "saving", "escalated", "unsupported"].includes(state) ? "tag-warn" : "");
+
+        const callActionLabel = state === "ready" ? "Accept call" : state === "working-call" ? "Loading…" : state === "call-ready" || state === "unsupported" ? "Draft post-call note" : state === "drafting" ? "Creating draft…" : hasDraft ? "Draft ready" : isFinished ? "Start again" : "Accept call";
+        setText(els.acceptButton, callActionLabel);
+        els.acceptButton.disabled = state !== "ready" && state !== "call-ready" && state !== "unsupported";
+        els.lowConfidenceButton.disabled = state !== "ready";
+
+        els.transcriptObject.hidden = hasCall;
+        els.transcript.hidden = !hasCall;
+        setText(els.transcriptStatus, state === "working-call" ? "Loading synthetic transcript…" : hasCall ? (scenario === "lowConfidence" ? "Overlapping speakers · review" : "Live transcript · synthetic") : "Awaiting acceptance");
+        if (hasCall && state !== "working-call") renderTranscript();
+
+        els.noteCard.hidden = !["drafting", "drafted", "saving", "saved", "escalated"].includes(state);
+        setText(els.noteStatusTag, state === "saved" ? "Reviewed" : state === "escalated" ? "Escalated" : "Draft");
+        els.noteStatusTag.className = "tag " + (state === "saved" ? "tag-ok" : state === "escalated" ? "tag-stop" : "tag-warn");
+        els.noteWarning.hidden = scenario !== "lowConfidence" || !["drafting", "drafted"].includes(state);
+        els.dateTag.hidden = false;
+        setText(els.dateTag, scenario === "lowConfidence" ? (dateEdited ? "Agent corrected" : "Needs review") : "Confirmed in source");
+        els.dateTag.className = "tag " + (scenario === "lowConfidence" && !dateEdited ? "tag-warn" : "tag-ok");
+        setText(els.dateHelp, scenario === "lowConfidence" && !dateEdited ? "Use one date named in the transcript before saving, or discard/escalate." : "Review against the transcript before saving the note.");
+        const fieldsLocked = ["saving", "saved", "escalated"].includes(state);
+        noteFields.forEach((field) => {
+          field.readOnly = fieldsLocked;
+          field.setAttribute("aria-readonly", String(fieldsLocked));
+        });
+        els.guidanceSource.hidden = !hasCall;
+        els.unsupportedButton.disabled = !hasCall || isFinished || unsupportedRaised;
+        setText(els.guidanceTag, !hasCall ? "Waiting" : unsupportedRaised ? "Escalation" : "Grounded");
+        els.guidanceTag.className = "tag " + (!hasCall ? "" : unsupportedRaised ? "tag-stop" : "tag-ok");
+        setText(els.guidanceCopy, !hasCall ? "Accept the call to see one access-only suggestion with its named synthetic source." : unsupportedRaised ? "No grounded guidance is available for that question. Keep the conversation within access and scheduling, then use human escalation." : "Confirm the caller's requested date and preparation question against the transcript before continuing in the existing scheduling workflow.");
+        setText(els.guidanceConfidence, scenario === "lowConfidence" ? "Illustrative confidence: low — overlapping speakers" : "Illustrative confidence: source-backed");
+
+        const draftAvailable = ["call-ready", "unsupported"].includes(state);
+        const saveAvailable = ["drafted"].includes(state);
+        const nextLabel = state === "ready" ? "Accept call" : state === "working-call" ? "Loading…" : draftAvailable ? "Draft post-call note" : state === "drafting" ? "Creating draft…" : saveAvailable ? "Save reviewed note" : state === "saving" ? "Saving…" : state === "saved" ? "Reset to replay" : state === "escalated" ? "Reset to replay" : "Review note";
+        setText(els.nextActionButton, nextLabel);
+        els.nextActionButton.disabled = state === "working-call" || state === "drafting" || state === "saving" || (saveAvailable && scenario === "lowConfidence" && !dateEdited);
+        setText(els.nextActionTag, state === "saved" ? "Complete" : state === "escalated" ? "Audit recorded" : state === "drafted" ? (scenario === "lowConfidence" && !dateEdited ? "Blocked" : "Review") : "Required");
+        els.nextActionTag.className = "tag " + (state === "saved" ? "tag-ok" : state === "escalated" ? "tag-stop" : state === "drafted" && scenario === "lowConfidence" && !dateEdited ? "tag-stop" : "tag-warn");
+        setText(els.nextActionCopy, state === "ready" ? "Accept the call before using context or guidance." : state === "call-ready" || state === "unsupported" ? "Create a structured draft from the transcript, then inspect each generated section." : state === "drafted" && scenario === "lowConfidence" && !dateEdited ? "Resolve the low-confidence appointment date before a reviewed save can proceed." : state === "drafted" ? "Review the generated sections and source evidence, then save as reviewed." : state === "saved" ? "The reviewed note is complete. Reset to replay the call." : state === "escalated" ? "The draft is held for human review. Reset to replay the exception." : "The desk is working.");
+
+        setBusy(["working-call", "drafting", "saving"].includes(state));
+        if (state === "drafted") els.saveButton.disabled = scenario === "lowConfidence" && !dateEdited;
+        if (state === "saved" || state === "escalated") {
+          els.saveButton.disabled = true;
+          els.discardButton.disabled = true;
+          els.escalateButton.disabled = true;
+        } else {
+          els.discardButton.disabled = false;
+          els.escalateButton.disabled = false;
+        }
+      }
+
+      function chooseScenario(nextScenario) {
+        clearTimeout(timer);
+        scenario = nextScenario;
+        state = "ready";
+        unsupportedRaised = false;
+        dateEdited = false;
+        audit = [{ time: "09:13:42", actor: "System", message: "Call queued for Rina" }];
+        renderAudit();
+        if (nextScenario === "lowConfidence") {
+          addAudit("System", "09:13:49", "Low-confidence call variant loaded for review", false);
+          announce("Low-confidence call loaded. Accept it to inspect overlapping speakers and conflicting appointment dates.", "warn");
+        } else {
+          announce("Next safe action: accept the synthetic inbound call to load context and transcript.");
+        }
+        els.auditOutcome.hidden = true;
+        updateControls();
+      }
+
+      function acceptCall() {
+        if (state !== "ready") return;
+        state = "working-call";
+        updateControls();
+        announce("Loading synthetic caller context and transcript…", "warn");
+        addAudit("System", scenario === "lowConfidence" ? "09:14:02" : "09:14:00", "Call accepted; context assembly in progress", false);
+        timer = setTimeout(() => {
+          state = "call-ready";
+          updateControls();
+          addAudit("System", scenario === "lowConfidence" ? "09:14:05" : "09:14:03", "Transcript and pre-interaction context available", false);
+          announce("Call context loaded. Review the transcript and use the grounded suggestion before drafting.", "ok");
+        }, 650);
+      }
+
+      function draftNote() {
+        if (!["call-ready", "unsupported"].includes(state)) return;
+        state = "drafting";
+        loadNoteFields();
+        updateControls();
+        announce("Creating structured post-call sections from the synthetic transcript…", "warn");
+        addAudit("System", scenario === "lowConfidence" ? "09:15:12" : "09:14:44", "Draft generation started; source evidence attached", false);
+        timer = setTimeout(() => {
+          state = "drafted";
+          updateControls();
+          addAudit("System", scenario === "lowConfidence" ? "09:15:14" : "09:14:46", "Generated draft ready for agent review", false);
+          announce(scenario === "lowConfidence" ? "Draft ready, but save is blocked until the appointment date is corrected or the draft is escalated." : "Draft ready. Review generated sections and source evidence, then save as a reviewed note.", scenario === "lowConfidence" ? "warn" : "ok");
+          els.noteCard.scrollIntoView({ block: "nearest", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+        }, 650);
+      }
+
+      function saveNote() {
+        if (state !== "drafted") return;
+        if (scenario === "lowConfidence" && !dateEdited) {
+          announce("Save blocked: edit the conflicting appointment date to one confirmed date, or discard or escalate the draft.", "warn");
+          return;
+        }
+        state = "saving";
+        updateControls();
+        announce("Recording Rina's human review of the note…", "warn");
+        addAudit("Rina Solano", "09:16:02", "Reviewed generated sections and source evidence", true);
+        timer = setTimeout(() => {
+          state = "saved";
+          updateControls();
+          addAudit("Rina Solano", "09:16:05", "Saved reviewed note; no record-of-truth write-back", true);
+          showOutcome("Reviewed", "Human-reviewed note saved for this illustrative workflow. It remains a demo artifact and is not an automatic record update.", "tag-ok");
+          announce("Reviewed note saved. Audit status confirms human review; no record-of-truth write-back occurred.", "ok");
+        }, 650);
+      }
+
+      function discardDraft() {
+        if (!["drafted", "drafting"].includes(state)) return;
+        clearTimeout(timer);
+        state = "call-ready";
+        dateEdited = false;
+        updateControls();
+        addAudit("Rina Solano", "09:16:10", "Discarded generated draft; no note saved", true);
+        announce("Draft discarded. No reviewed note was saved. You can draft again from the transcript.", "ok");
+      }
+
+      function escalateDraft() {
+        if (!["drafted", "drafting"].includes(state)) return;
+        clearTimeout(timer);
+        state = "escalated";
+        updateControls();
+        addAudit("Rina Solano", "09:16:12", "Escalated draft for human review: unresolved appointment date", true);
+        showOutcome("Escalated", "Rationale: overlapping speakers produced two appointment dates. Audit status is human escalation pending; no save occurred.", "tag-stop");
+        announce("Draft escalated for human review. No reviewed note was saved.", "warn");
+      }
+
+      function showOutcome(tag, heading, tagClass) {
+        els.auditOutcome.hidden = false;
+        setText(els.auditOutcomeTag, tag);
+        els.auditOutcomeTag.className = "tag " + tagClass;
+        setText(els.auditOutcomeHeading, heading);
+        setText(els.auditOutcomeCopy, tag === "Escalated" ? "Audit status: human escalation pending." : "Audit status: human review recorded.");
+      }
+
+      function raiseUnsupportedQuestion() {
+        if (els.unsupportedButton.disabled) return;
+        unsupportedRaised = true;
+        state = "unsupported";
+        addAudit("Rina Solano", "09:14:52", "Escalated unsupported question; no grounded guidance available", true);
+        updateControls();
+        announce("No grounded guidance is available for that question. Human escalation is recorded; keep the interaction in access and scheduling scope.", "warn");
+      }
+
+      function handleNextAction() {
+        if (state === "ready") acceptCall();
+        else if (["call-ready", "unsupported"].includes(state)) draftNote();
+        else if (state === "drafted") saveNote();
+        else if (["saved", "escalated"].includes(state)) chooseScenario("standard");
+      }
+
+      function bindEvents() {
+        els.acceptButton.addEventListener("click", () => {
+          if (state === "ready") acceptCall();
+          else if (["call-ready", "unsupported"].includes(state)) draftNote();
+        });
+        els.nextActionButton.addEventListener("click", handleNextAction);
+        els.lowConfidenceButton.addEventListener("click", () => chooseScenario("lowConfidence"));
+        els.saveButton.addEventListener("click", saveNote);
+        els.discardButton.addEventListener("click", discardDraft);
+        els.escalateButton.addEventListener("click", escalateDraft);
+        els.unsupportedButton.addEventListener("click", raiseUnsupportedQuestion);
+        els.resetButton.addEventListener("click", () => chooseScenario("standard"));
+        els.dateField.addEventListener("input", () => {
+          dateEdited = scenario === "lowConfidence" && isConfirmedDate(els.dateField.value);
+          if (dateEdited) {
+            els.unresolvedField.value = "No date conflict remains after agent confirmation in this demo.";
+          }
+          updateControls();
+        });
+        [els.requestField, els.actionField, els.followUpField, els.unresolvedField].forEach((field) => {
+          field.addEventListener("input", () => {
+            if (state === "drafted") announce("Draft edited by Rina. Review remains required before saving.", "warn");
+          });
+        });
+      }
+
+      bindEvents();
+      updateControls();
+    })();
+  </script>
+</body>
+</html>

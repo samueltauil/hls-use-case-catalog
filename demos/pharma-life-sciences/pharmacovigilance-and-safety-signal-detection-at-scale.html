@@ -1,0 +1,1537 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Safety signal review workbench | HLS catalog demo</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+body {
+  --review-fill: var(--accent-soft);
+  min-height: 100%;
+}
+
+button, textarea { font-family: inherit; }
+
+.appbar {
+  min-height: 62px;
+}
+
+.brand-mark {
+  width: 30px;
+  height: 30px;
+}
+
+.page {
+  width: min(1720px, 100%);
+  margin: 0 auto;
+  padding: 16px 18px 22px;
+}
+
+.context-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px 20px;
+  margin-bottom: 12px;
+}
+
+.context-bar h1 {
+  margin: 0;
+  font-size: clamp(19px, 2vw, 25px);
+  line-height: 1.2;
+}
+
+.context-copy {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.context-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(240px, 290px) minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.queue {
+  position: sticky;
+  top: 78px;
+  overflow: hidden;
+}
+
+.queue-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.queue-count {
+  min-width: 24px;
+  height: 24px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  color: var(--on-accent, #fff);
+  background: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.queue-list {
+  display: grid;
+}
+
+.signal-row {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid var(--line-soft);
+  background: var(--surface);
+  color: var(--ink);
+  text-align: left;
+  padding: 13px 14px;
+  cursor: pointer;
+  min-height: 84px;
+}
+
+.signal-row:last-child { border-bottom: 0; }
+.signal-row:hover { background: var(--surface-2); }
+.signal-row[aria-current="true"] {
+  background: var(--accent-soft);
+  box-shadow: inset 4px 0 0 var(--accent);
+}
+
+.signal-row-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.signal-name {
+  display: block;
+  font-weight: 650;
+  line-height: 1.3;
+}
+
+.signal-meta {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.review {
+  min-width: 0;
+}
+
+.object-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px 18px;
+  align-items: start;
+  padding: 15px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.object-head h2 {
+  margin: 0;
+  font-size: clamp(18px, 2vw, 23px);
+  line-height: 1.25;
+}
+
+.object-sub {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.object-action {
+  display: grid;
+  justify-items: end;
+  gap: 7px;
+}
+
+.object-action .btn {
+  min-height: 42px;
+}
+
+.review-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(280px, .72fr);
+  gap: 12px;
+  padding: 12px;
+}
+
+.main-column, .side-column {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  align-content: start;
+}
+
+.signal-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--line-soft);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.signal-stat {
+  padding: 10px 12px;
+  background: var(--surface);
+}
+
+.signal-stat span {
+  display: block;
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+.signal-stat strong {
+  display: block;
+  margin-top: 2px;
+  font-size: 14px;
+}
+
+.trend-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 210px;
+  gap: 14px;
+  align-items: center;
+}
+
+.trend-chart {
+  min-height: 105px;
+  border-left: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 8px 8px 0 10px;
+}
+
+.bars {
+  height: 88px;
+  display: flex;
+  align-items: end;
+  gap: 7px;
+}
+
+.bar-group {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
+  align-items: center;
+  gap: 4px;
+}
+
+.bar {
+  width: min(24px, 80%);
+  min-height: 5px;
+  background: var(--accent);
+  border-radius: 3px 3px 0 0;
+}
+
+.bar-label {
+  color: var(--muted);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.trend-note {
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+.trend-note strong {
+  display: block;
+  color: var(--ink);
+  margin-bottom: 5px;
+}
+
+.driver-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.driver-list li {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  font-size: 13px;
+}
+
+.driver-dot {
+  width: 9px;
+  height: 9px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.driver-list small {
+  display: block;
+  color: var(--muted);
+  margin-top: 1px;
+}
+
+.source-list {
+  display: grid;
+  gap: 7px;
+}
+
+.source-item {
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+
+.source-item summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  padding: 9px 10px;
+  cursor: pointer;
+}
+
+.source-title {
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.source-meta {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 11.5px;
+  font-weight: 400;
+}
+
+.source-excerpt {
+  margin: 0;
+  padding: 0 10px 10px;
+  color: var(--ink-soft);
+  font-size: 12.5px;
+}
+
+.exception-panel {
+  border-left: 4px solid var(--warn);
+}
+
+.exception-panel .card-body {
+  display: grid;
+  gap: 10px;
+}
+
+.gap-list {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+.review-gate {
+  background: var(--review-fill);
+  border-color: var(--accent-line);
+}
+
+.review-gate .card-body {
+  display: grid;
+  gap: 11px;
+}
+
+.accountable {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--accent-strong);
+  color: var(--on-accent, #fff);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.accountable div > strong, .accountable div > span {
+  display: block;
+}
+
+.accountable div > span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.review-gate .btn-primary {
+  justify-content: center;
+}
+
+.state-banner {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+}
+
+.audit-card {
+  scroll-margin-top: 80px;
+}
+
+.audit-message {
+  color: var(--ink-soft);
+}
+
+.footer {
+  margin-top: 2px;
+}
+
+.catalog-claim {
+  width: 100%;
+  padding-top: 8px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.close-button {
+  min-width: 38px;
+  min-height: 38px;
+  justify-content: center;
+  padding: 6px;
+}
+
+.decision-options {
+  display: grid;
+  gap: 8px;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.decision-options legend {
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.decision-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 11px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.decision-option:has(input:checked) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.decision-option input {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+}
+
+.decision-option strong, .decision-option small {
+  display: block;
+}
+
+.decision-option small {
+  margin-top: 2px;
+  color: var(--muted);
+}
+
+@media (max-width: 980px) {
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .queue {
+    position: static;
+  }
+
+  .queue-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .signal-row {
+    border-right: 1px solid var(--line-soft);
+    border-bottom: 0;
+  }
+
+  .signal-row:last-child { border-right: 0; }
+  .signal-row[aria-current="true"] { box-shadow: inset 0 4px 0 var(--accent); }
+}
+
+@media (max-width: 760px) {
+  .page { padding: 12px; }
+  .context-bar { align-items: flex-start; }
+  .context-actions { margin-left: 0; }
+  .review-grid { grid-template-columns: 1fr; padding: 9px; }
+  .trend-wrap { grid-template-columns: 1fr; }
+  .object-head { grid-template-columns: 1fr; }
+  .object-action { justify-items: start; }
+}
+
+@media (max-width: 560px) {
+  .who { display: none; }
+  .disclosure { order: 3; width: 100%; justify-content: center; }
+  .context-bar { display: grid; }
+  .context-actions { width: 100%; }
+  .context-actions .btn { flex: 1; justify-content: center; }
+  .queue-list {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+  }
+  .signal-row {
+    flex: 0 0 82%;
+    scroll-snap-align: start;
+  }
+  .signal-strip { grid-template-columns: repeat(2, 1fr); }
+  .source-item summary { grid-template-columns: 1fr; }
+  .dlg-foot .btn { flex: 1; justify-content: center; }
+}
+  </style>
+</head>
+<body data-subvertical="pharma-life-sciences">
+  <header class="appbar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+        <path fill="currentColor" d="M6 5h8v8H6zm12 0h8v8h-8zM6 17h8v8H6zm12 0h8v8h-8z"/>
+      </svg>
+      <div>
+        <span class="brand-name">Northstar Safety Operations</span>
+        <span class="brand-sub">Signal review workbench · Clinical Development &amp; Trials</span>
+      </div>
+    </div>
+    <p class="disclosure">
+      <span aria-hidden="true">◇</span>
+      Illustrative demo - synthetic data
+    </p>
+    <p class="who"><b>Dr. Mira Solis</b><br>Drug Safety Physician · fictional identity</p>
+  </header>
+
+  <main class="page">
+    <div class="context-bar">
+      <div>
+        <h1>Active signal review</h1>
+        <p class="context-copy">Review date: 18 Jun 2026 · Fictional Northstar Therapeutics portfolio</p>
+      </div>
+      <div class="context-actions">
+        <button class="btn" id="auditJump" type="button">View audit trail</button>
+        <button class="btn" id="resetDemo" type="button">Reset demo</button>
+      </div>
+    </div>
+
+    <div class="workspace">
+      <aside class="queue card" aria-labelledby="queueTitle">
+        <div class="card-head">
+          <div class="queue-summary">
+            <h2 id="queueTitle">Medical review queue</h2>
+            <span class="queue-count" id="queueCount">2</span>
+          </div>
+          <span class="card-note">Sample records</span>
+        </div>
+        <div class="queue-list" id="queueList" aria-label="Safety signals"></div>
+      </aside>
+
+      <article class="review card" aria-labelledby="signalTitle">
+        <div class="object-head">
+          <div>
+            <p class="eyebrow" id="signalId">Signal PV-SIG-026</p>
+            <h2 id="signalTitle">PX-340 / hepatic enzyme increased</h2>
+            <p class="object-sub" id="signalSub">Case cluster · First surfaced 12 Jun 2026 · Sample operational data</p>
+          </div>
+          <div class="object-action">
+            <span class="tag tag-warn" id="statusTag">Medical review due</span>
+            <button class="btn btn-primary" id="openReview" type="button">Review signal</button>
+          </div>
+        </div>
+
+        <div class="state-banner notice notice-ok" id="stateBanner" hidden></div>
+
+        <div class="signal-strip" aria-label="Signal summary">
+          <div class="signal-stat"><span>Evidence strength</span><strong id="evidenceStrength">High support</strong></div>
+          <div class="signal-stat"><span>Case reports</span><strong id="caseCount">18 sample cases</strong></div>
+          <div class="signal-stat"><span>Literature items</span><strong id="literatureCount">3 sample items</strong></div>
+          <div class="signal-stat"><span>Review state</span><strong id="reviewState">Awaiting physician</strong></div>
+        </div>
+
+        <div class="review-grid">
+          <div class="main-column">
+            <section class="card" aria-labelledby="patternTitle">
+              <div class="card-head">
+                <h3 id="patternTitle">Observed pattern</h3>
+                <span class="card-note">Illustrative weekly intake · not a causal conclusion</span>
+              </div>
+              <div class="card-body trend-wrap">
+                <div class="trend-chart" aria-label="Seven-week sample case report trend">
+                  <div class="bars" id="trendBars"></div>
+                </div>
+                <div class="trend-note">
+                  <strong id="trendSummary">Review threshold crossed in the latest sample period</strong>
+                  <span id="trendDetail">The workbench grouped coded terms and temporal patterns for human assessment.</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="card" aria-labelledby="driversTitle">
+              <div class="card-head">
+                <h3 id="driversTitle">Why this signal surfaced</h3>
+                <span class="card-note">Generated triage rationale · verify against sources</span>
+              </div>
+              <div class="card-body">
+                <ul class="driver-list" id="driverList"></ul>
+              </div>
+            </section>
+
+            <section class="card" aria-labelledby="sourcesTitle">
+              <div class="card-head">
+                <h3 id="sourcesTitle">Source evidence</h3>
+                <span class="card-note" id="sourceDate">Sources indexed through 17 Jun 2026</span>
+              </div>
+              <div class="card-body source-list" id="sourceList"></div>
+            </section>
+
+            <section class="card audit-card" id="auditTrail" aria-labelledby="auditTitle">
+              <div class="card-head">
+                <h3 id="auditTitle">Audit trail</h3>
+                <span class="card-note">Illustrative review history</span>
+              </div>
+              <div class="card-body">
+                <ol class="audit" id="auditList"></ol>
+              </div>
+            </section>
+          </div>
+
+          <div class="side-column">
+            <section class="card review-gate" aria-labelledby="gateTitle">
+              <div class="card-head">
+                <h3 id="gateTitle">Human review required</h3>
+                <span class="tag tag-stop">No auto-decision</span>
+              </div>
+              <div class="card-body">
+                <div class="accountable">
+                  <span class="avatar" aria-hidden="true">MS</span>
+                  <div>
+                    <strong>Dr. Mira Solis</strong>
+                    <span>Accountable Drug Safety Physician · synthetic</span>
+                  </div>
+                </div>
+                <p class="status-line" id="gateCopy">Inspect the evidence package, then record a disposition and rationale.</p>
+                <button class="btn btn-primary" id="gateReview" type="button">Review signal</button>
+                <div class="rule">
+                  <span aria-hidden="true">ⓘ</span>
+                  <span>Generated triage supports prioritization only. A qualified reviewer owns the safety assessment and escalation.</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="card exception-panel" id="exceptionPanel" aria-labelledby="exceptionTitle" hidden>
+              <div class="card-head">
+                <h3 id="exceptionTitle">Evidence gaps block advancement</h3>
+                <span class="tag tag-warn">Exception</span>
+              </div>
+              <div class="card-body">
+                <p class="status-line">This cluster needs additional case follow-up before a medical assessment can advance.</p>
+                <ul class="gap-list" id="gapList"></ul>
+                <button class="btn" id="escalateException" type="button">Escalate for evidence</button>
+              </div>
+            </section>
+
+            <section class="card" aria-labelledby="provenanceTitle">
+              <div class="card-head">
+                <h3 id="provenanceTitle">Evidence controls</h3>
+                <span class="card-note">Sample governance context</span>
+              </div>
+              <div class="card-body">
+                <dl class="facts">
+                  <div><dt>Data cutoff</dt><dd id="dataCutoff">17 Jun 2026, 18:00 UTC</dd></div>
+                  <div><dt>Coding dictionary</dt><dd>Illustrative safety terms v1</dd></div>
+                  <div><dt>Generated output</dt><dd>Unapproved triage rationale</dd></div>
+                  <div><dt>Source lineage</dt><dd>Case and digest IDs shown</dd></div>
+                </dl>
+              </div>
+            </section>
+          </div>
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="built" aria-label="Catalog workload mapping">
+      <span>Catalog workloads:</span>
+      <span class="svc-chip">Azure OpenAI in Azure AI Foundry Models</span>
+      <span class="svc-chip">Azure AI Vision</span>
+      <span class="svc-chip">Azure Machine Learning</span>
+      <span class="svc-chip">Microsoft Purview</span>
+    </div>
+    <p class="claim catalog-claim"><b>Catalog opportunity:</b> automate case intake and triage to cut processing cost 30-50%, speed signal detection, and reduce compliance risk. This is catalog context, not a measured demo outcome.</p>
+  </footer>
+
+  <div class="sr-only" id="liveStatus" aria-live="polite"></div>
+
+  <dialog id="reviewDialog" aria-labelledby="dialogTitle">
+    <form id="reviewForm" method="dialog">
+      <div class="dlg-head">
+        <div>
+          <h2 id="dialogTitle">Record human disposition</h2>
+          <span class="dlg-sub" id="dialogSignal">PV-SIG-026 · PX-340 / hepatic enzyme increased</span>
+        </div>
+        <button class="btn close-button" id="closeDialog" type="button" aria-label="Close review dialog">×</button>
+      </div>
+      <div class="dlg-body">
+        <div class="notice notice-warn">
+          <span aria-hidden="true">⚠</span>
+          <span>The generated triage rationale is not a safety conclusion. Review the cited sample evidence before submitting.</span>
+        </div>
+
+        <dl class="meta-grid">
+          <div><dt>Accountable reviewer</dt><dd>Dr. Mira Solis · synthetic</dd></div>
+          <div><dt>Evidence cutoff</dt><dd id="dialogCutoff">17 Jun 2026</dd></div>
+        </dl>
+
+        <fieldset class="decision-options">
+          <legend>Disposition</legend>
+          <label class="decision-option">
+            <input type="radio" name="decision" value="advance" checked>
+            <span><strong>Advance to safety assessment</strong><small>Send the reviewed package to the cross-functional safety team.</small></span>
+          </label>
+          <label class="decision-option">
+            <input type="radio" name="decision" value="evidence">
+            <span><strong>Request more evidence</strong><small>Route missing follow-up to PV Operations before assessment.</small></span>
+          </label>
+        </fieldset>
+
+        <div class="field">
+          <label for="rationale">Reviewer rationale</label>
+          <textarea id="rationale" maxlength="500" required>Evidence package supports cross-functional safety assessment; causality remains undetermined.</textarea>
+        </div>
+
+        <label class="attest">
+          <input id="attestation" type="checkbox">
+          <span>I reviewed the cited sample sources and understand that I remain accountable for this disposition.</span>
+        </label>
+
+        <p class="dlg-error" id="dialogError" role="alert"></p>
+      </div>
+      <div class="dlg-foot">
+        <button class="btn" id="cancelReview" type="button">Cancel</button>
+        <button class="btn btn-primary" id="submitReview" type="submit">Submit disposition</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+    const SAFETY_FIXTURES = {
+      signals: [
+        {
+          id: "PV-SIG-026",
+          name: "PX-340 / hepatic enzyme increased",
+          product: "PX-340",
+          status: "Medical review due",
+          statusTone: "warn",
+          queueMeta: "18 sample cases · high support",
+          evidenceStrength: "High support",
+          cases: 18,
+          literature: 3,
+          reviewState: "Awaiting physician",
+          firstSurfaced: "12 Jun 2026",
+          cutoff: "17 Jun 2026, 18:00 UTC",
+          trend: [2, 2, 3, 4, 4, 6, 7],
+          trendLabels: ["W16", "W17", "W18", "W19", "W20", "W21", "W22"],
+          trendSummary: "Review threshold crossed in the latest sample period",
+          trendDetail: "The workbench grouped coded terms and temporal patterns for human assessment.",
+          isException: false,
+          drivers: [
+            {
+              title: "Temporally similar case narratives",
+              detail: "Twelve sample reports describe onset within 5-12 days of first exposure."
+            },
+            {
+              title: "Repeated coded event grouping",
+              detail: "The illustrative intake pipeline grouped related hepatic-enzyme terms for review."
+            },
+            {
+              title: "Supporting literature monitor entries",
+              detail: "Three fictional digest items mention a comparable pattern; each requires source verification."
+            }
+          ],
+          sources: [
+            {
+              title: "Case series · SAE-NT-26061 to SAE-NT-26066",
+              meta: "6 synthetic reports · received 10-16 Jun 2026",
+              tag: "Case intake",
+              excerpt: "Sample extract: adults receiving PX-340 reported elevated hepatic enzymes after treatment initiation. Narratives are de-identified fictional fixtures; seriousness and causality require individual medical review."
+            },
+            {
+              title: "Northstar weekly aggregate · AGG-PX340-W22",
+              meta: "12 additional synthetic reports · locked 17 Jun 2026",
+              tag: "Aggregate",
+              excerpt: "Illustrative aggregate shows repeated coded terms across four fictional reporting regions. Duplicate screening is complete in the demo fixture; this does not establish causality."
+            },
+            {
+              title: "Safety literature monitor · LIT-DIGEST-0626",
+              meta: "3 fictional digest items · indexed 16 Jun 2026",
+              tag: "Literature",
+              excerpt: "Synthetic digest: three review candidates were retained after relevance screening. Full-text verification and medical assessment remain pending."
+            }
+          ],
+          gaps: [],
+          audit: [
+            { time: "08:42", actor: "Intake pipeline", human: false, message: "Grouped 18 synthetic case reports under the review term." },
+            { time: "08:44", actor: "Signal triage", human: false, message: "Created generated rationale and routed the cluster to medical review." },
+            { time: "09:05", actor: "PV Operations", human: true, message: "Confirmed sample duplicate-screening status and evidence cutoff." }
+          ],
+          defaultDecision: "advance",
+          defaultRationale: "Evidence package supports cross-functional safety assessment; causality remains undetermined."
+        },
+        {
+          id: "PV-SIG-031",
+          name: "NTX-118 / dizziness cluster",
+          product: "NTX-118",
+          status: "Evidence incomplete",
+          statusTone: "warn",
+          queueMeta: "3 sample cases · limited support",
+          evidenceStrength: "Limited support",
+          cases: 3,
+          literature: 0,
+          reviewState: "Follow-up needed",
+          firstSurfaced: "16 Jun 2026",
+          cutoff: "17 Jun 2026, 18:00 UTC",
+          trend: [0, 1, 0, 0, 1, 0, 1],
+          trendLabels: ["W16", "W17", "W18", "W19", "W20", "W21", "W22"],
+          trendSummary: "Sparse cluster retained for cautious review",
+          trendDetail: "The available sample does not support advancement without additional case follow-up.",
+          isException: true,
+          drivers: [
+            {
+              title: "Three similarly coded reports",
+              detail: "The terms are related, but the small fictional cluster is not independently persuasive."
+            },
+            {
+              title: "Incomplete exposure timing",
+              detail: "Two sample reports lack a usable onset date and treatment chronology."
+            },
+            {
+              title: "No supporting literature item",
+              detail: "The current fictional literature digest returned no corroborating source."
+            }
+          ],
+          sources: [
+            {
+              title: "Case intake · SAE-NT-26081",
+              meta: "Synthetic report · received 15 Jun 2026",
+              tag: "Complete",
+              excerpt: "Sample extract: dizziness was reported after treatment initiation; chronology is present. Reporter causality is not supplied."
+            },
+            {
+              title: "Case intake · SAE-NT-26087 and SAE-NT-26090",
+              meta: "2 synthetic reports · follow-up pending",
+              tag: "Incomplete",
+              excerpt: "Sample extract: onset date, concomitant medicines, and outcome are missing. Follow-up requests have been drafted but not sent outside this demo."
+            }
+          ],
+          gaps: [
+            "Two reports are missing onset date and treatment chronology.",
+            "No supporting item appears in the current fictional literature digest.",
+            "Medical assessment must wait for PV Operations follow-up."
+          ],
+          audit: [
+            { time: "10:12", actor: "Intake pipeline", human: false, message: "Grouped 3 synthetic reports for cautious review." },
+            { time: "10:14", actor: "Signal triage", human: false, message: "Flagged missing chronology and absent literature support." }
+          ],
+          defaultDecision: "evidence",
+          defaultRationale: "Request missing onset, treatment chronology, and outcome details before medical assessment."
+        },
+        {
+          id: "PV-SIG-019",
+          name: "PX-212 / injection-site reaction",
+          product: "PX-212",
+          status: "Assessment recorded",
+          statusTone: "ok",
+          queueMeta: "11 sample cases · reviewed",
+          evidenceStrength: "Reviewed package",
+          cases: 11,
+          literature: 1,
+          reviewState: "Assessment recorded",
+          firstSurfaced: "06 Jun 2026",
+          cutoff: "14 Jun 2026, 18:00 UTC",
+          trend: [1, 1, 2, 2, 2, 2, 1],
+          trendLabels: ["W15", "W16", "W17", "W18", "W19", "W20", "W21"],
+          trendSummary: "Stable sample pattern after completed review",
+          trendDetail: "This fixture demonstrates a previously reviewed queue item; reset restores its original state.",
+          isException: false,
+          drivers: [
+            {
+              title: "Stable coded-event pattern",
+              detail: "The fictional weekly counts remain within the sample review band's expected variation."
+            },
+            {
+              title: "Source package reviewed",
+              detail: "A synthetic physician disposition is present in the audit trail."
+            }
+          ],
+          sources: [
+            {
+              title: "Reviewed case bundle · AGG-PX212-W21",
+              meta: "11 synthetic reports · reviewed 14 Jun 2026",
+              tag: "Reviewed",
+              excerpt: "Illustrative reviewed package retained for trend monitoring. It is not regulatory evidence and contains no real safety data."
+            }
+          ],
+          gaps: [],
+          audit: [
+            { time: "14:20", actor: "Signal triage", human: false, message: "Routed the synthetic cluster for review." },
+            { time: "15:06", actor: "Dr. Mira Solis", human: true, message: "Recorded an illustrative disposition: continue routine monitoring." }
+          ],
+          defaultDecision: "advance",
+          defaultRationale: "Previously reviewed sample package; no new action in this demonstration."
+        }
+      ]
+    };
+
+    const state = {
+      selectedId: SAFETY_FIXTURES.signals[0].id,
+      decisions: {},
+      busy: false
+    };
+
+    const elements = {
+      queueList: document.getElementById("queueList"),
+      queueCount: document.getElementById("queueCount"),
+      signalId: document.getElementById("signalId"),
+      signalTitle: document.getElementById("signalTitle"),
+      signalSub: document.getElementById("signalSub"),
+      statusTag: document.getElementById("statusTag"),
+      evidenceStrength: document.getElementById("evidenceStrength"),
+      caseCount: document.getElementById("caseCount"),
+      literatureCount: document.getElementById("literatureCount"),
+      reviewState: document.getElementById("reviewState"),
+      trendBars: document.getElementById("trendBars"),
+      trendSummary: document.getElementById("trendSummary"),
+      trendDetail: document.getElementById("trendDetail"),
+      driverList: document.getElementById("driverList"),
+      sourceList: document.getElementById("sourceList"),
+      sourceDate: document.getElementById("sourceDate"),
+      auditList: document.getElementById("auditList"),
+      exceptionPanel: document.getElementById("exceptionPanel"),
+      gapList: document.getElementById("gapList"),
+      dataCutoff: document.getElementById("dataCutoff"),
+      gateCopy: document.getElementById("gateCopy"),
+      gateReview: document.getElementById("gateReview"),
+      openReview: document.getElementById("openReview"),
+      stateBanner: document.getElementById("stateBanner"),
+      reviewDialog: document.getElementById("reviewDialog"),
+      reviewForm: document.getElementById("reviewForm"),
+      dialogSignal: document.getElementById("dialogSignal"),
+      dialogCutoff: document.getElementById("dialogCutoff"),
+      rationale: document.getElementById("rationale"),
+      attestation: document.getElementById("attestation"),
+      dialogError: document.getElementById("dialogError"),
+      submitReview: document.getElementById("submitReview"),
+      liveStatus: document.getElementById("liveStatus")
+    };
+
+    function currentSignal() {
+      return SAFETY_FIXTURES.signals.find((signal) => signal.id === state.selectedId);
+    }
+
+    function effectiveSignal(signal) {
+      const recorded = state.decisions[signal.id];
+      if (!recorded) return signal;
+      return {
+        ...signal,
+        status: recorded.decision === "advance" ? "Sent to safety assessment" : "Evidence follow-up requested",
+        statusTone: recorded.decision === "advance" ? "ok" : "warn",
+        reviewState: recorded.decision === "advance" ? "Physician disposition recorded" : "PV Operations follow-up",
+        queueMeta: recorded.decision === "advance" ? "human-reviewed · assessment queue" : "human-reviewed · follow-up queue"
+      };
+    }
+
+    function makeTextElement(tag, className, text) {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      node.textContent = text;
+      return node;
+    }
+
+    function renderQueue() {
+      elements.queueList.replaceChildren();
+      const activeCount = SAFETY_FIXTURES.signals.filter((signal) => {
+        const decision = state.decisions[signal.id];
+        return signal.status !== "Assessment recorded" && !decision;
+      }).length;
+      elements.queueCount.textContent = String(activeCount);
+      elements.queueCount.setAttribute("aria-label", `${activeCount} signals awaiting action`);
+
+      SAFETY_FIXTURES.signals.forEach((baseSignal) => {
+        const signal = effectiveSignal(baseSignal);
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "signal-row";
+        button.dataset.signalId = signal.id;
+        button.setAttribute("aria-current", String(signal.id === state.selectedId));
+
+        const top = makeTextElement("span", "signal-row-top", "");
+        const name = makeTextElement("span", "signal-name", signal.name);
+        const tag = makeTextElement("span", `tag tag-${signal.statusTone}`, signal.status);
+        top.append(name, tag);
+        const meta = makeTextElement("span", "signal-meta", `${signal.id} · ${signal.queueMeta}`);
+        button.append(top, meta);
+        button.addEventListener("click", () => selectSignal(signal.id));
+        elements.queueList.append(button);
+      });
+    }
+
+    function renderTrend(signal) {
+      elements.trendBars.replaceChildren();
+      const max = Math.max(...signal.trend, 1);
+      signal.trend.forEach((value, index) => {
+        const group = makeTextElement("span", "bar-group", "");
+        const bar = makeTextElement("span", "bar", "");
+        bar.style.height = `${Math.max(6, Math.round((value / max) * 64))}px`;
+        bar.title = `${signal.trendLabels[index]}: ${value} sample reports`;
+        const label = makeTextElement("span", "bar-label", signal.trendLabels[index]);
+        group.append(bar, label);
+        elements.trendBars.append(group);
+      });
+    }
+
+    function renderDrivers(signal) {
+      elements.driverList.replaceChildren();
+      signal.drivers.forEach((driver) => {
+        const item = document.createElement("li");
+        const dot = makeTextElement("span", "driver-dot", "");
+        dot.setAttribute("aria-hidden", "true");
+        const copy = document.createElement("span");
+        copy.append(
+          makeTextElement("strong", "", driver.title),
+          makeTextElement("small", "", driver.detail)
+        );
+        item.append(dot, copy);
+        elements.driverList.append(item);
+      });
+    }
+
+    function renderSources(signal) {
+      elements.sourceList.replaceChildren();
+      signal.sources.forEach((source, index) => {
+        const detail = makeTextElement("details", "source-item", "");
+        if (index === 0) detail.open = true;
+        const summary = document.createElement("summary");
+        const titleWrap = document.createElement("span");
+        titleWrap.append(
+          makeTextElement("span", "source-title", source.title),
+          makeTextElement("span", "source-meta", source.meta)
+        );
+        summary.append(titleWrap, makeTextElement("span", "tag", source.tag));
+        detail.append(summary, makeTextElement("p", "source-excerpt", source.excerpt));
+        elements.sourceList.append(detail);
+      });
+    }
+
+    function renderAudit(signal) {
+      elements.auditList.replaceChildren();
+      const entries = [...signal.audit];
+      const recorded = state.decisions[signal.id];
+      if (recorded) {
+        entries.push({
+          time: "Now",
+          actor: "Dr. Mira Solis",
+          human: true,
+          message: `${recorded.label}. Rationale: ${recorded.rationale}`
+        });
+      }
+
+      entries.forEach((entry) => {
+        const item = document.createElement("li");
+        const time = document.createElement("time");
+        time.textContent = entry.time;
+        const message = document.createElement("span");
+        const actor = makeTextElement("span", `actor ${entry.human ? "is-human" : "is-system"}`, entry.actor);
+        message.append(actor, document.createTextNode(` · ${entry.message}`));
+        item.append(time, message);
+        elements.auditList.append(item);
+      });
+    }
+
+    function renderException(signal) {
+      elements.exceptionPanel.hidden = !signal.isException || Boolean(state.decisions[signal.id]);
+      elements.gapList.replaceChildren();
+      signal.gaps.forEach((gap) => {
+        elements.gapList.append(makeTextElement("li", "", gap));
+      });
+    }
+
+    function renderSelected() {
+      const baseSignal = currentSignal();
+      const signal = effectiveSignal(baseSignal);
+      const recorded = state.decisions[signal.id];
+
+      elements.signalId.textContent = `Signal ${signal.id}`;
+      elements.signalTitle.textContent = signal.name;
+      elements.signalSub.textContent = `Case cluster · First surfaced ${signal.firstSurfaced} · Sample operational data`;
+      elements.statusTag.textContent = signal.status;
+      elements.statusTag.className = `tag tag-${signal.statusTone}`;
+      elements.evidenceStrength.textContent = signal.evidenceStrength;
+      elements.caseCount.textContent = `${signal.cases} sample ${signal.cases === 1 ? "case" : "cases"}`;
+      elements.literatureCount.textContent = `${signal.literature} sample ${signal.literature === 1 ? "item" : "items"}`;
+      elements.reviewState.textContent = signal.reviewState;
+      elements.trendSummary.textContent = signal.trendSummary;
+      elements.trendDetail.textContent = signal.trendDetail;
+      elements.sourceDate.textContent = `Sources indexed through ${signal.cutoff.split(",")[0]}`;
+      elements.dataCutoff.textContent = signal.cutoff;
+
+      const actionLabel = signal.isException ? "Review evidence gaps" : "Review signal";
+      elements.openReview.textContent = recorded ? "Review recorded disposition" : actionLabel;
+      elements.gateReview.textContent = recorded ? "Review recorded disposition" : actionLabel;
+      elements.gateCopy.textContent = recorded
+        ? `${recorded.label} by the accountable reviewer. Reset the demo to replay.`
+        : signal.isException
+          ? "Inspect the evidence gaps, then request accountable follow-up."
+          : "Inspect the evidence package, then record a disposition and rationale.";
+
+      renderTrend(signal);
+      renderDrivers(signal);
+      renderSources(signal);
+      renderAudit(baseSignal);
+      renderException(signal);
+    }
+
+    function renderBanner() {
+      const decision = state.decisions[state.selectedId];
+      elements.stateBanner.hidden = !decision;
+      if (!decision) return;
+      elements.stateBanner.className = decision.decision === "advance"
+        ? "state-banner notice notice-ok"
+        : "state-banner notice notice-warn";
+      elements.stateBanner.textContent = `${decision.label}. The human rationale is recorded in the illustrative audit trail.`;
+    }
+
+    function render() {
+      renderQueue();
+      renderSelected();
+      renderBanner();
+    }
+
+    function selectSignal(id) {
+      if (state.busy || state.selectedId === id) return;
+      state.selectedId = id;
+      render();
+      elements.signalTitle.focus?.();
+      announce(`${currentSignal().name} selected.`);
+    }
+
+    function announce(message) {
+      elements.liveStatus.textContent = "";
+      window.setTimeout(() => {
+        elements.liveStatus.textContent = message;
+      }, 20);
+    }
+
+    function setDecisionInput(value) {
+      const input = elements.reviewForm.querySelector(`input[name="decision"][value="${value}"]`);
+      if (input) input.checked = true;
+    }
+
+    function openReviewDialog(forceEvidence = false) {
+      const signal = currentSignal();
+      const recorded = state.decisions[signal.id];
+      elements.dialogSignal.textContent = `${signal.id} · ${signal.name}`;
+      elements.dialogCutoff.textContent = signal.cutoff.split(",")[0];
+      elements.dialogError.textContent = "";
+      elements.attestation.checked = false;
+      elements.rationale.value = recorded ? recorded.rationale : signal.defaultRationale;
+      setDecisionInput(forceEvidence || signal.isException ? "evidence" : signal.defaultDecision);
+
+      if (recorded) {
+        elements.dialogError.textContent = "A disposition is already recorded in this demo. Reset to replay the workflow.";
+        elements.submitReview.disabled = true;
+      } else {
+        elements.submitReview.disabled = false;
+      }
+
+      if (typeof elements.reviewDialog.showModal === "function") {
+        elements.reviewDialog.showModal();
+      } else {
+        elements.reviewDialog.setAttribute("open", "");
+      }
+      window.setTimeout(() => elements.reviewForm.querySelector('input[name="decision"]:checked')?.focus(), 0);
+    }
+
+    function closeReviewDialog() {
+      if (typeof elements.reviewDialog.close === "function") {
+        elements.reviewDialog.close();
+      } else {
+        elements.reviewDialog.removeAttribute("open");
+      }
+    }
+
+    function submitDecision(event) {
+      event.preventDefault();
+      if (state.busy) return;
+
+      const signal = currentSignal();
+      const decision = new FormData(elements.reviewForm).get("decision");
+      const rationale = elements.rationale.value.trim();
+
+      if (signal.isException && decision === "advance") {
+        elements.dialogError.textContent = "This sample has unresolved evidence gaps. Request more evidence or cancel the review.";
+        return;
+      }
+      if (rationale.length < 12) {
+        elements.dialogError.textContent = "Add a clear rationale of at least 12 characters.";
+        elements.rationale.focus();
+        return;
+      }
+      if (!elements.attestation.checked) {
+        elements.dialogError.textContent = "Confirm that you reviewed the cited sample sources.";
+        elements.attestation.focus();
+        return;
+      }
+
+      state.busy = true;
+      elements.submitReview.disabled = true;
+      elements.submitReview.textContent = "Recording…";
+      elements.dialogError.textContent = "";
+      announce("Recording human disposition.");
+
+      window.setTimeout(() => {
+        const label = decision === "advance"
+          ? "Advanced to safety assessment"
+          : "Evidence follow-up requested";
+        state.decisions[signal.id] = { decision, label, rationale };
+        state.busy = false;
+        elements.submitReview.textContent = "Submit disposition";
+        closeReviewDialog();
+        render();
+        announce(`${label}. Human rationale recorded.`);
+        elements.stateBanner.focus?.();
+      }, 650);
+    }
+
+    function resetDemo() {
+      state.selectedId = SAFETY_FIXTURES.signals[0].id;
+      state.decisions = {};
+      state.busy = false;
+      elements.submitReview.disabled = false;
+      elements.submitReview.textContent = "Submit disposition";
+      closeReviewDialog();
+      render();
+      announce("Demo reset. PX-340 signal selected.");
+      document.getElementById("openReview").focus();
+    }
+
+    elements.openReview.addEventListener("click", () => openReviewDialog());
+    elements.gateReview.addEventListener("click", () => openReviewDialog());
+    document.getElementById("escalateException").addEventListener("click", () => openReviewDialog(true));
+    document.getElementById("closeDialog").addEventListener("click", closeReviewDialog);
+    document.getElementById("cancelReview").addEventListener("click", closeReviewDialog);
+    document.getElementById("resetDemo").addEventListener("click", resetDemo);
+    document.getElementById("auditJump").addEventListener("click", () => {
+      document.getElementById("auditTrail").scrollIntoView({ behavior: "smooth", block: "start" });
+      document.getElementById("auditTitle").focus?.();
+    });
+    elements.reviewForm.addEventListener("submit", submitDecision);
+    elements.reviewDialog.addEventListener("cancel", (event) => {
+      event.preventDefault();
+      closeReviewDialog();
+    });
+    elements.reviewForm.querySelectorAll('input[name="decision"]').forEach((input) => {
+      input.addEventListener("change", () => {
+        const signal = currentSignal();
+        if (input.value === "evidence") {
+          elements.rationale.value = signal.isException
+            ? signal.defaultRationale
+            : "Request targeted follow-up before cross-functional safety assessment.";
+        } else {
+          elements.rationale.value = signal.defaultRationale;
+        }
+        elements.dialogError.textContent = "";
+      });
+    });
+
+    render();
+  </script>
+</body>
+</html>

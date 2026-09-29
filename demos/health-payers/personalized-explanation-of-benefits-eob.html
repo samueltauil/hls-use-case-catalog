@@ -1,0 +1,719 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>EOB explanation review — illustrative demo</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block into the <style> element before any demo-specific layout
+   CSS, and set the subvertical on the body element.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark {
+  display: grid; place-items: center; flex: none; width: 30px; height: 30px;
+  border-radius: 5px; background: var(--accent-strong); color: var(--on-accent);
+  font-size: 10px; font-weight: 700; letter-spacing: .03em;
+}
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* ------------------------------------------------------------- app body */
+body {
+  --on-accent: #ffffff;
+  --canvas: var(--bg);
+  --accent-ink: var(--accent-strong);
+}
+.btn-primary { color: var(--on-accent); }
+.page { width: min(1480px, 100%); margin: 0 auto; padding: 18px 22px 24px; }
+.page-head {
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 16px;
+  margin: 0 0 15px;
+}
+.crumbs { margin: 0 0 4px; color: var(--muted); font-size: 12.5px; }
+h1 { margin: 0; font-size: clamp(21px, 2.2vw, 27px); line-height: 1.2; letter-spacing: -.025em; }
+.page-intro { margin: 5px 0 0; color: var(--muted); font-size: 13.5px; }
+.page-tools { display: flex; align-items: center; gap: 12px; }
+.queue-count { color: var(--muted); font-size: 12.5px; white-space: nowrap; }
+
+.workbench {
+  display: grid;
+  grid-template-columns: minmax(205px, .78fr) minmax(360px, 1.62fr) minmax(245px, .95fr);
+  align-items: start; gap: 12px;
+}
+.pane { min-width: 0; }
+.pane-heading { margin: 0; font-size: 15px; font-weight: 650; }
+.pane-subtitle { margin: 2px 0 0; color: var(--muted); font-size: 12.5px; }
+.pane-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 0 0 9px; }
+.queue-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.queue-item {
+  display: grid; gap: 3px; width: 100%; min-height: 78px; padding: 10px 11px;
+  border: 1px solid var(--line); border-left: 3px solid transparent; border-radius: var(--radius);
+  background: var(--surface); color: var(--ink); text-align: left; font: inherit; cursor: pointer;
+}
+.queue-item:hover { border-color: var(--muted-soft); }
+.queue-item[aria-current="true"] {
+  border-color: var(--accent-line); border-left-color: var(--accent);
+  background: var(--accent-soft);
+}
+.queue-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.queue-id { font: 600 12px/1.4 var(--mono); }
+.queue-name { font-weight: 600; font-size: 13.5px; }
+.queue-detail { font-size: 12px; color: var(--muted); }
+
+.record { overflow: hidden; box-shadow: var(--shadow-1); }
+.record-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line-soft); }
+.record-ident {
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px;
+}
+.record-id { margin: 0; font: 650 14px/1.4 var(--mono); }
+.member-line { display: flex; flex-wrap: wrap; gap: 5px 17px; margin: 8px 0 0; color: var(--muted); font-size: 12.5px; }
+.member-line b { color: var(--ink-soft); font-weight: 600; }
+.record-body { padding: 14px 16px 16px; }
+.service-line { margin: 0 0 12px; font-weight: 600; font-size: 14px; }
+.service-line span { color: var(--muted); font-weight: 400; }
+.amount-list { margin: 0; border-top: 1px solid var(--line-soft); }
+.amount-row {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px;
+  padding: 7px 0; border-bottom: 1px solid var(--line-soft); font-size: 13px;
+}
+.amount-row dt { color: var(--ink-soft); }
+.amount-row dd { margin: 0; font-variant-numeric: tabular-nums; text-align: right; }
+.amount-row.subtle dt { color: var(--muted); }
+.amount-row.total { padding-top: 10px; font-weight: 700; font-size: 14px; }
+.amount-row.total dt { color: var(--ink); }
+.record-foot { display: flex; justify-content: space-between; gap: 12px; margin-top: 10px; color: var(--muted); font-size: 11.5px; }
+.record-foot span:last-child { text-align: right; }
+.action-area { margin-top: 13px; }
+.action-area .btn { width: 100%; justify-content: center; }
+.action-help { margin: 7px 0 0; color: var(--muted); font-size: 12px; }
+.source-details { margin-top: 12px; border-top: 1px solid var(--line-soft); padding-top: 9px; }
+.source-details summary { color: var(--accent-strong); font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.source-list { margin: 8px 0 0; padding-left: 18px; color: var(--ink-soft); font-size: 12px; }
+.source-list li + li { margin-top: 5px; }
+.source-list strong { color: var(--ink); }
+
+.review-pane { min-height: 250px; }
+.review-box { padding: 14px; }
+.review-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+.review-heading h2 { margin: 0; font-size: 15px; }
+.draft-copy { margin: 0; padding: 11px 12px; border-left: 3px solid var(--accent); background: var(--bg); font-size: 13.5px; line-height: 1.6; }
+.draft-empty { margin: 0; color: var(--muted); font-size: 13px; }
+.draft-label { margin: 12px 0 5px; color: var(--muted); font-size: 11.5px; font-weight: 650; }
+.citation-list { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; font-size: 12px; }
+.citation-list li { padding-left: 17px; position: relative; }
+.citation-list li::before { content: "↳"; position: absolute; left: 0; color: var(--accent-strong); }
+.review-check {
+  display: flex; align-items: flex-start; gap: 9px; margin-top: 13px; padding: 10px;
+  border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface);
+  font-size: 12.5px;
+}
+.review-check input { flex: none; width: 18px; height: 18px; margin: 1px 0 0; accent-color: var(--accent-strong); }
+.review-actions { display: grid; gap: 7px; margin-top: 10px; }
+.review-actions .btn { justify-content: center; }
+.human-rationale { margin: 10px 0 0; color: var(--muted); font-size: 12px; }
+.approved-box { margin-top: 10px; }
+.approved-box p { margin: 5px 0 0; font-size: 12.5px; }
+.exception-box { margin-bottom: 11px; }
+.exception-box p { margin: 5px 0 0; }
+.handoff-box { margin-top: 10px; }
+.review-guidance { margin-top: 10px; }
+.catalog-footer {
+  display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px 20px;
+  padding: 14px 0 0; margin-top: 16px; border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 11.5px;
+}
+.workload-list { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
+.workload-title { font-weight: 600; color: var(--ink-soft); margin-right: 2px; }
+.workload-chip { padding: 2px 6px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); color: var(--ink-soft); }
+.value-direction { max-width: 80ch; margin: 0; }
+.value-direction strong { color: var(--ink-soft); }
+
+@media (max-width: 1050px) {
+  .workbench { grid-template-columns: minmax(210px, .8fr) minmax(0, 1.6fr); }
+  .review-pane { grid-column: 1 / -1; }
+  .review-box { max-width: none; }
+}
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+  .page { padding: 14px 14px 20px; }
+  .page-head { align-items: flex-start; flex-direction: column; }
+  .page-tools { width: 100%; justify-content: space-between; }
+  .workbench { grid-template-columns: minmax(0, 1fr); }
+  .review-pane { grid-column: auto; }
+  .queue-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .queue-item { min-height: 94px; padding: 9px; }
+  .record-foot { flex-direction: column; gap: 2px; }
+  .record-foot span:last-child { text-align: left; }
+}
+@media (max-width: 390px) {
+  .disclosure { font-size: 11px; padding: 4px 7px; }
+  .brand-mark { width: 26px; height: 26px; }
+  .queue-row { align-items: flex-start; flex-direction: column; gap: 4px; }
+  .page-tools { align-items: flex-start; flex-direction: column; gap: 6px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+  </style>
+</head>
+<body data-subvertical="health-payers">
+  <header class="appbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">CV</span>
+      <span><span class="brand-name">Cedar Vale Sample Plan</span><span class="brand-sub">Member communications workbench</span></span>
+    </div>
+    <p class="disclosure"><span aria-hidden="true">●</span> Illustrative demo - synthetic data</p>
+    <p class="who">Workspace role: <b>Claims communications reviewer</b></p>
+  </header>
+
+  <main class="page">
+    <header class="page-head">
+      <div>
+        <p class="crumbs">Member communications / EOB review queue</p>
+        <h1>Explanation of benefits review</h1>
+        <p class="page-intro">Compare the adjudication record with a plain-language draft before a human approves it.</p>
+      </div>
+      <div class="page-tools">
+        <span class="queue-count" id="queueCount">2 illustrative cases · 1 held</span>
+        <button class="btn" id="resetButton" type="button">Reset workflow</button>
+      </div>
+    </header>
+
+    <p class="status-line" id="workflowStatus" role="status" aria-live="polite">Ready. Review the selected EOB, then create its sample explanation.</p>
+
+    <div class="workbench" id="workbench">
+      <nav class="pane queue-pane" aria-labelledby="queueTitle">
+        <div class="pane-head">
+          <div>
+            <h2 class="pane-heading" id="queueTitle">Communication queue</h2>
+            <p class="pane-subtitle">Fictional work items</p>
+          </div>
+        </div>
+        <ul class="queue-list">
+          <li>
+            <button class="queue-item" type="button" data-case="ready" aria-current="true">
+              <span class="queue-row"><span class="queue-id">EOB-SYN-26091</span><span class="tag tag-ok">Ready</span></span>
+              <span class="queue-name">Avery Demo</span>
+              <span class="queue-detail">Source values reconcile · $36.00 member share</span>
+            </button>
+          </li>
+          <li>
+            <button class="queue-item" type="button" data-case="held" aria-current="false">
+              <span class="queue-row"><span class="queue-id">EOB-SYN-26092</span><span class="tag tag-warn">Hold</span></span>
+              <span class="queue-name">Jordan Example</span>
+              <span class="queue-detail">Source mismatch · do not draft</span>
+            </button>
+          </li>
+        </ul>
+      </nav>
+
+      <section class="pane case-pane" aria-labelledby="caseTitle">
+        <div class="pane-head">
+          <div>
+            <h2 class="pane-heading" id="caseTitle">EOB source record</h2>
+            <p class="pane-subtitle">Fictional adjudication details · verify before approval</p>
+          </div>
+          <span class="tag tag-ok" id="caseStatus">Ready to explain</span>
+        </div>
+        <article class="card record" aria-label="Selected synthetic explanation of benefits">
+          <div class="record-head">
+            <div class="record-ident">
+              <h3 class="record-id" id="recordId">EOB-SYN-26091</h3>
+              <span class="tag" id="recordType">Member copy · draft not started</span>
+            </div>
+            <p class="member-line">
+              <span>Member <b id="memberName">Avery Demo</b></span>
+              <span>Plan <b id="planName">Cedar Vale Sample Plan</b></span>
+              <span>Service date <b id="serviceDate">14 Aug 2026</b></span>
+            </p>
+          </div>
+          <div class="record-body">
+            <p class="service-line" id="serviceDescription">Office visit <span>· Cedar Grove Sample Clinic</span></p>
+            <dl class="amount-list" aria-label="Synthetic claim amount breakdown">
+              <div class="amount-row"><dt>Provider billed</dt><dd id="billedAmount">$250.00</dd></div>
+              <div class="amount-row subtle"><dt>Plan adjustment</dt><dd id="adjustmentAmount">−$70.00</dd></div>
+              <div class="amount-row"><dt>Plan allowed amount</dt><dd id="allowedAmount">$180.00</dd></div>
+              <div class="amount-row"><dt>Plan paid</dt><dd id="paidAmount">$144.00</dd></div>
+              <div class="amount-row total"><dt>Member share</dt><dd id="memberShare">$36.00</dd></div>
+            </dl>
+            <div class="record-foot">
+              <span id="adjudicationLabel">Sample adjudication · finalized 18 Aug 2026</span>
+              <span>Illustrative amounts only — not a bill or coverage decision</span>
+            </div>
+
+            <div class="notice notice-warn exception-box" id="exceptionNotice" hidden>
+              <span aria-hidden="true">!</span>
+              <div><strong>Draft held: source values conflict.</strong><p id="exceptionReason"></p></div>
+            </div>
+
+            <div class="action-area" id="draftActionArea">
+              <button class="btn btn-primary" id="draftButton" type="button">Create plain-language draft</button>
+              <p class="action-help" id="actionHelp">Fixed sample text for review; this demo does not call a live model or send member communications.</p>
+            </div>
+            <div class="actions" id="escalationActions" hidden>
+              <button class="btn" id="escalateButton" type="button">Escalate for source reconciliation</button>
+            </div>
+            <div class="notice notice-warn handoff-box" id="handoffNotice" hidden>
+              <span aria-hidden="true">↗</span>
+              <div><strong>Routed to claims communications review.</strong><p id="handoffReason"></p></div>
+            </div>
+
+            <details class="source-details">
+              <summary>Inspect source records and reconciliation</summary>
+              <ul class="source-list" id="sourceList"></ul>
+            </details>
+          </div>
+        </article>
+      </section>
+
+      <aside class="pane review-pane" aria-labelledby="reviewTitle">
+        <div class="pane-head">
+          <div>
+            <h2 class="pane-heading" id="reviewTitle">Member explanation</h2>
+            <p class="pane-subtitle">Draft, evidence, and human decision</p>
+          </div>
+        </div>
+        <section class="card review-box" aria-label="Plain-language explanation review">
+          <div class="review-heading">
+            <h2>Plain-language draft</h2>
+            <span class="tag" id="draftStateTag">Not created</span>
+          </div>
+          <p class="draft-empty" id="draftEmpty">No draft yet. The source record and next action are ready for review.</p>
+          <div id="draftContent" hidden>
+            <p class="draft-copy" id="draftCopy"></p>
+            <p class="draft-label">Grounded in these sample sources</p>
+            <ul class="citation-list" id="citationList"></ul>
+            <p class="human-rationale" id="reviewRationale"></p>
+            <label class="review-check" id="attestationLabel">
+              <input type="checkbox" id="attestation">
+              <span>I checked the amounts and cited sources. This draft does not make or change a coverage decision.</span>
+            </label>
+            <div class="review-actions">
+              <button class="btn btn-primary" id="approveButton" type="button" disabled>Approve draft for delivery</button>
+            </div>
+          </div>
+          <div class="notice notice-ok approved-box" id="approvedNotice" hidden>
+            <span aria-hidden="true">✓</span>
+            <div><strong>Human review recorded.</strong><p id="approvedSummary">Approved for delivery in this demo only. No communication was sent.</p></div>
+          </div>
+        </section>
+        <p class="rule review-guidance">
+          <span aria-hidden="true">i</span>
+          <span>Reviewer owns the decision. If evidence conflicts or a question falls outside these sources, hold the draft and route it to a person.</span>
+        </p>
+      </aside>
+    </div>
+
+    <footer class="catalog-footer">
+      <div class="workload-list" aria-label="Catalog workload names">
+        <span class="workload-title">Catalog workload mapping</span>
+        <span class="workload-chip">Azure OpenAI in Azure AI Foundry Models</span>
+        <span class="workload-chip">Azure AI Search</span>
+        <span class="workload-chip">Azure App Service</span>
+        <span class="workload-chip">Azure Cosmos DB</span>
+        <span>No live services are called by this file.</span>
+      </div>
+      <p class="value-direction"><strong>Catalog value direction:</strong> EOB-driven call volume down, member comprehension and trust up, payment timeliness up, dispute rates down. These are intended outcomes, not demo measurements.</p>
+    </footer>
+  </main>
+
+  <script>
+    "use strict";
+
+    // Every person, organization, amount, source, and identifier below is fictional.
+    const EOB_FIXTURES = Object.freeze({
+      ready: Object.freeze({
+        id: "EOB-SYN-26091",
+        member: "Avery Demo",
+        plan: "Cedar Vale Sample Plan",
+        serviceDate: "14 Aug 2026",
+        service: "Office visit",
+        provider: "Cedar Grove Sample Clinic",
+        adjudicated: "18 Aug 2026",
+        billed: 250,
+        adjustment: 70,
+        allowed: 180,
+        paid: 144,
+        share: 36,
+        status: "Ready to explain",
+        sources: [
+          "Synthetic adjudication record ADJ-SYN-26091 — finalized 18 Aug 2026. Billed $250.00; adjustment $70.00; allowed $180.00; plan paid $144.00; member share $36.00.",
+          "Illustrative benefit note BEN-SYN-03 — fictional sample rule for this scenario: member coinsurance is $36.00 on the $180.00 allowed amount.",
+          "Reconciliation check — $144.00 plan paid + $36.00 member share = $180.00 allowed amount."
+        ],
+        draft: "For your office visit on 14 Aug 2026, the provider billed $250.00. The plan's allowed amount was $180.00 after a $70.00 adjustment. The plan paid $144.00, and the member share shown in this sample record is $36.00. This explanation describes the supplied sample adjudication; it is not a bill.",
+        citations: [
+          "ADJ-SYN-26091 — billed, adjustment, allowed amount, plan payment, and member share.",
+          "BEN-SYN-03 — fictional benefit note used only to explain this example."
+        ],
+        rationale: "Review rationale: sample source totals reconcile. Confirm the figures and wording against the source before approving."
+      }),
+      held: Object.freeze({
+        id: "EOB-SYN-26092",
+        member: "Jordan Example",
+        plan: "Cedar Vale Sample Plan",
+        serviceDate: "16 Aug 2026",
+        service: "Imaging visit",
+        provider: "Willow Bend Sample Imaging",
+        adjudicated: "20 Aug 2026",
+        billed: 410,
+        adjustment: 200,
+        allowed: 210,
+        paid: 168,
+        share: 42,
+        statementShare: 52,
+        status: "Held for review",
+        sources: [
+          "Synthetic adjudication record ADJ-SYN-26092 — finalized 20 Aug 2026. Billed $410.00; adjustment $200.00; allowed $210.00; plan paid $168.00; member share $42.00.",
+          "Queued statement excerpt STMT-SYN-26092 — shows member amount $52.00. This differs from the adjudication member share.",
+          "Reconciliation check — the $10.00 difference is unresolved. Do not draft or approve an explanation from conflicting sources."
+        ],
+        exception: "Adjudication shows a $42.00 member share; the queued statement shows $52.00. The $10.00 difference is unresolved, so drafting and approval are blocked until a person reconciles the sources."
+      })
+    });
+
+    const state = {
+      name: "ready",
+      caseKey: "ready",
+      timer: 0
+    };
+
+    const ui = {
+      status: document.getElementById("workflowStatus"),
+      reset: document.getElementById("resetButton"),
+      queueCount: document.getElementById("queueCount"),
+      queueItems: Array.from(document.querySelectorAll("[data-case]")),
+      caseStatus: document.getElementById("caseStatus"),
+      recordId: document.getElementById("recordId"),
+      recordType: document.getElementById("recordType"),
+      member: document.getElementById("memberName"),
+      plan: document.getElementById("planName"),
+      serviceDate: document.getElementById("serviceDate"),
+      service: document.getElementById("serviceDescription"),
+      billed: document.getElementById("billedAmount"),
+      adjustment: document.getElementById("adjustmentAmount"),
+      allowed: document.getElementById("allowedAmount"),
+      paid: document.getElementById("paidAmount"),
+      share: document.getElementById("memberShare"),
+      adjudicated: document.getElementById("adjudicationLabel"),
+      sourceList: document.getElementById("sourceList"),
+      draftActionArea: document.getElementById("draftActionArea"),
+      draftButton: document.getElementById("draftButton"),
+      actionHelp: document.getElementById("actionHelp"),
+      escalationActions: document.getElementById("escalationActions"),
+      escalate: document.getElementById("escalateButton"),
+      exceptionNotice: document.getElementById("exceptionNotice"),
+      exceptionReason: document.getElementById("exceptionReason"),
+      handoffNotice: document.getElementById("handoffNotice"),
+      handoffReason: document.getElementById("handoffReason"),
+      draftState: document.getElementById("draftStateTag"),
+      draftEmpty: document.getElementById("draftEmpty"),
+      draftContent: document.getElementById("draftContent"),
+      draftCopy: document.getElementById("draftCopy"),
+      citationList: document.getElementById("citationList"),
+      rationale: document.getElementById("reviewRationale"),
+      attestation: document.getElementById("attestation"),
+      approve: document.getElementById("approveButton"),
+      approvedNotice: document.getElementById("approvedNotice")
+    };
+
+    const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+    function setText(element, value) {
+      element.textContent = String(value);
+    }
+    function appendTextItem(list, value) {
+      const item = document.createElement("li");
+      item.textContent = value;
+      list.append(item);
+    }
+    function updateStatus(message) {
+      setText(ui.status, message);
+    }
+
+    function render() {
+      const fixture = EOB_FIXTURES[state.caseKey];
+      const held = state.caseKey === "held";
+      const working = state.name === "working";
+      const hasDraft = state.name === "review" || state.name === "approved";
+      const approved = state.name === "approved";
+      const escalated = state.name === "escalated";
+
+      document.getElementById("workbench").dataset.workflowState = state.name;
+      ui.queueItems.forEach((button) => {
+        button.setAttribute("aria-current", String(button.dataset.case === state.caseKey));
+        button.disabled = working;
+      });
+
+      setText(ui.caseStatus, fixture.status);
+      ui.caseStatus.className = "tag " + (held ? "tag-warn" : "tag-ok");
+      setText(ui.recordId, fixture.id);
+      setText(ui.recordType, held ? "Member copy · held" : (approved ? "Member copy · human approved" : "Member copy · sample"));
+      setText(ui.member, fixture.member);
+      setText(ui.plan, fixture.plan);
+      setText(ui.serviceDate, fixture.serviceDate);
+      ui.service.replaceChildren(document.createTextNode(fixture.service + " · "));
+      const provider = document.createElement("span");
+      provider.textContent = fixture.provider;
+      ui.service.append(provider);
+      setText(ui.billed, money.format(fixture.billed));
+      setText(ui.adjustment, "−" + money.format(fixture.adjustment));
+      setText(ui.allowed, money.format(fixture.allowed));
+      setText(ui.paid, money.format(fixture.paid));
+      setText(ui.share, money.format(fixture.share));
+      setText(ui.adjudicated, "Sample adjudication · finalized " + fixture.adjudicated);
+
+      ui.sourceList.replaceChildren();
+      fixture.sources.forEach((source) => appendTextItem(ui.sourceList, source));
+
+      ui.draftActionArea.hidden = held;
+      ui.draftButton.disabled = working || hasDraft || approved;
+      ui.draftButton.textContent = working ? "Preparing sample draft…" : "Create plain-language draft";
+      ui.actionHelp.textContent = held
+        ? "Source conflict blocks drafting."
+        : "Fixed sample text for review; this demo does not call a live model or send member communications.";
+
+      ui.exceptionNotice.hidden = !held;
+      if (held) setText(ui.exceptionReason, fixture.exception);
+      ui.escalationActions.hidden = !held || escalated;
+      ui.handoffNotice.hidden = !escalated;
+      if (escalated) setText(ui.handoffReason, "The conflicting sample values were routed for human reconciliation. No explanation was created or sent.");
+
+      ui.draftEmpty.hidden = hasDraft || held;
+      ui.draftContent.hidden = !hasDraft;
+      ui.approvedNotice.hidden = !approved;
+      ui.draftState.className = "tag " + (approved ? "tag-ok" : (hasDraft ? "tag-warn" : "tag"));
+      setText(ui.draftState, approved ? "Human approved" : (hasDraft ? "Needs human review" : (held ? "Blocked" : (working ? "Working" : "Not created"))));
+      if (hasDraft) {
+        setText(ui.draftCopy, fixture.draft);
+        ui.citationList.replaceChildren();
+        fixture.citations.forEach((citation) => appendTextItem(ui.citationList, citation));
+        setText(ui.rationale, fixture.rationale);
+      }
+      ui.attestation.disabled = !hasDraft || approved;
+      ui.attestation.checked = approved || (state.name === "review" && ui.attestation.checked);
+      ui.approve.hidden = !hasDraft || approved;
+      ui.approve.disabled = !hasDraft || !ui.attestation.checked;
+      if (approved) setText(document.getElementById("approvedSummary"), "Approved for delivery in this demo at 09:42 AM. No communication was sent.");
+    }
+
+    ui.queueItems.forEach((button) => {
+      button.addEventListener("click", () => {
+        window.clearTimeout(state.timer);
+        state.caseKey = button.dataset.case;
+        state.name = state.caseKey === "held" ? "exception" : "ready";
+        ui.attestation.checked = false;
+        render();
+        updateStatus(state.caseKey === "held"
+          ? "Source mismatch found. Drafting is blocked; inspect the sources and escalate for reconciliation."
+          : "Ready. Review the selected EOB, then create its sample explanation.");
+      });
+    });
+
+    ui.draftButton.addEventListener("click", () => {
+      if (state.name !== "ready" && state.name !== "reset") return;
+      state.name = "working";
+      render();
+      updateStatus("Preparing the fixed sample wording for human review.");
+      state.timer = window.setTimeout(() => {
+        if (state.name !== "working" || state.caseKey !== "ready") return;
+        state.name = "review";
+        render();
+        updateStatus("Sample draft ready. Inspect the cited values, attest that you reviewed them, then approve or reset.");
+      }, 420);
+    });
+
+    ui.attestation.addEventListener("change", () => {
+      ui.approve.disabled = !ui.attestation.checked || state.name !== "review";
+    });
+
+    ui.approve.addEventListener("click", () => {
+      if (state.name !== "review" || !ui.attestation.checked) return;
+      state.name = "approved";
+      render();
+      updateStatus("Human approval recorded for this demo. No member communication was sent.");
+    });
+
+    ui.escalate.addEventListener("click", () => {
+      if (state.name !== "exception") return;
+      state.name = "escalated";
+      render();
+      updateStatus("Source mismatch routed to claims communications for human reconciliation. No draft was created.");
+    });
+
+    ui.reset.addEventListener("click", () => {
+      window.clearTimeout(state.timer);
+      state.caseKey = "ready";
+      state.name = "reset";
+      ui.attestation.checked = false;
+      render();
+      updateStatus("Workflow reset. The ready synthetic EOB is selected; you can replay the review or inspect the held case.");
+    });
+
+    render();
+  </script>
+</body>
+</html>

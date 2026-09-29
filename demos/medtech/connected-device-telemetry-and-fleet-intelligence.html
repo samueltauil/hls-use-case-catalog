@@ -1,0 +1,983 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Fleet signal review | Cirrus Vale Medical</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+  </style>
+  <style>
+    body {
+      --on-accent: #ffffff;
+      --focus-ring: var(--accent-strong);
+    }
+    .btn-primary {
+      background: var(--accent-strong);
+      border-color: var(--accent-strong);
+      color: var(--on-accent);
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: var(--accent-strong);
+      border-color: var(--accent-strong);
+    }
+    .appbar { min-height: 58px; }
+    .brand-mark {
+      width: 27px; height: 27px; display: grid; place-items: center;
+      border: 1px solid var(--accent); border-radius: 6px;
+      color: var(--accent-line); font: 700 13px/1 var(--mono);
+    }
+    .page {
+      width: min(1500px, 100%);
+      margin-inline: auto;
+      padding: 18px 22px 24px;
+    }
+    .page-heading {
+      display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between;
+      gap: 10px 20px; margin-bottom: 13px;
+    }
+    .eyebrow {
+      margin: 0 0 3px; color: var(--muted); font-size: 12px;
+      letter-spacing: .02em;
+    }
+    h1 { margin: 0; font-size: clamp(23px, 2.1vw, 30px); line-height: 1.2; letter-spacing: -.025em; }
+    .subhead { margin: 5px 0 0; color: var(--muted); font-size: 13.5px; }
+    .heading-actions { display: flex; align-items: center; gap: 9px; }
+    .operator {
+      display: flex; align-items: center; flex-wrap: wrap; gap: 7px 10px;
+      min-height: 45px; padding: 8px 12px; margin-bottom: 13px;
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+      font-size: 13px;
+    }
+    .avatar {
+      display: grid; place-items: center; width: 27px; height: 27px; flex: none;
+      border-radius: 50%; background: var(--accent-soft); color: var(--accent-strong);
+      font-weight: 700; font-size: 11px;
+    }
+    .operator-name { font-weight: 650; }
+    .operator-role { color: var(--muted); }
+    .operator-org { margin-left: auto; color: var(--muted); }
+    .workspace {
+      display: grid; grid-template-columns: minmax(232px, 270px) minmax(0, 1fr) minmax(230px, 270px);
+      align-items: start; gap: 14px;
+    }
+    .queue-card, .signal-card, .decision-card, .side-card { min-width: 0; }
+    .queue-summary { color: var(--muted); font-size: 12px; }
+    .queue-list { display: grid; }
+    .signal-option {
+      display: grid; gap: 6px; width: 100%; padding: 12px 14px; text-align: left;
+      color: var(--ink); background: var(--surface); border: 0; border-bottom: 1px solid var(--line-soft);
+      font: inherit; cursor: pointer;
+    }
+    .signal-option:last-child { border-bottom: 0; }
+    .signal-option:hover { background: var(--bg); }
+    .signal-option[aria-current="true"] {
+      box-shadow: inset 3px 0 0 var(--accent);
+      background: var(--accent-soft);
+    }
+    .signal-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .signal-title { font-size: 13px; font-weight: 650; line-height: 1.35; }
+    .signal-meta { color: var(--muted); font-size: 12px; line-height: 1.4; }
+    .signal-id { color: var(--muted); font: 11px/1.4 var(--mono); }
+    .signal-body { display: grid; gap: 13px; padding: 15px; }
+    .signal-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .signal-title-row h2 { margin: 0; font-size: clamp(18px, 1.7vw, 22px); line-height: 1.3; }
+    .signal-title-row p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+    .signal-badge {
+      display: inline-flex; align-items: center; flex: none; gap: 6px;
+      padding: 4px 8px; border-radius: 4px; border: 1px solid var(--line);
+      background: var(--surface-2); color: var(--ink-soft); font-size: 11.5px; font-weight: 650;
+    }
+    .signal-badge.attention { border-color: #e6d08a; background: var(--warn-bg); color: #704707; }
+    .signal-badge.good { border-color: #a7d9a7; background: var(--ok-bg); color: #0b5c0b; }
+    .signal-badge.alert { border-color: #e5b4b7; background: var(--stop-bg); color: #8b1f25; }
+    .metric-strip {
+      display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+      border: 1px solid var(--line-soft); background: var(--bg);
+    }
+    .metric { min-width: 0; padding: 9px 11px; border-right: 1px solid var(--line-soft); }
+    .metric:last-child { border-right: 0; }
+    .metric dt { margin: 0 0 3px; color: var(--muted); font-size: 11.5px; }
+    .metric dd { margin: 0; font: 600 13px/1.35 var(--mono); overflow-wrap: anywhere; }
+    .trace-box {
+      padding: 11px 12px; border: 1px solid var(--line); border-radius: var(--radius);
+      background: #fff;
+    }
+    .trace-heading { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; margin-bottom: 8px; }
+    .trace-heading h3 { margin: 0; font-size: 13px; }
+    .trace-heading span { color: var(--muted); font-size: 11.5px; }
+    .trace-line {
+      display: grid; grid-template-columns: 57px minmax(0, 1fr) auto; gap: 8px;
+      align-items: center; min-height: 31px; border-top: 1px solid var(--line-soft);
+      font-size: 12.5px;
+    }
+    .trace-line time { color: var(--muted); font: 11px/1.4 var(--mono); }
+    .trace-mark { width: 8px; height: 8px; margin-right: 6px; display: inline-block; border-radius: 50%; background: var(--accent); }
+    .trace-line.warning .trace-mark { background: #97620a; }
+    .trace-value { color: var(--muted); font: 11px/1.4 var(--mono); white-space: nowrap; }
+    .trace-empty {
+      min-height: 94px; display: grid; place-items: center; padding: 10px;
+      border: 1px dashed var(--line); background: var(--bg); color: var(--muted);
+      text-align: center; font-size: 13px;
+    }
+    .signal-footer {
+      display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 14px;
+      padding-top: 10px; border-top: 1px solid var(--line-soft);
+      color: var(--muted); font-size: 12px;
+    }
+    .decision-body { display: grid; gap: 11px; padding: 14px; }
+    .decision-body h3 { margin: 0; font-size: 14px; }
+    .decision-body p { margin: 0; font-size: 13px; color: var(--ink-soft); }
+    .decision-body .btn { width: 100%; justify-content: center; }
+    .decision-note { padding: 9px 10px; border-left: 3px solid var(--accent-line); background: var(--bg); color: var(--muted); font-size: 12px; }
+    .decision-title { display: flex; align-items: center; gap: 8px; }
+    .decision-icon { display: grid; place-items: center; width: 24px; height: 24px; flex: none; border-radius: 5px; background: var(--accent-soft); color: var(--accent-strong); font-size: 13px; font-weight: 700; }
+    .result-mark { font-size: 14px; font-weight: 700; color: #0b5c0b; }
+    .result-block { padding: 10px; border: 1px solid #a7d9a7; background: var(--ok-bg); border-radius: var(--radius); color: #0b5c0b; font-size: 13px; }
+    .result-block strong { display: block; margin-bottom: 2px; }
+    .subsection { padding: 14px 15px; }
+    .subsection + .subsection { border-top: 1px solid var(--line-soft); }
+    .subsection h2 { margin: 0 0 9px; font-size: 13.5px; }
+    .pattern-copy { margin: 0; color: var(--ink-soft); font-size: 12.5px; }
+    .workload-list { display: grid; gap: 7px; margin: 11px 0 0; padding: 0; list-style: none; }
+    .workload-list li {
+      display: flex; justify-content: space-between; align-items: baseline; gap: 9px;
+      padding-bottom: 6px; border-bottom: 1px solid var(--line-soft); font-size: 12px;
+    }
+    .workload-list li:last-child { border-bottom: 0; padding-bottom: 0; }
+    .workload-name { font-weight: 600; }
+    .workload-detail { color: var(--muted); text-align: right; font-size: 11px; }
+    .risk-copy { margin: 0; color: var(--muted); font-size: 12px; }
+    .risk-copy + .risk-copy { margin-top: 7px; }
+    .audit-card { margin-top: 14px; }
+    .audit-list { padding: 12px 15px 14px; }
+    .audit-event { display: flex; flex-wrap: wrap; gap: 4px 9px; align-items: baseline; font-size: 12px; }
+    .audit-event time { color: var(--muted); font: 11px/1.4 var(--mono); }
+    .audit-event strong { font-weight: 650; }
+    .audit-event span { color: var(--muted); }
+    .sr-live { min-height: 1px; }
+    dialog .dialog-signal-name { font-weight: 650; color: var(--ink); }
+    dialog .dialog-rationale {
+      padding: 11px 12px; border-left: 3px solid var(--accent);
+      background: var(--bg); color: var(--ink-soft); font-size: 13px;
+    }
+    dialog .human-boundary { color: var(--muted); font-size: 12px; }
+    .processing {
+      display: flex; align-items: center; gap: 9px; min-height: 38px;
+      padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius);
+      background: var(--surface-2); color: var(--ink-soft); font-size: 13px;
+    }
+    .processing-mark { width: 9px; height: 9px; border: 2px solid var(--accent-line); border-top-color: var(--accent-strong); border-radius: 50%; animation: turn .7s linear infinite; }
+    @keyframes turn { to { transform: rotate(360deg); } }
+    .footer { gap: 8px 14px; }
+    .footer .claim { max-width: 64ch; }
+    @media (max-width: 1050px) {
+      .workspace { grid-template-columns: minmax(220px, .72fr) minmax(0, 1.6fr); }
+      .right-rail { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+      .audit-card { margin-top: 0; }
+    }
+    @media (max-width: 700px) {
+      .page { padding: 14px 12px 20px; }
+      .page-heading { align-items: start; }
+      .heading-actions { width: 100%; justify-content: flex-end; }
+      .operator-org { width: 100%; margin-left: 37px; }
+      .workspace { grid-template-columns: minmax(0, 1fr); gap: 11px; }
+      .right-rail { grid-column: auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 11px; }
+      .signal-body { padding: 12px; }
+      .metric { padding: 8px; }
+      .metric dt { min-height: 32px; }
+      .trace-line { grid-template-columns: 48px minmax(0, 1fr) auto; gap: 5px; font-size: 11.5px; }
+      .trace-value { font-size: 10px; }
+      .workload-list li { align-items: flex-start; }
+      .footer { padding: 10px 12px; }
+      .footer .claim { margin-left: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .processing-mark { animation: none; }
+    }
+  </style>
+</head>
+<body data-subvertical="medtech">
+  <header class="appbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">CV</span>
+      <div>
+        <span class="brand-name">Fleet operations</span>
+        <span class="brand-sub">Connected devices · Product reliability</span>
+      </div>
+    </div>
+    <p class="who"><b id="organizationName"></b> · Product Innovation &amp; R&amp;D</p>
+    <p class="disclosure">Illustrative demo - synthetic data</p>
+  </header>
+
+  <main class="page">
+    <div class="page-heading">
+      <div>
+        <p class="eyebrow">Field telemetry / Signal review</p>
+        <h1>Fleet signal review</h1>
+        <p class="subhead">Inspect a field signal, check its evidence, and route the next safe step.</p>
+      </div>
+      <div class="heading-actions">
+        <button class="btn" id="resetButton" type="button">Reset demo</button>
+      </div>
+    </div>
+
+    <div class="operator" aria-label="Current operator">
+      <span class="avatar" id="operatorInitials" aria-hidden="true"></span>
+      <span class="operator-name" id="operatorName"></span>
+      <span class="operator-role" id="operatorRole"></span>
+      <span class="operator-org">Review owner</span>
+    </div>
+
+    <p class="sr-only sr-live" id="liveStatus" aria-live="polite" aria-atomic="true"></p>
+
+    <div class="workspace">
+      <aside class="card queue-card" aria-labelledby="queueHeading">
+        <div class="card-head">
+          <h2 id="queueHeading">Signals to review</h2>
+          <span class="queue-summary" id="queueSummary"></span>
+        </div>
+        <div class="queue-list" id="signalQueue"></div>
+      </aside>
+
+      <section class="card signal-card" aria-labelledby="signalHeading">
+        <div class="card-head">
+          <h2>Selected signal</h2>
+          <span class="card-note" id="signalSource">Synthetic stream excerpt</span>
+        </div>
+        <div class="signal-body">
+          <div class="signal-title-row">
+            <div>
+              <h2 id="signalHeading"></h2>
+              <p id="signalSummary"></p>
+            </div>
+            <span class="signal-badge" id="signalBadge"></span>
+          </div>
+          <dl class="metric-strip" aria-label="Illustrative device context">
+            <div class="metric"><dt>Device profile</dt><dd id="deviceProfile"></dd></div>
+            <div class="metric"><dt>Sample firmware</dt><dd id="firmwareVersion"></dd></div>
+            <div class="metric"><dt>Sample event ID</dt><dd id="signalId"></dd></div>
+          </dl>
+          <section class="trace-box" aria-labelledby="traceHeading">
+            <div class="trace-heading">
+              <h3 id="traceHeading">Observed event sequence</h3>
+              <span>Fictional operational data</span>
+            </div>
+            <div id="traceContent"></div>
+          </section>
+          <div class="signal-footer">
+            <span id="evidenceStatus"></span>
+            <span>Source: synthetic device telemetry slice</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="right-rail">
+        <aside class="card decision-card" aria-labelledby="decisionHeading">
+          <div class="card-head">
+            <h2 id="decisionHeading">Next action</h2>
+            <span class="card-note">Human review required</span>
+          </div>
+          <div class="decision-body" id="readyPanel">
+            <div class="decision-title"><span class="decision-icon" aria-hidden="true">1</span><h3>Review before routing</h3></div>
+            <p>Confirm the event sequence and rationale before creating an engineering investigation draft.</p>
+            <button class="btn btn-primary" id="reviewButton" type="button">Review signal</button>
+            <div class="decision-note">No device command, field release, or safety disposition is made here. Pause and escalate any quality or safety concern to the Head of Quality.</div>
+          </div>
+          <div class="decision-body" id="gapPanel" hidden>
+            <div class="decision-title"><span class="decision-icon" aria-hidden="true">!</span><h3>Evidence is incomplete</h3></div>
+            <p>The synthetic sequence has a gap. Do not infer a cause from the partial sample.</p>
+            <button class="btn btn-primary" id="escalateButton" type="button">Escalate data gap</button>
+            <div class="decision-note">Route to the data platform owner to check the sample path before engineering triage.</div>
+          </div>
+          <div class="decision-body" id="workingPanel" hidden>
+            <div class="processing"><span class="processing-mark" aria-hidden="true"></span><span id="workingText">Preparing the review record…</span></div>
+            <p>Sample workflow only. Nothing is sent to a device or external system.</p>
+          </div>
+          <div class="decision-body" id="resultPanel" hidden>
+            <div class="decision-title"><span class="result-mark" aria-hidden="true">✓</span><h3 id="resultHeading">Review draft created</h3></div>
+            <div class="result-block">
+              <strong id="resultTitle"></strong>
+              <span id="resultCopy"></span>
+            </div>
+            <p id="resultNext"></p>
+            <button class="btn" id="reviewAnotherButton" type="button">Review another signal</button>
+          </div>
+        </aside>
+
+        <aside class="card side-card">
+          <div class="subsection">
+            <h2>Catalog solution pattern</h2>
+            <p class="pattern-copy">IoT telemetry pipeline to a cloud lakehouse for real-time monitoring and product analytics.</p>
+            <ul class="workload-list" id="workloadList" aria-label="Catalog workloads"></ul>
+          </div>
+          <div class="subsection">
+            <h2>Design considerations</h2>
+            <p class="risk-copy">Connectivity and security: edge-to-cloud reference architecture with zero-trust telemetry.</p>
+            <p class="risk-copy">Data volume: consider tiered storage and separate real-time and cold paths.</p>
+          </div>
+        </aside>
+
+        <section class="card audit-card" aria-labelledby="auditHeading">
+          <div class="card-head">
+            <h2 id="auditHeading">Review history</h2>
+            <span class="card-note">This demo session</span>
+          </div>
+          <div class="audit-list" id="auditList"></div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="built">Starting motion: Architecture Workshop · Solution pattern: Infra</div>
+    <span class="claim"><b>Catalog value:</b> device uptime and reliability up; time-to-detect field issues down 40-60%; warranty and recall exposure reduced; telemetry-driven features accelerated.</span>
+  </footer>
+
+  <dialog id="reviewDialog" aria-labelledby="dialogTitle" aria-describedby="dialogDescription">
+    <form id="reviewForm">
+      <div class="dlg-head">
+        <div>
+          <h2 id="dialogTitle">Review signal and prepare investigation</h2>
+          <span class="dlg-sub">Human decision point · Engineering review stays accountable</span>
+        </div>
+        <button class="btn" id="closeDialogButton" type="button" aria-label="Close review">Close</button>
+      </div>
+      <div class="dlg-body">
+        <p id="dialogDescription" class="status-line">Check the sample evidence and keep the rationale attached to the draft.</p>
+        <dl class="meta-grid">
+          <div><dt>Signal</dt><dd id="dialogSignal" class="dialog-signal-name"></dd></div>
+          <div><dt>Source</dt><dd>Synthetic device telemetry slice</dd></div>
+          <div><dt>Evidence status</dt><dd id="dialogEvidence"></dd></div>
+          <div><dt>Review owner</dt><dd id="dialogOwner"></dd></div>
+        </dl>
+        <div class="dialog-rationale" id="dialogRationale"></div>
+        <label class="attest" for="humanReviewCheck">
+          <input id="humanReviewCheck" type="checkbox">
+          <span>I reviewed the synthetic trace and agree an engineering owner must validate the finding before any field action.</span>
+        </label>
+        <p class="human-boundary">This creates only an illustrative investigation draft. It does not diagnose a device, change firmware, or make a quality or safety decision. Escalate a quality or safety concern to the Head of Quality.</p>
+        <p class="dlg-error" id="dialogError" aria-live="polite"></p>
+      </div>
+      <div class="dlg-foot">
+        <button class="btn" id="cancelReviewButton" type="button">Cancel</button>
+        <button class="btn btn-primary" id="createDraftButton" type="submit" disabled>Create investigation draft</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+    "use strict";
+
+    const DEMO_FIXTURES = {
+      organization: "Cirrus Vale Medical",
+      operator: "Jordan Lee",
+      role: "R&D Systems Engineer",
+      escalationRole: "Head of Quality",
+      dataOwnerRole: "Data platform owner",
+      investigationOwnerRole: "Firmware / embedded lead",
+      investigationDraftId: "SIM-INV-018",
+      dataQualityReviewId: "SIM-DQ-006",
+      auditStart: [
+        { time: "09:12", actor: "System", text: "Synthetic signal entered review queue." },
+        { time: "09:14", actor: "Jordan Lee", text: "Review owner assigned for this demo session." }
+      ],
+      signals: [
+        {
+          id: "SIM-FLT-041",
+          title: "Restart cadence changed",
+          summary: "Repeated restart markers after a sample firmware package; engineering review is suggested.",
+          profile: "DemoNode Kestrel-4",
+          firmware: "sample 3.8.2",
+          stateLabel: "Review suggested",
+          stateClass: "attention",
+          evidenceStatus: "Complete synthetic sequence",
+          rationale: "The sample trace contains repeated restart markers after the fictional firmware package. The sequence is sufficient to prepare a review draft, but it does not establish a cause.",
+          trace: [
+            { time: "09:14:08", event: "Heartbeat received", value: "sample 1" },
+            { time: "09:14:11", event: "Restart marker", value: "sample 2", warning: true },
+            { time: "09:14:14", event: "Heartbeat resumed", value: "sample 3" },
+            { time: "09:14:16", event: "Restart marker", value: "sample 4", warning: true }
+          ]
+        },
+        {
+          id: "SIM-FLT-044",
+          title: "Telemetry continuity gap",
+          summary: "Part of the synthetic event sequence is absent; cause cannot be assessed from this sample.",
+          profile: "DemoNode Kestrel-2",
+          firmware: "sample 3.8.2",
+          stateLabel: "Incomplete evidence",
+          stateClass: "alert",
+          evidenceStatus: "Partial synthetic sequence",
+          rationale: "The sample trace has a continuity gap. There is not enough evidence to infer a device condition or assign a cause; route the data-quality question for human follow-up.",
+          trace: [
+            { time: "09:11:02", event: "Heartbeat received", value: "sample 1" },
+            { time: "09:11:06", event: "No event row in sample", value: "gap", warning: true },
+            { time: "09:11:12", event: "Heartbeat resumed", value: "sample 3" }
+          ]
+        }
+      ],
+      workloads: [
+        { name: "Azure IoT", detail: "IoT Services" },
+        { name: "Microsoft Fabric", detail: "Real-Time Intelligence" },
+        { name: "Azure Storage", detail: "Files / Blob / ADLS / Disk" },
+        { name: "Azure Machine Learning", detail: "AI workload" }
+      ]
+    };
+
+    const state = {
+      mode: "ready",
+      selectedId: DEMO_FIXTURES.signals[0].id,
+      exceptionStage: "unrouted",
+      timer: null,
+      audit: DEMO_FIXTURES.auditStart.map((entry) => ({ ...entry }))
+    };
+
+    const elements = {
+      queue: document.getElementById("signalQueue"),
+      signalHeading: document.getElementById("signalHeading"),
+      signalSummary: document.getElementById("signalSummary"),
+      signalBadge: document.getElementById("signalBadge"),
+      deviceProfile: document.getElementById("deviceProfile"),
+      firmwareVersion: document.getElementById("firmwareVersion"),
+      signalId: document.getElementById("signalId"),
+      traceContent: document.getElementById("traceContent"),
+      evidenceStatus: document.getElementById("evidenceStatus"),
+      readyPanel: document.getElementById("readyPanel"),
+      gapPanel: document.getElementById("gapPanel"),
+      workingPanel: document.getElementById("workingPanel"),
+      resultPanel: document.getElementById("resultPanel"),
+      workingText: document.getElementById("workingText"),
+      resultHeading: document.getElementById("resultHeading"),
+      resultTitle: document.getElementById("resultTitle"),
+      resultCopy: document.getElementById("resultCopy"),
+      resultNext: document.getElementById("resultNext"),
+      liveStatus: document.getElementById("liveStatus"),
+      auditList: document.getElementById("auditList"),
+      workloadList: document.getElementById("workloadList"),
+      organizationName: document.getElementById("organizationName"),
+      operatorName: document.getElementById("operatorName"),
+      operatorRole: document.getElementById("operatorRole"),
+      queueSummary: document.getElementById("queueSummary"),
+      operatorInitials: document.getElementById("operatorInitials"),
+      dialog: document.getElementById("reviewDialog"),
+      dialogSignal: document.getElementById("dialogSignal"),
+      dialogEvidence: document.getElementById("dialogEvidence"),
+      dialogRationale: document.getElementById("dialogRationale"),
+      dialogOwner: document.getElementById("dialogOwner"),
+      dialogError: document.getElementById("dialogError"),
+      reviewCheck: document.getElementById("humanReviewCheck"),
+      createDraft: document.getElementById("createDraftButton")
+    };
+
+    function selectedSignal() {
+      return DEMO_FIXTURES.signals.find((signal) => signal.id === state.selectedId);
+    }
+
+    function setLive(message) {
+      elements.liveStatus.textContent = message;
+    }
+
+    function renderQueue() {
+      elements.queue.replaceChildren();
+      DEMO_FIXTURES.signals.forEach((signal) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "signal-option";
+        button.setAttribute("aria-current", String(signal.id === state.selectedId));
+        button.setAttribute("aria-label", signal.title + ". " + signal.stateLabel + ". Select signal.");
+
+        const row = document.createElement("span");
+        row.className = "signal-row";
+        const title = document.createElement("span");
+        title.className = "signal-title";
+        title.textContent = signal.title;
+        const badge = document.createElement("span");
+        badge.className = "tag";
+        badge.textContent = signal.stateLabel;
+        row.append(title, badge);
+
+        const summary = document.createElement("span");
+        summary.className = "signal-meta";
+        summary.textContent = signal.summary;
+        const id = document.createElement("span");
+        id.className = "signal-id";
+        id.textContent = signal.id;
+        button.append(row, summary, id);
+        button.addEventListener("click", () => chooseSignal(signal.id));
+        elements.queue.append(button);
+      });
+    }
+
+    function renderTrace(signal) {
+      elements.traceContent.replaceChildren();
+      if (signal.trace.length === 0) {
+        const empty = document.createElement("p");
+        empty.className = "trace-empty";
+        empty.textContent = "No trace rows are available in this synthetic sample.";
+        elements.traceContent.append(empty);
+        return;
+      }
+
+      signal.trace.forEach((entry) => {
+        const row = document.createElement("div");
+        row.className = "trace-line" + (entry.warning ? " warning" : "");
+        const time = document.createElement("time");
+        time.textContent = entry.time;
+        const event = document.createElement("span");
+        const marker = document.createElement("span");
+        marker.className = "trace-mark";
+        marker.setAttribute("aria-hidden", "true");
+        event.append(marker, document.createTextNode(entry.event));
+        const value = document.createElement("span");
+        value.className = "trace-value";
+        value.textContent = entry.value;
+        row.append(time, event, value);
+        elements.traceContent.append(row);
+      });
+    }
+
+    function renderAudit() {
+      elements.auditList.replaceChildren();
+      const list = document.createElement("ul");
+      list.className = "audit";
+      state.audit.forEach((entry) => {
+        const item = document.createElement("li");
+        const time = document.createElement("time");
+        time.textContent = entry.time;
+        const event = document.createElement("span");
+        event.className = "audit-event";
+        const actor = document.createElement("strong");
+        actor.textContent = entry.actor;
+        const text = document.createElement("span");
+        text.textContent = entry.text;
+        event.append(actor, text);
+        item.append(time, event);
+        list.append(item);
+      });
+      elements.auditList.append(list);
+    }
+
+    function renderWorkloads() {
+      elements.workloadList.replaceChildren();
+      DEMO_FIXTURES.workloads.forEach((workload) => {
+        const item = document.createElement("li");
+        const name = document.createElement("span");
+        name.className = "workload-name";
+        name.textContent = workload.name;
+        const detail = document.createElement("span");
+        detail.className = "workload-detail";
+        detail.textContent = workload.detail;
+        item.append(name, detail);
+        elements.workloadList.append(item);
+      });
+    }
+
+    function render() {
+      const signal = selectedSignal();
+      elements.organizationName.textContent = DEMO_FIXTURES.organization;
+      elements.operatorName.textContent = DEMO_FIXTURES.operator;
+      elements.operatorRole.textContent = "· " + DEMO_FIXTURES.role;
+      elements.operatorInitials.textContent = DEMO_FIXTURES.operator.split(/\s+/).map((part) => part.charAt(0)).join("").slice(0, 2);
+      elements.queueSummary.textContent = "Sample queue · " + DEMO_FIXTURES.signals.length + " items";
+      elements.signalHeading.textContent = signal.title;
+      elements.signalSummary.textContent = signal.summary;
+      elements.signalBadge.textContent = signal.stateLabel;
+      elements.signalBadge.className = "signal-badge " + signal.stateClass;
+      elements.deviceProfile.textContent = signal.profile;
+      elements.firmwareVersion.textContent = signal.firmware;
+      elements.signalId.textContent = signal.id;
+      elements.evidenceStatus.textContent = "Evidence: " + signal.evidenceStatus;
+      renderTrace(signal);
+      renderQueue();
+      renderWorkloads();
+
+      const isGap = signal.id === DEMO_FIXTURES.signals[1].id;
+      const showGap = isGap && state.mode === "exception" && state.exceptionStage === "unrouted";
+      const showGapResult = isGap && state.mode === "exception" && state.exceptionStage === "routed";
+      elements.readyPanel.hidden = state.mode !== "ready";
+      elements.gapPanel.hidden = !showGap;
+      elements.workingPanel.hidden = state.mode !== "working";
+      elements.resultPanel.hidden = !(state.mode === "result" || showGapResult);
+
+      if (state.mode === "working") {
+        elements.workingText.textContent = isGap ? "Routing the data-quality review…" : "Preparing the investigation draft…";
+      }
+      if (state.mode === "result") {
+        elements.resultHeading.textContent = "Investigation draft prepared";
+        elements.resultTitle.textContent = "Draft " + DEMO_FIXTURES.investigationDraftId;
+        elements.resultCopy.textContent = " · " + signal.id + " attached for engineering review.";
+        elements.resultNext.textContent = "Next: the " + DEMO_FIXTURES.investigationOwnerRole + " reviews the evidence and rationale. No device action has been taken.";
+      } else if (showGapResult) {
+        elements.resultHeading.textContent = "Data-quality review escalated";
+        elements.resultTitle.textContent = "Route " + DEMO_FIXTURES.dataQualityReviewId;
+        elements.resultCopy.textContent = " · " + signal.id + " sent to the fictional " + DEMO_FIXTURES.dataOwnerRole + " for sample-path review.";
+        elements.resultNext.textContent = "Engineering triage remains paused until a human verifies the missing sample context.";
+      }
+      renderAudit();
+    }
+
+    function chooseSignal(id) {
+      if (state.timer) window.clearTimeout(state.timer);
+      state.timer = null;
+      state.selectedId = id;
+      const isGap = id === DEMO_FIXTURES.signals[1].id;
+      state.mode = isGap ? "exception" : "ready";
+      state.exceptionStage = "unrouted";
+      render();
+      setLive(isGap
+        ? "Incomplete telemetry selected. Cause is unknown; review the data gap before engineering triage."
+        : "Restart cadence signal selected. Review the synthetic trace before preparing an investigation draft.");
+    }
+
+    function openReview() {
+      const signal = selectedSignal();
+      if (state.mode !== "ready" || signal.id === DEMO_FIXTURES.signals[1].id) return;
+      elements.dialogSignal.textContent = signal.title + " · " + signal.id;
+      elements.dialogEvidence.textContent = signal.evidenceStatus;
+      elements.dialogRationale.textContent = signal.rationale;
+      elements.dialogOwner.textContent = DEMO_FIXTURES.operator + " · " + DEMO_FIXTURES.role;
+      elements.dialogError.textContent = "";
+      elements.reviewCheck.checked = false;
+      elements.createDraft.disabled = true;
+      state.mode = "reviewing";
+      setLive("Review opened. Inspect the synthetic event trace and confirm human review before creating a draft.");
+      if (typeof elements.dialog.showModal === "function") {
+        elements.dialog.showModal();
+      } else {
+        elements.dialog.setAttribute("open", "");
+      }
+      elements.reviewCheck.focus();
+    }
+
+    function closeReview() {
+      if (elements.dialog.open) {
+        if (typeof elements.dialog.close === "function") elements.dialog.close();
+        else elements.dialog.removeAttribute("open");
+      }
+      if (state.mode === "reviewing") {
+        state.mode = "ready";
+        setLive("Review cancelled. The signal remains available for another review.");
+      }
+      document.getElementById("reviewButton").focus();
+    }
+
+    function runTransition(kind) {
+      state.mode = "working";
+      render();
+      setLive(kind === "gap"
+        ? "Routing the synthetic data gap for human review."
+        : "Preparing an investigation draft for human engineering review.");
+      state.timer = window.setTimeout(() => {
+        state.timer = null;
+        const isGap = kind === "gap";
+        state.mode = isGap ? "exception" : "result";
+        if (isGap) state.exceptionStage = "routed";
+        state.audit.push({
+          time: isGap ? "09:16" : "09:15",
+          actor: "Jordan Lee",
+          text: isGap
+            ? "Escalated incomplete sample to the data platform owner."
+            : "Prepared an investigation draft; human engineering review remains pending."
+        });
+        render();
+        setLive(isGap
+          ? "Data-quality review escalated. Engineering triage remains paused pending human verification."
+          : "Investigation draft prepared. A human engineering owner must review it before any field action.");
+      }, 480);
+    }
+
+    document.getElementById("reviewButton").addEventListener("click", openReview);
+    document.getElementById("escalateButton").addEventListener("click", () => runTransition("gap"));
+    document.getElementById("resetButton").addEventListener("click", () => {
+      if (state.timer) window.clearTimeout(state.timer);
+      state.timer = null;
+      if (elements.dialog.open) {
+        if (typeof elements.dialog.close === "function") elements.dialog.close();
+        else elements.dialog.removeAttribute("open");
+      }
+      state.mode = "reset";
+      state.selectedId = DEMO_FIXTURES.signals[0].id;
+      state.exceptionStage = "unrouted";
+      state.audit = DEMO_FIXTURES.auditStart.map((entry) => ({ ...entry }));
+      elements.reviewCheck.checked = false;
+      elements.createDraft.disabled = true;
+      render();
+      state.mode = "ready";
+      render();
+      setLive("Demo reset. The synthetic signal queue is ready to replay.");
+    });
+    document.getElementById("reviewAnotherButton").addEventListener("click", () => {
+      chooseSignal(DEMO_FIXTURES.signals[1].id);
+      document.getElementById("escalateButton").focus();
+    });
+    document.getElementById("closeDialogButton").addEventListener("click", closeReview);
+    document.getElementById("cancelReviewButton").addEventListener("click", closeReview);
+    elements.dialog.addEventListener("cancel", () => {
+      if (state.mode === "reviewing") {
+        state.mode = "ready";
+        setLive("Review cancelled. The signal remains available for another review.");
+      }
+    });
+    elements.dialog.addEventListener("close", () => {
+      if (state.mode === "reviewing") state.mode = "ready";
+    });
+    elements.reviewCheck.addEventListener("change", () => {
+      elements.createDraft.disabled = !elements.reviewCheck.checked;
+      elements.dialogError.textContent = "";
+    });
+    document.getElementById("reviewForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      if (!elements.reviewCheck.checked) {
+        elements.dialogError.textContent = "Confirm that you reviewed the evidence before continuing.";
+        elements.reviewCheck.focus();
+        return;
+      }
+      if (elements.dialog.open && typeof elements.dialog.close === "function") elements.dialog.close();
+      state.mode = "working";
+      runTransition("happy");
+    });
+
+    render();
+    setLive("Demo ready. Select the highlighted synthetic signal to inspect its evidence.");
+  </script>
+</body>
+</html>

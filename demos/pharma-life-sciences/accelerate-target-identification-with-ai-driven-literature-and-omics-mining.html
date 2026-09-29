@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Target evidence review | Fictional Alder Research</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* Target review workspace */
+main { max-width: 1780px; margin: auto; padding: 20px; }
+.context { display: flex; align-items: end; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+.eyebrow { color: var(--accent-strong); font-size: 13px; font-weight: 700; margin: 0 0 3px; }
+h1 { font-size: clamp(21px, 2vw, 28px); line-height: 1.2; margin: 0; }
+.context p:last-child { color: var(--muted); margin: 5px 0 0; font-size: 13px; }
+.workspace { display: grid; grid-template-columns: minmax(240px, 280px) minmax(0, 1fr) minmax(245px, 290px); gap: 14px; align-items: start; }
+.queue { grid-area: queue; }
+.sources { grid-area: sources; min-width: 0; }
+.decision { grid-area: decision; }
+.workspace { grid-template-areas: "queue sources decision"; }
+.candidate-list { list-style: none; padding: 0; margin: 0; }
+.candidate-list li + li { border-top: 1px solid var(--line-soft); }
+.candidate {
+  display: grid; gap: 2px; width: 100%; padding: 12px 15px; min-height: 70px;
+  border: 0; border-left: 3px solid transparent; background: transparent;
+  color: var(--ink); font: inherit; text-align: left; cursor: pointer;
+}
+.candidate:hover { background: var(--bg); }
+.candidate[aria-current="true"] { background: var(--accent-soft); border-left-color: var(--accent-strong); }
+.candidate strong { font-size: 14px; }
+.candidate small { color: var(--muted); font-size: 12px; }
+.candidate .flag { color: var(--warn); font-weight: 600; }
+.panel-title { margin: 0; font-size: 18px; line-height: 1.3; }
+.subhead { margin: 0 0 14px; color: var(--muted); font-size: 13px; }
+.hypothesis { border-left: 3px solid var(--accent); padding: 8px 12px; background: var(--accent-soft); font-size: 13px; margin-bottom: 16px; }
+.hypothesis strong { display: block; color: var(--accent-strong); }
+.source-list { list-style: none; display: grid; gap: 9px; padding: 0; margin: 0 0 18px; }
+.source-item { border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; }
+.source-item p { margin: 4px 0 8px; font-size: 13px; color: var(--ink-soft); }
+.source-item small { display: block; color: var(--muted); font-size: 12px; }
+.source-item .btn-link { min-height: 32px; text-align: left; }
+.source-detail { margin: 0; }
+.source-detail h3 { font-size: 14px; margin: 0 0 6px; }
+.source-detail p { margin: 7px 0 0; font-size: 12px; color: var(--muted); }
+.source-detail blockquote { margin: 0; }
+.decision .card-body { display: grid; gap: 13px; }
+.decision p { margin: 0; font-size: 13px; }
+.decision .btn { justify-content: center; width: 100%; }
+.decision .notice { font-size: 13px; }
+.decision .notice p { margin: 0; }
+.audit-panel { margin-top: 14px; }
+.audit-panel .card-body { padding-block: 11px; }
+.status-line { margin: 0 0 12px; }
+.footer { margin-top: 20px; }
+dialog .field textarea { width: 100%; }
+@media (max-width: 1060px) {
+  .workspace { grid-template-columns: minmax(215px, 280px) minmax(0, 1fr); grid-template-areas: "queue decision" "sources sources"; }
+}
+@media (max-width: 620px) {
+  main { padding: 12px; }
+  .context { align-items: start; margin-bottom: 10px; }
+  .workspace { grid-template-columns: minmax(0, 1fr); grid-template-areas: "queue" "decision" "sources"; gap: 10px; }
+  .candidate { min-height: 48px; padding: 6px 12px; }
+  .candidate small { line-height: 1.2; }
+  .queue .card-head, .decision .card-head { padding: 8px 12px; }
+  .decision .card-body { padding: 9px 12px; gap: 7px; }
+  .appbar .who { display: none; }
+  .disclosure { white-space: normal; }
+}
+  </style>
+</head>
+<body data-subvertical="pharma-life-sciences">
+  <header class="appbar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">◆</span><span class="brand-name">Alder Research <span class="brand-sub">Target evidence workspace</span></span></div>
+    <p class="disclosure">Illustrative demo - synthetic data</p>
+    <p class="who">Review owner <b>Dr. Mara Vale (fictional)</b></p>
+  </header>
+  <main>
+    <div class="context">
+      <div>
+        <p class="eyebrow">Discovery biology / sample project AR-07</p>
+        <h1>Target evidence review</h1>
+        <p>Fictional hypothesis: inflammatory pathway in a single therapeutic-area discovery PoV. Ranking is illustrative, not validation.</p>
+      </div>
+      <button class="btn" type="button" id="reset">Reset demo</button>
+    </div>
+    <p class="status-line" id="status" role="status" aria-live="polite">Ready: inspect a cited source before preparing a human-review draft.</p>
+    <div class="workspace">
+      <section class="card queue" aria-labelledby="queue-title">
+        <div class="card-head"><h2 id="queue-title">Ranked candidates</h2><span class="card-note">Sample ordering</span></div>
+        <ol class="candidate-list" id="candidates"></ol>
+      </section>
+      <section class="card sources" aria-labelledby="evidence-title">
+        <div class="card-head"><h2 id="evidence-title">Evidence trail</h2><span class="card-note">Fictional source extracts</span></div>
+        <div class="card-body">
+          <h3 class="panel-title" id="selected-name"></h3>
+          <p class="subhead" id="selected-summary"></p>
+          <div class="hypothesis"><strong>Generated hypothesis · not a scientific conclusion</strong><span id="hypothesis-text"></span></div>
+          <ul class="source-list" id="evidence-list"></ul>
+          <div class="source-detail" id="source-detail" hidden>
+            <h3 id="source-name"></h3>
+            <blockquote class="evidence" id="source-excerpt"></blockquote>
+            <p id="source-provenance"></p>
+          </div>
+        </div>
+      </section>
+      <aside class="decision" aria-label="Review actions">
+        <section class="card" aria-labelledby="review-title">
+          <div class="card-head"><h2 id="review-title">Scientist review</h2><span class="card-note" id="review-state"></span></div>
+          <div class="card-body">
+            <p id="review-guidance"></p>
+            <div class="notice" id="review-notice"><p id="review-reason"></p></div>
+            <button class="btn" id="inspect-leading" type="button">Inspect first source extract</button>
+            <button class="btn btn-primary" id="prepare" type="button" disabled>Prepare review draft</button>
+            <button class="btn" id="escalate" type="button" hidden>Escalate evidence gap</button>
+            <p id="review-outcome"></p>
+            <p id="saved-rationale" hidden></p>
+          </div>
+        </section>
+        <section class="card audit-panel" aria-labelledby="audit-title">
+          <div class="card-head"><h2 id="audit-title">Review trail</h2></div>
+          <div class="card-body"><ol class="audit" id="audit"></ol></div>
+        </section>
+      </aside>
+    </div>
+  </main>
+  <footer class="footer">
+    <div class="built"><span>Catalog workload mapping:</span><span class="svc-chip">Azure OpenAI in Azure AI Foundry Models</span><span class="svc-chip">Azure AI Search</span><span class="svc-chip">Azure Machine Learning</span><span class="svc-chip">Azure Databricks</span></div>
+    <span class="claim">Conceptual demo only. No service is connected; no target is scientifically validated or nominated.</span>
+  </footer>
+  <dialog id="review-dialog" aria-labelledby="dialog-title">
+    <form id="review-form">
+      <div class="dlg-head"><div><h2 id="dialog-title">Prepare committee review draft</h2><span class="dlg-sub" id="dialog-sub"></span></div></div>
+      <div class="dlg-body">
+        <div class="notice notice-warn">This saves a sample draft for human review, not an approval or nomination. Check the cited sources independently.</div>
+        <div class="field"><label for="rationale">Scientist rationale (fictional sample)</label><textarea id="rationale" required minlength="12"></textarea></div>
+        <p class="dlg-error" id="dialog-error" role="alert"></p>
+      </div>
+      <div class="dlg-foot"><button class="btn" type="button" id="cancel">Cancel</button><button class="btn btn-primary" type="submit">Save review draft</button></div>
+    </form>
+  </dialog>
+  <script>
+    const fixture = {
+      candidates: [
+        {
+          id: "SYN-T01", name: "SYN-T01 · pathway regulator", certainty: "Evidence for review",
+          summary: "Internal omics and illustrative literature point in the same direction; interpretation remains open.",
+          hypothesis: "Consider SYN-T01 for follow-up assay design; association is not proof of mechanism.",
+          draft: "Review concordant sample omics and literature signals; request independent assay confirmation before any nomination.",
+          evidence: [
+            { kind: "Internal omics", label: "AR-07 expression panel", date: "2026-04-12", note: "Differential signal across fictional assay groups.", excerpt: "Sample panel AR-07: SYN-T01 expression differs between illustrative stimulated and reference groups. Replication has not been assessed.", provenance: "Fictional internal panel AR-07 · sample extract · 2026-04-12" },
+            { kind: "Public literature", label: "Illustrative abstract LIT-04", date: "2025-11-06", note: "Pathway association discussed, not independently confirmed.", excerpt: "Synthetic abstract LIT-04: a pathway regulator was associated with a model inflammatory response. This is invented text, not a published paper.", provenance: "Fictional literature placeholder LIT-04 · sample abstract · 2025-11-06" },
+            { kind: "Patent landscape", label: "Illustrative scan PAT-02", date: "2026-03-03", note: "Unreviewed search note; no freedom-to-operate assessment.", excerpt: "Synthetic patent scan PAT-02: related pathway language appears in a fictional claim summary. Legal review is required.", provenance: "Fictional patent placeholder PAT-02 · sample note · 2026-03-03" }
+          ]
+        },
+        {
+          id: "SYN-T02", name: "SYN-T02 · receptor candidate", certainty: "Evidence for review",
+          summary: "Two sample sources suggest a possible role; additional experiments remain necessary.",
+          hypothesis: "Review SYN-T02 as a possible secondary follow-up, not a validated target.",
+          draft: "Compare the sample assay note with the fictional literature summary and request orthogonal follow-up.",
+          evidence: [
+            { kind: "Internal omics", label: "AR-07 assay note", date: "2026-02-19", note: "Small exploratory subset; no replication.", excerpt: "Sample assay note AR-07: a fictional receptor signal appears in an exploratory subset; interpretation is preliminary.", provenance: "Fictional internal assay AR-07 · sample note · 2026-02-19" },
+            { kind: "Public literature", label: "Illustrative abstract LIT-09", date: "2025-08-21", note: "Indirect pathway context only.", excerpt: "Synthetic abstract LIT-09: pathway context suggests a question for follow-up, not a causal link.", provenance: "Fictional literature placeholder LIT-09 · sample abstract · 2025-08-21" }
+          ]
+        },
+        {
+          id: "SYN-T03", name: "SYN-T03 · exploratory factor", certainty: "Evidence gap",
+          summary: "Literature-only signal. No internal omics match in the sample project scope.",
+          hypothesis: "Do not advance without internal replication and a scientist-led assessment.",
+          draft: "",
+          evidence: [
+            { kind: "Public literature", label: "Illustrative abstract LIT-12", date: "2025-09-14", note: "Single uncorroborated mention.", excerpt: "Synthetic abstract LIT-12: this fictional factor is mentioned in a pathway discussion with no supporting internal data.", provenance: "Fictional literature placeholder LIT-12 · sample abstract · 2025-09-14" }
+          ]
+        }
+      ]
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const state = { selected: 0, inspected: new Set(), draft: new Map(), escalated: new Set(), audit: [] };
+    const dialog = $("review-dialog");
+
+    function log(actor, message) {
+      state.audit.unshift({ actor, message });
+      const list = $("audit");
+      list.replaceChildren();
+      state.audit.forEach((entry) => {
+        const item = document.createElement("li");
+        const time = document.createElement("span");
+        time.className = "mono";
+        time.textContent = "Step " + (state.audit.length - state.audit.indexOf(entry));
+        const text = document.createElement("span");
+        const name = document.createElement("span");
+        name.className = "actor " + (entry.actor === "Scientist" ? "is-human" : "is-system");
+        name.textContent = entry.actor + ": ";
+        text.append(name, document.createTextNode(entry.message));
+        item.append(time, text);
+        list.append(item);
+      });
+    }
+
+    function render() {
+      const candidate = fixture.candidates[state.selected];
+      const list = $("candidates");
+      list.replaceChildren();
+      fixture.candidates.forEach((item, index) => {
+        const li = document.createElement("li");
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "candidate";
+        button.setAttribute("aria-current", String(index === state.selected));
+        const name = document.createElement("strong");
+        name.textContent = item.name;
+        const note = document.createElement("small");
+        note.textContent = (index + 1) + " · " + item.certainty;
+        if (item.certainty === "Evidence gap") note.className = "flag";
+        button.append(name, note);
+        button.addEventListener("click", () => {
+          state.selected = index;
+          $("status").textContent = item.name + " selected. " + (item.certainty === "Evidence gap" ? "Internal evidence is missing; escalate for review." : "Inspect a cited source before preparing a draft.");
+          render();
+        });
+        li.append(button);
+        list.append(li);
+      });
+      $("selected-name").textContent = candidate.name;
+      $("selected-summary").textContent = candidate.summary;
+      $("hypothesis-text").textContent = candidate.hypothesis;
+      const evidenceList = $("evidence-list");
+      evidenceList.replaceChildren();
+      candidate.evidence.forEach((source) => {
+        const li = document.createElement("li");
+        li.className = "source-item";
+        const title = document.createElement("strong");
+        title.textContent = source.kind + " · " + source.label;
+        const date = document.createElement("small");
+        date.textContent = "Sample source · " + source.date;
+        const note = document.createElement("p");
+        note.textContent = source.note;
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "btn-link";
+        button.textContent = "Inspect source extract";
+        button.addEventListener("click", () => inspectSource(source));
+        li.append(title, date, note, button);
+        evidenceList.append(li);
+      });
+      $("source-detail").hidden = true;
+      renderDecision();
+    }
+
+    function inspectSource(source) {
+      const candidate = fixture.candidates[state.selected];
+      state.inspected.add(candidate.id);
+      $("source-name").textContent = source.kind + " · " + source.label;
+      $("source-excerpt").textContent = source.excerpt;
+      $("source-provenance").textContent = source.provenance;
+      $("source-detail").hidden = false;
+      $("status").textContent = source.label + " sample extract open. Verify source independently before making a decision.";
+      renderDecision();
+    }
+
+    function renderDecision() {
+      const candidate = fixture.candidates[state.selected];
+      const gap = candidate.certainty === "Evidence gap";
+      const drafted = state.draft.has(candidate.id);
+      const escalated = state.escalated.has(candidate.id);
+      $("review-state").textContent = escalated ? "Escalated" : drafted ? "Draft saved" : gap ? "Hold · evidence gap" : "Awaiting scientist";
+      $("review-guidance").textContent = gap ? "No matching internal omics in this sample scope. Do not prepare a nomination draft." : drafted ? "Draft saved; committee review remains pending." : "Inspect a source, then prepare an editable draft for committee review.";
+      $("review-reason").textContent = gap ? "Uncorroborated literature-only signal; request internal evidence and independent review." : "AI-ranked ordering is a prompt for investigation, not a recommendation or approval.";
+      $("inspect-leading").hidden = gap || state.inspected.has(candidate.id);
+      $("prepare").hidden = gap;
+      $("prepare").disabled = !state.inspected.has(candidate.id) || drafted;
+      $("escalate").hidden = !gap;
+      $("escalate").disabled = escalated;
+      $("review-outcome").textContent = drafted ? "Saved for committee review by Dr. Mara Vale (fictional). No target was nominated." : escalated ? "Evidence gap sent to the fictional discovery biology review queue. No nomination." : !gap && !state.inspected.has(candidate.id) ? "Next: inspect one cited sample extract." : "";
+      $("saved-rationale").hidden = !drafted;
+      $("saved-rationale").textContent = drafted ? "Scientist rationale: " + state.draft.get(candidate.id) : "";
+    }
+
+    $("inspect-leading").addEventListener("click", () => inspectSource(fixture.candidates[state.selected].evidence[0]));
+    $("prepare").addEventListener("click", () => {
+      const candidate = fixture.candidates[state.selected];
+      if (candidate.certainty === "Evidence gap" || !state.inspected.has(candidate.id) || state.draft.has(candidate.id)) return;
+      $("dialog-sub").textContent = candidate.name + " · Scientist review required";
+      $("rationale").value = candidate.draft;
+      $("dialog-error").textContent = "";
+      dialog.showModal();
+    });
+    $("cancel").addEventListener("click", () => dialog.close());
+    $("review-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const candidate = fixture.candidates[state.selected];
+      if (!$("rationale").value.trim() || $("rationale").value.trim().length < 12) {
+        $("dialog-error").textContent = "Enter a rationale of at least 12 non-space characters.";
+        $("rationale").focus();
+        return;
+      }
+      state.draft.set(candidate.id, $("rationale").value.trim());
+      log("Scientist", "Saved " + candidate.id + " review draft with rationale; committee decision pending.");
+      dialog.close();
+      $("status").textContent = candidate.id + " draft saved for human committee review. No nomination or validation occurred.";
+      renderDecision();
+    });
+    $("escalate").addEventListener("click", () => {
+      const candidate = fixture.candidates[state.selected];
+      if (candidate.certainty !== "Evidence gap" || state.escalated.has(candidate.id)) return;
+      state.escalated.add(candidate.id);
+      log("Scientist", "Escalated " + candidate.id + " missing internal evidence to discovery biology review.");
+      $("status").textContent = candidate.id + " evidence gap escalated for human follow-up.";
+      renderDecision();
+    });
+    $("reset").addEventListener("click", () => {
+      dialog.close();
+      state.selected = 0;
+      state.inspected.clear();
+      state.draft.clear();
+      state.escalated.clear();
+      state.audit = [];
+      log("Demo", "Sample shortlist ready; no decisions made.");
+      $("status").textContent = "Ready: inspect a cited source before preparing a human-review draft.";
+      render();
+    });
+    log("Demo", "Sample shortlist ready; no decisions made.");
+    render();
+  </script>
+</body>
+</html>

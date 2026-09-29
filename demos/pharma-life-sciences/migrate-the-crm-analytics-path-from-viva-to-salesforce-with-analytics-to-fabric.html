@@ -1,0 +1,774 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Illustrative CRM analytics continuity workshop workbench using synthetic data.">
+  <title>CRM analytics continuity workbench — illustrative demo</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+  </style>
+  <style>
+    /* Small layout tokens stay downstream of the shared shell and accent bindings. */
+    body {
+      --on-accent: #ffffff;
+      --page-width: 1480px;
+      --column-gap: 16px;
+      --panel-pad: 16px;
+    }
+    .btn-primary { color: var(--on-accent); }
+    main { width: min(var(--page-width), 100% - 36px); margin: 0 auto; padding: 22px 0 32px; }
+    .intro { display: flex; justify-content: space-between; align-items: flex-end; gap: 18px; margin-bottom: 16px; }
+    .eyebrow { margin: 0 0 4px; color: var(--muted); font-size: 12px; font-weight: 650; letter-spacing: .02em; }
+    h1 { margin: 0; font-size: clamp(24px, 2.4vw, 32px); line-height: 1.15; letter-spacing: -.025em; }
+    .intro-copy { margin: 6px 0 0; max-width: 72ch; color: var(--muted); }
+    .intro-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+    .work-order { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 16px; padding: 16px 18px; border-left: 4px solid var(--accent); box-shadow: var(--shadow-1); }
+    .work-kicker { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px; }
+    .work-kicker strong { font-size: 12px; color: var(--muted); font-weight: 600; }
+    .work-title { margin: 0; font-size: 18px; line-height: 1.3; }
+    .work-subtitle { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+    .transition { display: flex; align-items: center; gap: 8px; margin-top: 13px; font-size: 14px; font-weight: 650; }
+    .system-name { padding: 4px 9px; border: 1px solid var(--line); background: var(--surface-2); border-radius: 5px; }
+    .arrow { color: var(--muted); font-size: 18px; }
+    .work-meta { display: flex; flex-wrap: wrap; gap: 7px 18px; margin: 12px 0 0; color: var(--muted); font-size: 12px; }
+    .work-meta b { color: var(--ink-soft); font-weight: 600; }
+    .work-next { min-width: 230px; display: grid; gap: 8px; }
+    .work-next .btn { justify-content: center; min-height: 44px; }
+    .next-label { margin: 0; color: var(--muted); font-size: 12px; font-weight: 600; }
+    .workspace { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(300px, .85fr); align-items: start; gap: var(--column-gap); margin-top: 16px; }
+    .primary-column, .side-column { display: grid; gap: var(--column-gap); min-width: 0; }
+    .section-heading { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 14px; }
+    .section-heading h2, .section-heading h3 { margin: 0; font-size: 15px; }
+    .section-heading p { margin: 0; color: var(--muted); font-size: 12px; }
+    .feed-list { display: grid; }
+    .feed-row { display: grid; grid-template-columns: minmax(138px, .85fr) minmax(0, 1.5fr) auto; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line-soft); }
+    .feed-row:last-child { border-bottom: 0; padding-bottom: 0; }
+    .feed-name { margin: 0; font-size: 13.5px; font-weight: 650; }
+    .feed-meta, .mapping { display: block; margin-top: 2px; color: var(--muted); font-size: 12px; }
+    .mapping { font-family: var(--mono); overflow-wrap: anywhere; }
+    .feed-state { justify-self: end; }
+    .report-strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 13px; }
+    .report-view { min-width: 0; padding: 10px 11px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius); }
+    .report-view b { display: block; font-size: 12.5px; }
+    .report-view span { display: block; color: var(--muted); font-size: 11.5px; }
+    .synthetic-flag { margin: 11px 0 0; color: var(--muted); font-size: 11.5px; }
+    .panel-body { padding: var(--panel-pad); }
+    .decision-card { border-top: 3px solid var(--accent); }
+    .decision-title { margin: 0; font-size: 17px; line-height: 1.3; }
+    .decision-copy { margin: 6px 0 14px; color: var(--muted); font-size: 13px; }
+    .review-form { display: grid; gap: 12px; }
+    .review-check { display: flex; align-items: flex-start; gap: 9px; padding: 10px 11px; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); font-size: 13px; }
+    .review-check input { flex: none; width: 18px; height: 18px; margin: 1px 0 0; accent-color: var(--accent-strong); }
+    .review-check small { display: block; color: var(--muted); font-size: 12px; margin-top: 3px; }
+    .review-form label { display: block; margin-bottom: 4px; color: var(--muted); font-size: 12px; font-weight: 650; }
+    .review-form select { width: 100%; min-height: 40px; padding: 7px 9px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--ink); font: inherit; font-size: 13px; }
+    .review-form .btn { width: 100%; justify-content: center; min-height: 42px; }
+    .feedback { min-height: 22px; margin: 0; color: var(--ink-soft); font-size: 12.5px; }
+    .human-rule { margin-top: 13px; padding: 10px 11px; background: var(--accent-soft); border-left: 3px solid var(--accent); border-radius: 0 var(--radius) var(--radius) 0; color: var(--ink-soft); font-size: 12px; }
+    .human-rule b { display: block; margin-bottom: 2px; }
+    .exception-panel { padding: 13px; border: 1px solid #e6d08a; border-radius: var(--radius); background: var(--warn-bg); }
+    .exception-panel h3 { margin: 0 0 4px; color: #654308; font-size: 14px; }
+    .exception-panel p { margin: 0; color: #654308; font-size: 12.5px; }
+    .exception-actions { margin-top: 10px; }
+    .exception-actions .btn { width: 100%; justify-content: center; }
+    .audit-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 9px; }
+    .audit-list li { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 9px; align-items: start; font-size: 12px; }
+    .audit-time { color: var(--muted); font-family: var(--mono); font-size: 11px; }
+    .audit-event { color: var(--ink-soft); }
+    .workloads { display: flex; flex-wrap: wrap; gap: 6px; }
+    .workload { padding: 3px 7px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface-2); color: var(--ink-soft); font-size: 11.5px; }
+    .footer { position: static; }
+    .footer-note { margin: 0; }
+    .footer .built { margin-left: auto; }
+    .state-working .progress-track { height: 4px; margin-top: 12px; overflow: hidden; border-radius: 4px; background: var(--line-soft); }
+    .progress-fill { width: 38%; height: 100%; background: var(--accent); }
+    .state-working .progress-fill { animation: sample-progress .6s ease-out forwards; }
+    @keyframes sample-progress { to { width: 100%; } }
+    .decision-record { padding: 11px; border: 1px solid #a7d9a7; border-radius: var(--radius); background: var(--ok-bg); color: #0b5c0b; font-size: 13px; }
+    .decision-record b { display: block; margin-bottom: 3px; }
+    @media (max-width: 900px) {
+      main { width: min(100% - 28px, var(--page-width)); }
+      .workspace { grid-template-columns: minmax(0, 1fr) minmax(270px, .8fr); }
+      .feed-row { grid-template-columns: minmax(120px, .8fr) minmax(0, 1.3fr) auto; gap: 8px; }
+      .report-strip { gap: 7px; }
+    }
+    @media (max-width: 680px) {
+      main { width: min(100% - 24px, var(--page-width)); padding-top: 16px; }
+      .intro { align-items: flex-start; flex-direction: column; }
+      .intro-actions { justify-content: flex-start; }
+      .work-order { grid-template-columns: 1fr; }
+      .work-next { min-width: 0; }
+      .workspace { grid-template-columns: 1fr; }
+      .feed-row { grid-template-columns: minmax(0, 1fr) auto; align-items: start; }
+      .feed-map { grid-column: 1 / -1; grid-row: 2; }
+      .feed-state { grid-column: 2; grid-row: 1; }
+      .report-strip { grid-template-columns: 1fr; }
+      .footer .built { margin-left: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .state-working .progress-fill { animation: none; width: 100%; }
+    }
+  </style>
+</head>
+<body data-subvertical="pharma-life-sciences">
+  <header class="appbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">◈</span>
+      <span><span class="brand-name">Continuity workbench</span><span class="brand-sub">Commercial systems · transition review</span></span>
+    </div>
+    <p class="who">Signed in as <b>Mara Chen</b> · Data Engineering Lead</p>
+    <p class="disclosure">Illustrative demo - synthetic data</p>
+  </header>
+
+  <main>
+    <header class="intro">
+      <div>
+        <p class="eyebrow">Architecture workshop · work item <span class="mono">SYN-CRM-042</span></p>
+        <h1>CRM analytics continuity</h1>
+        <p class="intro-copy">Maintain continuous, governed commercial insight through the fictional CRM change by reviewing reporting feeds before recording a parallel-flow rehearsal decision.</p>
+      </div>
+      <div class="intro-actions">
+        <button class="btn" id="resetButton" type="button">Reset work item</button>
+      </div>
+    </header>
+
+    <section class="card work-order" aria-labelledby="workTitle">
+      <div>
+        <div class="work-kicker">
+          <strong>ACTIVE WORK ITEM</strong>
+          <span class="tag" id="stateTag">Ready for review</span>
+        </div>
+        <h2 class="work-title" id="workTitle">Commercial activity analytics feed</h2>
+        <p class="work-subtitle"><span id="fictionalOrg"></span> · sample migration window <span id="sampleWindow"></span></p>
+        <div class="transition" aria-label="CRM transition from Viva to Salesforce">
+          <span class="system-name">Viva</span><span class="arrow" aria-hidden="true">→</span><span class="system-name">Salesforce</span>
+        </div>
+        <p class="work-meta">
+          <span>Decision owner: <b>Mara Chen, Data Engineering Lead</b></span>
+          <span>Starting motion: <b>Architecture Workshop</b></span>
+          <span>Continuity approach: <b>Parallel data flows · phased connector delivery</b></span>
+        </p>
+      </div>
+      <div class="work-next">
+        <p class="next-label">NEXT ACTION · validate the sample transition</p>
+        <button class="btn btn-primary" id="runCheckButton" type="button">Run continuity check</button>
+        <button class="btn" id="runExceptionButton" type="button">Test held-mapping exception</button>
+      </div>
+    </section>
+
+    <div class="workspace">
+      <div class="primary-column">
+        <section class="card" aria-labelledby="feedHeading">
+          <div class="card-head">
+            <div class="section-heading">
+              <h2 id="feedHeading">Analytics feeds in scope</h2>
+              <p>Illustrative workshop mappings · synthetic operational sample</p>
+            </div>
+            <span class="tag" id="feedCount"></span>
+          </div>
+          <div class="card-body">
+            <div class="feed-list" id="feedList" aria-live="polite"></div>
+            <div class="report-strip" id="reportViews" aria-label="Illustrative downstream reports"></div>
+            <p class="synthetic-flag">Sample row quantities describe this fictional fixture only; they are not customer outcomes or platform performance claims.</p>
+            <p class="human-rule"><b>Catalog mitigation</b>Keep parallel data flows in the transition plan and phase connector delivery after mapping review.</p>
+            <div class="progress-track" id="progressTrack" hidden aria-hidden="true"><div class="progress-fill"></div></div>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="workloadsHeading">
+          <div class="card-head">
+            <h2 id="workloadsHeading">Workload references in the catalog</h2>
+            <span class="card-note">Names only · no live services connected</span>
+          </div>
+          <div class="card-body">
+            <div class="workloads" id="workloadList"></div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="side-column" aria-label="Review and decision">
+        <section class="card decision-card" aria-labelledby="decisionHeading">
+          <div class="card-head">
+            <div>
+              <h2 id="decisionHeading">Workshop decision</h2>
+              <span class="card-note">A person owns the continuity call</span>
+            </div>
+            <span class="tag" id="decisionState">Not reviewed</span>
+          </div>
+          <div class="panel-body">
+            <p class="decision-title" id="decisionTitle">Check the sample feeds first</p>
+            <p class="decision-copy" id="decisionCopy">A local fixture comparison will show whether each illustrative mapping is ready to discuss. Nothing is sent or changed.</p>
+            <div class="notice notice-warn" id="exceptionNotice" hidden>
+              <div>
+                <strong>Mapping held for human review</strong>
+                <span class="notice-note" id="exceptionDetail"></span>
+              </div>
+            </div>
+            <div class="exception-actions" id="exceptionActions" hidden>
+              <button class="btn" id="escalateButton" type="button">Route to CRM Platform Owner</button>
+            </div>
+            <form class="review-form" id="reviewForm" hidden>
+              <label class="review-check" for="reviewedCheck">
+                <input id="reviewedCheck" type="checkbox">
+                <span>I reviewed the sample feed mappings and accept the rationale shown.<small>This attestation is required before recording a workshop decision.</small></span>
+              </label>
+              <div>
+                <label for="rationaleSelect">Proposed decision rationale · editable</label>
+                <select id="rationaleSelect" required>
+                  <option value="Preserve consistent commercial reporting during the CRM change.">Preserve consistent commercial reporting during the CRM change.</option>
+                  <option value="Keep parallel sample flows in scope while the CRM transition is staged.">Keep parallel sample flows in scope while the CRM transition is staged.</option>
+                </select>
+              </div>
+              <button class="btn btn-primary" id="approveButton" type="submit" disabled>Record parallel-flow rehearsal decision</button>
+            </form>
+            <div class="decision-record" id="decisionRecord" hidden>
+              <b>Workshop decision recorded</b>
+              <span id="recordedDecision"></span>
+            </div>
+            <p class="feedback" id="feedback" role="status" aria-live="polite">Ready. Choose a sample check to begin.</p>
+            <div class="human-rule"><b>Human review &amp; escalation</b>Only the named owner records this simulated decision. If a mapping is held, keep the established flow unchanged and route the issue to the CRM Platform Owner.</div>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="auditHeading">
+          <div class="card-head">
+            <h2 id="auditHeading">Review trace</h2>
+            <span class="card-note">Local demo state</span>
+          </div>
+          <div class="card-body">
+            <ol class="audit-list" id="auditList"></ol>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p class="footer-note">Workshop simulation only · no live CRM, analytics, governance, or data actions.</p>
+    <div class="built" aria-label="Catalog workload references">
+      <span class="svc-chip">Microsoft Fabric</span>
+      <span class="svc-chip">Power BI</span>
+      <span class="svc-chip">Microsoft Purview</span>
+      <span class="svc-chip">Azure Functions</span>
+    </div>
+  </footer>
+
+  <script>
+    // State model: ready → working → result → approved; ready → working → exception → escalated.
+    // Reset briefly announces reset, then restores the deterministic ready fixture.
+    const DEMO_FIXTURES = Object.freeze({
+      organization: "Aster Vale Therapeutics (fictional)",
+      sampleWindow: "18–22 May 2026",
+      workItem: "SYN-CRM-042",
+      owner: "Mara Chen",
+      proposedRationale: "Preserve consistent commercial reporting during the CRM change.",
+      feeds: [
+        { name: "Field activity", source: "activity_day", target: "interaction_date", rows: "1,284 sample rows", exception: false },
+        { name: "HCP engagement", source: "territory_ref", target: "territory_key", rows: "642 sample rows", exception: true },
+        { name: "Commercial plan", source: "product_period", target: "product_period", rows: "216 sample rows", exception: false }
+      ],
+      reports: [
+        { name: "Territory call activity", detail: "Commercial reporting view" },
+        { name: "HCP engagement", detail: "Channel summary view" },
+        { name: "Commercial plan", detail: "Planning view" }
+      ],
+      workloads: ["Microsoft Fabric", "Power BI", "Microsoft Purview", "Azure Functions"],
+      events: {
+        ready: [{ actor: "SYSTEM", event: "Synthetic workshop fixture loaded." }],
+        working: [
+          { actor: "SYSTEM", event: "Local sample comparison started; no network activity." },
+          { actor: "SYSTEM", event: "Illustrative report dependencies checked." }
+        ]
+      }
+    });
+
+    const STATES = Object.freeze({
+      READY: "ready",
+      WORKING: "working",
+      RESULT: "result",
+      EXCEPTION: "exception",
+      ESCALATED: "escalated",
+      APPROVED: "approved",
+      RESET: "reset"
+    });
+    let state = STATES.READY;
+    let scenario = "normal";
+    let resetTimer = null;
+    let runTimer = null;
+    let recordedRationale = "";
+
+    const ui = {
+      stateTag: document.querySelector("#stateTag"),
+      feedCount: document.querySelector("#feedCount"),
+      feedList: document.querySelector("#feedList"),
+      reportViews: document.querySelector("#reportViews"),
+      workloadList: document.querySelector("#workloadList"),
+      progressTrack: document.querySelector("#progressTrack"),
+      decisionState: document.querySelector("#decisionState"),
+      decisionTitle: document.querySelector("#decisionTitle"),
+      decisionCopy: document.querySelector("#decisionCopy"),
+      exceptionNotice: document.querySelector("#exceptionNotice"),
+      exceptionDetail: document.querySelector("#exceptionDetail"),
+      exceptionActions: document.querySelector("#exceptionActions"),
+      reviewForm: document.querySelector("#reviewForm"),
+      reviewedCheck: document.querySelector("#reviewedCheck"),
+      rationaleSelect: document.querySelector("#rationaleSelect"),
+      approveButton: document.querySelector("#approveButton"),
+      decisionRecord: document.querySelector("#decisionRecord"),
+      recordedDecision: document.querySelector("#recordedDecision"),
+      feedback: document.querySelector("#feedback"),
+      auditList: document.querySelector("#auditList")
+    };
+    const auditEvents = [...DEMO_FIXTURES.events.ready];
+
+    document.querySelector("#fictionalOrg").textContent = DEMO_FIXTURES.organization;
+    document.querySelector("#sampleWindow").textContent = DEMO_FIXTURES.sampleWindow;
+
+    function addAudit(actor, event) {
+      auditEvents.push({ actor, event });
+      renderAudit();
+    }
+
+    function renderAudit() {
+      ui.auditList.replaceChildren();
+      auditEvents.slice(-4).forEach((item, index) => {
+        const li = document.createElement("li");
+        const time = document.createElement("span");
+        time.className = "audit-time";
+        time.textContent = index === 0 ? "WORKSHOP" : "LOCAL DEMO";
+        const text = document.createElement("span");
+        text.className = "audit-event";
+        const actor = document.createElement("b");
+        actor.textContent = `${item.actor}: `;
+        text.append(actor, document.createTextNode(item.event));
+        li.append(time, text);
+        ui.auditList.append(li);
+      });
+    }
+
+    function renderFeeds() {
+      ui.feedList.replaceChildren();
+      DEMO_FIXTURES.feeds.forEach((feed) => {
+        const held = state === STATES.EXCEPTION || state === STATES.ESCALATED
+          ? scenario === "held" && feed.exception
+          : false;
+        const complete = [STATES.RESULT, STATES.APPROVED].includes(state);
+        const row = document.createElement("div");
+        row.className = "feed-row";
+        const name = document.createElement("div");
+        const feedName = document.createElement("p");
+        feedName.className = "feed-name";
+        feedName.textContent = feed.name;
+        const feedMeta = document.createElement("span");
+        feedMeta.className = "feed-meta";
+        feedMeta.textContent = feed.rows;
+        name.append(feedName, feedMeta);
+        const map = document.createElement("div");
+        map.className = "feed-map";
+        const label = document.createElement("span");
+        label.className = "feed-meta";
+        label.textContent = "Illustrative mapping · Viva → Salesforce";
+        const mapping = document.createElement("span");
+        mapping.className = "mapping";
+        mapping.textContent = held ? `${feed.source} → [unresolved target]` : `${feed.source} → ${feed.target}`;
+        map.append(label, mapping);
+        const status = document.createElement("span");
+        status.className = `tag ${held ? "tag-warn" : complete ? "tag-ok" : ""}`.trim();
+        status.textContent = held ? "Held · review" : complete ? "Ready to discuss" : "Not checked";
+        status.setAttribute("aria-label", `${feed.name}: ${status.textContent}`);
+        row.append(name, map, status);
+        ui.feedList.append(row);
+      });
+      ui.feedCount.textContent = `${DEMO_FIXTURES.feeds.length} synthetic feeds`;
+    }
+
+    function renderReports() {
+      ui.reportViews.replaceChildren();
+      DEMO_FIXTURES.reports.forEach((report) => {
+        const item = document.createElement("div");
+        item.className = "report-view";
+        const title = document.createElement("b");
+        title.textContent = report.name;
+        const detail = document.createElement("span");
+        detail.textContent = report.detail;
+        item.append(title, detail);
+        ui.reportViews.append(item);
+      });
+    }
+
+    function renderWorkloads() {
+      ui.workloadList.replaceChildren();
+      DEMO_FIXTURES.workloads.forEach((name) => {
+        const item = document.createElement("span");
+        item.className = "workload";
+        item.textContent = name;
+        ui.workloadList.append(item);
+      });
+    }
+
+    function setTag(element, text, kind = "") {
+      element.textContent = text;
+      element.className = `tag ${kind}`.trim();
+    }
+
+    function render() {
+      document.body.classList.toggle("state-working", state === STATES.WORKING);
+      ui.progressTrack.hidden = state !== STATES.WORKING;
+      document.querySelector(".work-next").hidden = state !== STATES.READY;
+      ui.exceptionNotice.hidden = ![STATES.EXCEPTION, STATES.ESCALATED].includes(state);
+      ui.exceptionActions.hidden = ![STATES.EXCEPTION, STATES.ESCALATED].includes(state);
+      ui.reviewForm.hidden = state !== STATES.RESULT;
+      ui.decisionRecord.hidden = state !== STATES.APPROVED;
+      document.querySelector("#runCheckButton").disabled = state !== STATES.READY;
+      document.querySelector("#runExceptionButton").disabled = state !== STATES.READY;
+
+      const labels = {
+        [STATES.READY]: ["Ready for review", "Not reviewed", "Check the sample feeds first", "A local fixture comparison will show whether each illustrative mapping is ready to discuss. Nothing is sent or changed."],
+        [STATES.WORKING]: ["Checking sample", "In progress", "Comparing workshop fixtures", "Running a short, deterministic local check. This does not connect to a CRM or analytics service."],
+        [STATES.RESULT]: ["Review required", "Awaiting owner", "Review the sample comparison", "All illustrative mappings align in this sample. Review the notes, attest, and choose a rationale before recording a workshop decision."],
+        [STATES.EXCEPTION]: ["Mapping held", "Escalation available", "Keep the affected view on hold", "One fictional territory reference has no matching target in this exception fixture. Preserve the established flow and ask the CRM Platform Owner to resolve it."],
+        [STATES.ESCALATED]: ["Routed for review", "Owner notified", "Exception routed", "The local demo marked this issue for the CRM Platform Owner. No message was sent; resolve the mapping outside this simulation before replaying."],
+        [STATES.APPROVED]: ["Decision recorded", "Recorded by owner", "Parallel-flow rehearsal approved", "This records a workshop decision in the demo only. It does not start a connector, change a report, or modify CRM data."],
+        [STATES.RESET]: ["Resetting", "Not reviewed", "Resetting the work item", "Restoring the deterministic synthetic starting state."]
+      };
+      const [stateLabel, decisionLabel, title, copy] = labels[state];
+      setTag(ui.stateTag, stateLabel, state === STATES.RESULT ? "tag-warn" : state === STATES.APPROVED || state === STATES.ESCALATED ? "tag-ok" : "");
+      setTag(ui.decisionState, decisionLabel, state === STATES.APPROVED || state === STATES.ESCALATED ? "tag-ok" : "");
+      ui.decisionTitle.textContent = title;
+      ui.decisionCopy.textContent = copy;
+      ui.feedback.textContent = state === STATES.WORKING ? "Checking fictional feed mappings…" :
+        state === STATES.EXCEPTION ? "Exception found. Review the mismatch and escalation route." :
+        state === STATES.ESCALATED ? "Escalation recorded in this local demo state." :
+        state === STATES.RESULT ? "Comparison complete. Human review is required before recording." :
+        state === STATES.APPROVED ? "Decision recorded locally for this workshop simulation." :
+        state === STATES.RESET ? "Resetting to the starting sample…" :
+        state === STATES.READY ? "Ready. Choose a sample check to begin." : "";
+
+      if (state === STATES.EXCEPTION || state === STATES.ESCALATED) {
+        ui.exceptionDetail.textContent = scenario === "held"
+          ? "HCP engagement: territory_ref has no illustrative match for territory_key. This is a synthetic mapping exception, not source data."
+          : "";
+        const escalate = document.querySelector("#escalateButton");
+        escalate.disabled = state === STATES.ESCALATED;
+        escalate.textContent = state === STATES.ESCALATED ? "Routed to CRM Platform Owner" : "Route to CRM Platform Owner";
+      }
+      if (state !== STATES.RESULT) {
+        ui.reviewedCheck.checked = false;
+        ui.rationaleSelect.value = DEMO_FIXTURES.proposedRationale;
+        ui.approveButton.disabled = true;
+      } else {
+        updateApprovalAvailability();
+      }
+      if (state === STATES.APPROVED) {
+        ui.recordedDecision.textContent = `${DEMO_FIXTURES.owner} recorded: ${recordedRationale}`;
+      }
+      renderFeeds();
+      renderAudit();
+    }
+
+    function updateApprovalAvailability() {
+      ui.approveButton.disabled = !(ui.reviewedCheck.checked && ui.rationaleSelect.value);
+    }
+
+    function startCheck(kind) {
+      if (state !== STATES.READY) return;
+      scenario = kind;
+      state = STATES.WORKING;
+      addAudit("SYSTEM", kind === "held"
+        ? "Held-mapping exception fixture selected."
+        : "Continuity check requested by the CRM Platform Owner.");
+      render();
+      runTimer = window.setTimeout(() => {
+        state = kind === "held" ? STATES.EXCEPTION : STATES.RESULT;
+        addAudit("SYSTEM", kind === "held"
+          ? "Synthetic territory mapping mismatch found; the affected view is held."
+          : "Sample mappings and report notes are ready for human review.");
+        render();
+      }, 620);
+    }
+
+    document.querySelector("#runCheckButton").addEventListener("click", () => startCheck("normal"));
+    document.querySelector("#runExceptionButton").addEventListener("click", () => startCheck("held"));
+    document.querySelector("#escalateButton").addEventListener("click", () => {
+      if (state !== STATES.EXCEPTION) return;
+      state = STATES.ESCALATED;
+      addAudit("MARA CHEN", "Routed the held territory mapping to the CRM Platform Owner; no external notification was sent.");
+      render();
+    });
+    ui.reviewedCheck.addEventListener("change", updateApprovalAvailability);
+    ui.rationaleSelect.addEventListener("change", updateApprovalAvailability);
+    document.querySelector("#reviewForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      if (state !== STATES.RESULT || ui.approveButton.disabled) return;
+      recordedRationale = ui.rationaleSelect.value;
+      state = STATES.APPROVED;
+      addAudit("MARA CHEN", "Recorded the human-reviewed parallel-flow rehearsal rationale.");
+      render();
+    });
+    document.querySelector("#resetButton").addEventListener("click", () => {
+      if (runTimer) window.clearTimeout(runTimer);
+      if (resetTimer) window.clearTimeout(resetTimer);
+      state = STATES.RESET;
+      scenario = "normal";
+      recordedRationale = "";
+      auditEvents.splice(0, auditEvents.length, ...DEMO_FIXTURES.events.ready);
+      render();
+      resetTimer = window.setTimeout(() => {
+        state = STATES.READY;
+        render();
+      }, 180);
+    });
+
+    renderReports();
+    renderWorkloads();
+    render();
+  </script>
+</body>
+</html>

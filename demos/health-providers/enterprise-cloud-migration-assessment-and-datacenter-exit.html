@@ -1,0 +1,1058 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Datacenter exit wave review | Illustrative provider demo</title>
+<style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+body { --on-accent: var(--surface); }
+.btn-primary, .btn-primary:hover:not(:disabled), .chip[aria-pressed="true"] { color: var(--on-accent); }
+.workspace { width: min(100%, 1600px); margin: 0 auto; padding: 15px 18px 18px; }
+.context {
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 12px;
+  margin-bottom: 13px;
+}
+.context h1 { margin: 0 0 2px; font-size: clamp(20px, 2vw, 27px); line-height: 1.2; }
+.context p { margin: 0; color: var(--muted); font-size: 13px; }
+.context-actions { display: flex; align-items: center; gap: 10px; flex: none; }
+.workspace-grid {
+  display: grid; grid-template-columns: 270px minmax(420px, 1fr) 310px;
+  grid-template-areas: "queue primary review"; gap: 13px; align-items: start;
+}
+.queue { grid-area: queue; }
+.primary { grid-area: primary; min-width: 0; }
+.review { grid-area: review; }
+.queue-list { display: grid; gap: 8px; }
+.wave {
+  width: 100%; text-align: left; font: inherit; color: var(--ink); cursor: pointer;
+  border: 1px solid var(--line); border-left: 4px solid transparent; border-radius: var(--radius);
+  background: var(--surface); padding: 10px 11px; min-height: 74px;
+}
+.wave:hover:not(:disabled) { border-color: var(--accent-line); background: var(--accent-soft); }
+.wave[aria-pressed="true"] { border-color: var(--accent); border-left-color: var(--accent); background: var(--accent-soft); }
+.wave:disabled { cursor: wait; opacity: .65; }
+.wave-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.wave-id { font: 600 12px var(--mono); color: var(--accent-strong); }
+.wave-name { display: block; margin-top: 4px; font-size: 13.5px; font-weight: 600; }
+.wave-meta { display: block; margin-top: 2px; color: var(--muted); font-size: 12px; }
+.portfolio-note { margin: 11px 0 0; color: var(--muted); font-size: 12px; }
+.object-head {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+  padding: 14px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.object-head h2 { margin: 1px 0 3px; font-size: 18px; line-height: 1.25; }
+.eyebrow { color: var(--accent-strong); font-size: 12px; font-weight: 700; letter-spacing: .02em; }
+.object-sub { margin: 0; color: var(--muted); font-size: 12.5px; }
+.assessment { display: grid; gap: 12px; padding: 13px 15px 15px; }
+.command-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px 11px; border: 1px solid var(--accent-line); border-radius: var(--radius);
+  background: var(--accent-soft);
+}
+.command-copy strong { display: block; font-size: 13.5px; }
+.command-copy span { display: block; color: var(--muted); font-size: 12px; }
+.evidence-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(250px, .9fr); gap: 11px; }
+.section-box { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; min-width: 0; }
+.section-title {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  margin: 0; padding: 9px 11px; background: var(--surface-2);
+  border-bottom: 1px solid var(--line-soft); font-size: 13px;
+}
+.checks { list-style: none; padding: 4px 11px; margin: 0; }
+.checks li { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--line-soft); }
+.checks li:last-child { border-bottom: 0; }
+.check-symbol {
+  display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--surface-2); color: var(--muted); font-size: 12px; font-weight: 700;
+}
+.check-symbol.ok { background: var(--ok-bg); color: var(--ok); }
+.check-symbol.stop { background: var(--stop-bg); color: var(--stop); }
+.check-name { font-size: 13px; font-weight: 600; }
+.check-evidence { display: block; color: var(--muted); font-size: 11.5px; font-weight: 400; }
+.dependency-flow { display: grid; gap: 6px; padding: 10px 11px; }
+.dependency {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center;
+  border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: var(--radius);
+  padding: 8px 9px; background: var(--surface);
+}
+.dependency.is-stop { border-left-color: var(--stop); background: var(--stop-bg); }
+.dependency-name { font-size: 12.5px; font-weight: 600; }
+.dependency-note { display: block; color: var(--muted); font-size: 11.5px; }
+.flow-arrow { text-align: center; color: var(--muted); line-height: 1; }
+details.sources { border-top: 1px solid var(--line-soft); padding: 8px 11px; }
+details.sources summary { color: var(--accent-strong); cursor: pointer; font-size: 12.5px; font-weight: 600; }
+details.sources p { margin: 7px 0 1px; color: var(--muted); font-size: 12px; }
+.result-panel { display: grid; gap: 10px; }
+.result-panel .actions { align-items: center; }
+.progress-track { height: 5px; overflow: hidden; border-radius: 999px; background: var(--line); }
+.progress-bar { height: 100%; width: 0; background: var(--accent); transition: width .45s ease; }
+.review .card + .card { margin-top: 13px; }
+.gate-state { display: grid; gap: 10px; }
+.gate-state h3 { margin: 0; font-size: 15px; }
+.gate-state p { margin: 0; color: var(--muted); font-size: 12.5px; }
+.owner {
+  display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 9px; align-items: center;
+  padding: 9px; border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--bg);
+}
+.avatar {
+  display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%;
+  background: var(--accent-strong); color: var(--on-accent); font-weight: 700;
+}
+.owner strong, .owner span { display: block; }
+.owner span { color: var(--muted); font-size: 11.5px; }
+.source-stack { display: grid; gap: 8px; }
+.source-row { display: grid; grid-template-columns: 8px minmax(0, 1fr); gap: 8px; align-items: start; font-size: 12.5px; }
+.source-dot { width: 8px; height: 8px; margin-top: 5px; border-radius: 50%; background: var(--accent); }
+.source-row span { display: block; color: var(--muted); font-size: 11.5px; }
+.audit-wrap { max-height: 210px; overflow: auto; }
+.icon-button {
+  border: 0; background: transparent; color: var(--muted); cursor: pointer;
+  font: 22px/1 var(--font); padding: 2px 5px; border-radius: var(--radius);
+}
+.dialog-rule { margin: 0; color: var(--muted); font-size: 12.5px; }
+.value-claim { max-width: 72ch; }
+
+@media (max-width: 1120px) {
+  .workspace-grid {
+    grid-template-columns: 250px minmax(0, 1fr);
+    grid-template-areas: "queue primary" "review primary";
+  }
+}
+@media (max-width: 760px) {
+  .workspace { padding: 12px; }
+  .context { align-items: flex-start; }
+  .workspace-grid { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: "queue" "primary" "review"; }
+  .queue-list { grid-template-columns: 1fr; }
+  .evidence-grid { grid-template-columns: minmax(0, 1fr); }
+  .command-row, .object-head { align-items: flex-start; flex-direction: column; }
+  .command-row .btn { width: 100%; justify-content: center; }
+}
+@media (max-width: 480px) {
+  .context { display: grid; }
+  .context-actions { justify-content: space-between; width: 100%; }
+  .object-head { padding: 12px; }
+  .assessment { padding: 11px 12px 13px; }
+  .checks li { grid-template-columns: 22px minmax(0, 1fr); }
+  .checks .tag { grid-column: 2; justify-self: start; }
+  .dlg-foot .btn { flex: 1 1 100%; justify-content: center; }
+}
+</style>
+</head>
+<body data-subvertical="health-providers">
+<header class="appbar">
+  <div class="brand">
+    <svg class="brand-mark" width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
+      <path fill="currentColor" d="M3 4h8v8H3zm12 0h8v8h-8zM3 16h8v7H3zm12 0h8v7h-8z"/>
+    </svg>
+    <div>
+      <span class="brand-name">Northstar transition workbench</span>
+      <span class="brand-sub">Datacenter exit assessment and wave planning</span>
+    </div>
+  </div>
+  <p class="disclosure">
+    <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm.8 10.5H7.2V7h1.6v4.5ZM8 5.8a.9.9 0 1 1 0-1.8.9.9 0 0 1 0 1.8Z"/></svg>
+    Illustrative demo - synthetic data
+  </p>
+  <p class="who"><b>Jordan Lee</b><br>Infrastructure transformation lead</p>
+</header>
+
+<main class="workspace">
+  <section class="context" aria-labelledby="page-title">
+    <div>
+      <h1 id="page-title">Datacenter exit wave review</h1>
+      <p>Fictional Northstar Health Network · Ashwood facility · target date and all values are sample operational data</p>
+    </div>
+    <div class="context-actions">
+      <span class="tag">Assessment snapshot · 29 Sep 2026</span>
+      <button class="btn" id="reset-demo" type="button">Reset demo</button>
+    </div>
+  </section>
+
+  <div class="workspace-grid">
+    <aside class="queue card" aria-labelledby="queue-title">
+      <div class="card-head">
+        <h2 id="queue-title">Candidate waves</h2>
+        <span class="card-note">3 sample scopes</span>
+      </div>
+      <div class="card-body">
+        <div class="queue-list" id="wave-list"></div>
+        <p class="portfolio-note">Sample portfolio snapshot: 186 applications and 742 servers in assessment scope. These are fictional operational counts, not outcomes.</p>
+      </div>
+    </aside>
+
+    <section class="primary card" aria-labelledby="object-title" aria-busy="false">
+      <div class="object-head">
+        <div>
+          <div class="eyebrow" id="wave-id">Wave</div>
+          <h2 id="object-title">Loading sample scope</h2>
+          <p class="object-sub" id="object-sub"></p>
+        </div>
+        <span class="tag" id="object-state">Not assessed</span>
+      </div>
+      <div class="assessment">
+        <div class="command-row">
+          <div class="command-copy">
+            <strong id="next-action-title">Assess this candidate scope</strong>
+            <span id="next-action-note">Compare inventory evidence, support exposure, and dependencies.</span>
+          </div>
+          <button class="btn btn-primary" id="run-assessment" type="button">
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="m5 3 7 5-7 5V3Z"/></svg>
+            Assess selected scope
+          </button>
+        </div>
+
+        <div class="progress-track" id="progress-track" hidden aria-hidden="true">
+          <div class="progress-bar" id="progress-bar"></div>
+        </div>
+
+        <div class="evidence-grid">
+          <section class="section-box" aria-labelledby="readiness-title">
+            <h3 class="section-title" id="readiness-title">
+              Readiness evidence
+              <span class="tag" id="evidence-date">Sample sources</span>
+            </h3>
+            <ul class="checks" id="readiness-list"></ul>
+          </section>
+
+          <section class="section-box" aria-labelledby="dependency-title">
+            <h3 class="section-title" id="dependency-title">
+              Dependency chain
+              <span class="tag" id="dependency-status">Mapped</span>
+            </h3>
+            <div class="dependency-flow" id="dependency-flow"></div>
+            <details class="sources">
+              <summary>Inspect source coverage</summary>
+              <p id="source-coverage"></p>
+            </details>
+          </section>
+        </div>
+
+        <section class="result-panel" id="result-panel" aria-labelledby="result-title" hidden>
+          <div class="notice" id="result-notice">
+            <svg width="17" height="17" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm.8 10.5H7.2V7h1.6v4.5ZM8 5.8a.9.9 0 1 1 0-1.8.9.9 0 0 1 0 1.8Z"/></svg>
+            <div>
+              <strong id="result-title">Assessment result</strong>
+              <span class="notice-note" id="result-detail"></span>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" id="review-wave" type="button" hidden>Review wave plan</button>
+            <button class="btn btn-primary" id="escalate-wave" type="button" hidden>Escalate to application owner</button>
+            <p class="status-line" id="workflow-status" role="status" aria-live="polite"></p>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <aside class="review" aria-label="Governance and audit context">
+      <section class="card" aria-labelledby="gate-title">
+        <div class="card-head">
+          <h2 id="gate-title">Human review gate</h2>
+          <span class="tag" id="gate-tag">Waiting</span>
+        </div>
+        <div class="card-body gate-state">
+          <div class="owner">
+            <span class="avatar" aria-hidden="true">JL</span>
+            <div><strong>Jordan Lee</strong><span>Accountable sample reviewer · CIO delegate</span></div>
+          </div>
+          <h3 id="gate-heading">Assessment required</h3>
+          <p id="gate-copy">No wave can move to factory planning until a named reviewer confirms scope and rationale.</p>
+          <div class="rule">
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 1 2.5 3v4.2c0 3.5 2.3 6.6 5.5 7.8 3.2-1.2 5.5-4.3 5.5-7.8V3L8 1Zm0 2 3.5 1.3v2.9c0 2.5-1.4 4.8-3.5 5.8-2.1-1-3.5-3.3-3.5-5.8V4.3L8 3Z"/></svg>
+            <span>Simulated and reversible. Approval records a planning decision only; it does not migrate workloads.</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="sources-title">
+        <div class="card-head">
+          <h2 id="sources-title">Assessment sources</h2>
+          <span class="card-note">Fictional snapshots</span>
+        </div>
+        <div class="card-body source-stack" id="source-list"></div>
+      </section>
+
+      <section class="card" aria-labelledby="audit-title">
+        <div class="card-head">
+          <h2 id="audit-title">Audit trail</h2>
+          <span class="card-note">This session</span>
+        </div>
+        <div class="card-body audit-wrap">
+          <ol class="audit" id="audit-list"></ol>
+        </div>
+      </section>
+    </aside>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="built">
+    <span>Canonical workload context:</span>
+    <span class="svc-chip">Azure Arc-enabled servers</span>
+    <span class="svc-chip">Azure governance (Policy &amp; management)</span>
+    <span class="svc-chip">Azure Storage</span>
+    <span class="svc-chip">Mainframe &amp; midrange migration</span>
+    <span class="svc-chip">Arc Windows Server ESU · catalog workload</span>
+  </div>
+  <p class="claim value-claim"><b>Catalog value:</b> A structured large-scale migration assessment and datacenter consolidation reduce run-rate cost, eliminate end-of-support risk, and accelerate AI readiness; comparable programs assess thousands of apps for cloud migration.</p>
+</footer>
+
+<dialog id="review-dialog" aria-labelledby="dialog-title">
+  <div class="dlg-head">
+    <div>
+      <h2 id="dialog-title">Approve wave for factory planning</h2>
+      <span class="dlg-sub" id="dialog-subtitle"></span>
+    </div>
+    <button class="icon-button" id="close-dialog" type="button" aria-label="Close review dialog">×</button>
+  </div>
+  <div class="dlg-body">
+    <dl class="meta-grid">
+      <div><dt>Reviewer</dt><dd>Jordan Lee · CIO delegate (fictional)</dd></div>
+      <div><dt>Decision</dt><dd>Planning approval only</dd></div>
+      <div><dt>Evidence date</dt><dd id="dialog-evidence-date"></dd></div>
+      <div><dt>Rollback</dt><dd>Reset or revise scope</dd></div>
+    </dl>
+    <div class="evidence" id="dialog-evidence"></div>
+    <div class="field">
+      <label for="approval-rationale">Approval rationale</label>
+      <textarea id="approval-rationale" maxlength="300"></textarea>
+    </div>
+    <p class="dialog-rule">By confirming, the named reviewer accepts accountability for the sample scope and rationale. No migration is executed.</p>
+    <p class="dlg-error" id="dialog-error" role="alert"></p>
+  </div>
+  <div class="dlg-foot">
+    <button class="btn" id="cancel-review" type="button">Cancel</button>
+    <button class="btn btn-primary" id="confirm-approval" type="button">Confirm planning approval</button>
+  </div>
+</dialog>
+
+<script>
+const DEMO_FIXTURES = {
+  organization: {
+    name: "Northstar Health Network",
+    facility: "Ashwood facility",
+    assessmentDate: "29 Sep 2026",
+    reviewer: "Jordan Lee",
+    portfolio: "186 applications and 742 servers",
+  },
+  sources: [
+    { name: "Application inventory", detail: "Sample snapshot · 28 Sep 2026 · owner and lifecycle fields" },
+    { name: "Server discovery export", detail: "Sample snapshot · 27 Sep 2026 · operating system and utilization" },
+    { name: "Dependency workshop", detail: "Sample notes · 25 Sep 2026 · human-validated relationships" },
+  ],
+  initialAudit: [
+    { time: "09:12", actor: "Assessment service", kind: "system", text: "Loaded fictional Ashwood facility inventory snapshot." },
+    { time: "09:14", actor: "Jordan Lee", kind: "human", text: "Opened candidate wave review." },
+  ],
+  waves: [
+    {
+      id: "W-02",
+      name: "Clinical integration services",
+      meta: "23 apps · 68 servers · sample",
+      queueState: "Ready",
+      queueTone: "ok",
+      owner: "Integration platform team",
+      targetWindow: "Sample window · 12-23 Jan 2027",
+      evidenceDate: "Evidence through 28 Sep 2026",
+      confidence: "High evidence coverage",
+      recommendation: "Ready for human review",
+      resultDetail: "Inventory, support exposure, and dependency evidence are complete enough for a named reviewer to approve factory planning.",
+      rationale: "Scope has validated owners, current dependency evidence, and an agreed transition sequence. Approve for detailed factory planning; revalidate at the implementation gate.",
+      isException: false,
+      readiness: [
+        { name: "Application ownership", evidence: "23 of 23 sample records have named owners", status: "Complete", tone: "ok" },
+        { name: "Server inventory", evidence: "68 of 68 sample records reconciled", status: "Complete", tone: "ok" },
+        { name: "Support exposure", evidence: "11 sample servers flagged for planning attention", status: "Reviewed", tone: "warn" },
+        { name: "Migration sequence", evidence: "Three dependency groups validated in workshop", status: "Complete", tone: "ok" },
+      ],
+      dependencies: [
+        { name: "Interface gateway", note: "Entry tier · owner confirmed", status: "ok" },
+        { name: "Message broker cluster", note: "Move in the same factory wave", status: "ok" },
+        { name: "Clinical archive connector", note: "Sequence after broker validation", status: "ok" },
+      ],
+      coverage: "3 sample sources; 91% of required assessment fields populated. Confidence is a qualitative fixture label, not a measured prediction.",
+    },
+    {
+      id: "W-03",
+      name: "Revenue cycle batch services",
+      meta: "17 apps · 41 servers · sample",
+      queueState: "Review",
+      queueTone: "warn",
+      owner: "Revenue platform team",
+      targetWindow: "Sample window · 09-20 Feb 2027",
+      evidenceDate: "Evidence through 27 Sep 2026",
+      confidence: "Moderate evidence coverage",
+      recommendation: "Ready with reviewer condition",
+      resultDetail: "The sample scope can enter factory planning if the reviewer carries forward the batch-calendar validation condition.",
+      rationale: "Approve for detailed factory planning with a condition to revalidate the month-end batch calendar before implementation sequencing.",
+      isException: false,
+      readiness: [
+        { name: "Application ownership", evidence: "17 of 17 sample records have named owners", status: "Complete", tone: "ok" },
+        { name: "Server inventory", evidence: "39 of 41 sample records reconciled", status: "Review", tone: "warn" },
+        { name: "Support exposure", evidence: "8 sample servers flagged for planning attention", status: "Reviewed", tone: "warn" },
+        { name: "Batch calendar", evidence: "Month-end window needs revalidation", status: "Condition", tone: "warn" },
+      ],
+      dependencies: [
+        { name: "Inbound remittance files", note: "Sequence confirmed in workshop", status: "ok" },
+        { name: "Batch scheduler", note: "Calendar validation carried forward", status: "ok" },
+        { name: "Finance export", note: "Owner confirmed", status: "ok" },
+      ],
+      coverage: "3 sample sources; 82% of required assessment fields populated. The unresolved fields are visible in the review condition.",
+    },
+    {
+      id: "W-04",
+      name: "Legacy archive and retrieval",
+      meta: "9 apps · 27 servers · sample",
+      queueState: "Exception",
+      queueTone: "stop",
+      owner: "Records application team",
+      targetWindow: "No sample window assigned",
+      evidenceDate: "Evidence through 25 Sep 2026",
+      confidence: "Low evidence coverage",
+      recommendation: "Blocked - owner escalation required",
+      resultDetail: "A downstream records export has no validated owner or tested replacement path. The scope cannot move to factory planning.",
+      rationale: "",
+      isException: true,
+      readiness: [
+        { name: "Application ownership", evidence: "8 of 9 sample records have named owners", status: "Gap", tone: "stop" },
+        { name: "Server inventory", evidence: "27 of 27 sample records reconciled", status: "Complete", tone: "ok" },
+        { name: "Support exposure", evidence: "14 sample servers flagged for planning attention", status: "Reviewed", tone: "warn" },
+        { name: "Export dependency", evidence: "Owner and replacement path not validated", status: "Blocked", tone: "stop" },
+      ],
+      dependencies: [
+        { name: "Archive index", note: "Inventory record confirmed", status: "ok" },
+        { name: "Records export service", note: "No validated owner or replacement path", status: "stop" },
+        { name: "Legal retrieval queue", note: "Downstream sequence remains unknown", status: "stop" },
+      ],
+      coverage: "2 sample sources; 58% of required assessment fields populated. The qualitative low-coverage label forces escalation rather than an automated recommendation.",
+    },
+  ],
+};
+
+const elements = {
+  primary: document.querySelector(".primary"),
+  waveList: document.querySelector("#wave-list"),
+  waveId: document.querySelector("#wave-id"),
+  objectTitle: document.querySelector("#object-title"),
+  objectSub: document.querySelector("#object-sub"),
+  objectState: document.querySelector("#object-state"),
+  runAssessment: document.querySelector("#run-assessment"),
+  resetDemo: document.querySelector("#reset-demo"),
+  progressTrack: document.querySelector("#progress-track"),
+  progressBar: document.querySelector("#progress-bar"),
+  evidenceDate: document.querySelector("#evidence-date"),
+  readinessList: document.querySelector("#readiness-list"),
+  dependencyFlow: document.querySelector("#dependency-flow"),
+  dependencyStatus: document.querySelector("#dependency-status"),
+  sourceCoverage: document.querySelector("#source-coverage"),
+  resultPanel: document.querySelector("#result-panel"),
+  resultNotice: document.querySelector("#result-notice"),
+  resultTitle: document.querySelector("#result-title"),
+  resultDetail: document.querySelector("#result-detail"),
+  reviewWave: document.querySelector("#review-wave"),
+  escalateWave: document.querySelector("#escalate-wave"),
+  workflowStatus: document.querySelector("#workflow-status"),
+  gateTag: document.querySelector("#gate-tag"),
+  gateHeading: document.querySelector("#gate-heading"),
+  gateCopy: document.querySelector("#gate-copy"),
+  sourceList: document.querySelector("#source-list"),
+  auditList: document.querySelector("#audit-list"),
+  dialog: document.querySelector("#review-dialog"),
+  dialogSubtitle: document.querySelector("#dialog-subtitle"),
+  dialogEvidenceDate: document.querySelector("#dialog-evidence-date"),
+  dialogEvidence: document.querySelector("#dialog-evidence"),
+  rationale: document.querySelector("#approval-rationale"),
+  dialogError: document.querySelector("#dialog-error"),
+  closeDialog: document.querySelector("#close-dialog"),
+  cancelReview: document.querySelector("#cancel-review"),
+  confirmApproval: document.querySelector("#confirm-approval"),
+};
+
+const state = {
+  selectedId: "W-02",
+  phase: "ready",
+  timer: null,
+  audit: DEMO_FIXTURES.initialAudit.map((entry) => ({ ...entry })),
+};
+
+function selectedWave() {
+  return DEMO_FIXTURES.waves.find((wave) => wave.id === state.selectedId);
+}
+
+function toneClass(tone, prefix) {
+  return `${prefix}-${tone}`;
+}
+
+function createTag(text, tone) {
+  const tag = document.createElement("span");
+  tag.className = `tag ${toneClass(tone, "tag")}`;
+  tag.textContent = text;
+  return tag;
+}
+
+function renderWaveQueue() {
+  elements.waveList.replaceChildren();
+  DEMO_FIXTURES.waves.forEach((wave) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "wave";
+    button.dataset.waveId = wave.id;
+    button.setAttribute("aria-pressed", String(wave.id === state.selectedId));
+    button.disabled = state.phase === "working";
+
+    const top = document.createElement("span");
+    top.className = "wave-top";
+    const id = document.createElement("span");
+    id.className = "wave-id";
+    id.textContent = wave.id;
+    top.append(id, createTag(wave.queueState, wave.queueTone));
+
+    const name = document.createElement("span");
+    name.className = "wave-name";
+    name.textContent = wave.name;
+    const meta = document.createElement("span");
+    meta.className = "wave-meta";
+    meta.textContent = wave.meta;
+    button.append(top, name, meta);
+    button.addEventListener("click", () => selectWave(wave.id));
+    elements.waveList.append(button);
+  });
+}
+
+function renderReadiness(wave) {
+  elements.readinessList.replaceChildren();
+  wave.readiness.forEach((item) => {
+    const row = document.createElement("li");
+    const symbol = document.createElement("span");
+    symbol.className = `check-symbol ${item.tone}`;
+    symbol.setAttribute("aria-hidden", "true");
+    symbol.textContent = item.tone === "ok" ? "✓" : item.tone === "stop" ? "!" : "·";
+
+    const copy = document.createElement("span");
+    copy.className = "check-name";
+    copy.textContent = item.name;
+    const evidence = document.createElement("span");
+    evidence.className = "check-evidence";
+    evidence.textContent = item.evidence;
+    copy.append(evidence);
+
+    row.append(symbol, copy, createTag(item.status, item.tone));
+    elements.readinessList.append(row);
+  });
+}
+
+function renderDependencies(wave) {
+  elements.dependencyFlow.replaceChildren();
+  wave.dependencies.forEach((item, index) => {
+    if (index > 0) {
+      const arrow = document.createElement("div");
+      arrow.className = "flow-arrow";
+      arrow.setAttribute("aria-hidden", "true");
+      arrow.textContent = "↓";
+      elements.dependencyFlow.append(arrow);
+    }
+    const dependency = document.createElement("div");
+    dependency.className = `dependency${item.status === "stop" ? " is-stop" : ""}`;
+    const copy = document.createElement("div");
+    const name = document.createElement("span");
+    name.className = "dependency-name";
+    name.textContent = item.name;
+    const note = document.createElement("span");
+    note.className = "dependency-note";
+    note.textContent = item.note;
+    copy.append(name, note);
+    dependency.append(copy, createTag(item.status === "stop" ? "Unresolved" : "Mapped", item.status === "stop" ? "stop" : "ok"));
+    elements.dependencyFlow.append(dependency);
+  });
+}
+
+function renderSources() {
+  elements.sourceList.replaceChildren();
+  DEMO_FIXTURES.sources.forEach((source) => {
+    const row = document.createElement("div");
+    row.className = "source-row";
+    const dot = document.createElement("span");
+    dot.className = "source-dot";
+    dot.setAttribute("aria-hidden", "true");
+    const copy = document.createElement("div");
+    const name = document.createElement("strong");
+    name.textContent = source.name;
+    const detail = document.createElement("span");
+    detail.textContent = source.detail;
+    copy.append(name, detail);
+    row.append(dot, copy);
+    elements.sourceList.append(row);
+  });
+}
+
+function renderAudit() {
+  elements.auditList.replaceChildren();
+  state.audit.forEach((entry) => {
+    const row = document.createElement("li");
+    const time = document.createElement("time");
+    time.textContent = entry.time;
+    const copy = document.createElement("div");
+    const actor = document.createElement("span");
+    actor.className = `actor is-${entry.kind}`;
+    actor.textContent = entry.actor;
+    const text = document.createElement("span");
+    text.textContent = ` · ${entry.text}`;
+    copy.append(actor, text);
+    row.append(time, copy);
+    elements.auditList.append(row);
+  });
+}
+
+function setGate(tag, tone, heading, copy) {
+  elements.gateTag.className = `tag ${toneClass(tone, "tag")}`;
+  elements.gateTag.textContent = tag;
+  elements.gateHeading.textContent = heading;
+  elements.gateCopy.textContent = copy;
+}
+
+function renderPhase() {
+  const wave = selectedWave();
+  const isWorking = state.phase === "working";
+  elements.primary.setAttribute("aria-busy", String(isWorking));
+  elements.runAssessment.disabled = isWorking || ["approved", "escalated"].includes(state.phase);
+  elements.progressTrack.hidden = !isWorking;
+  elements.resultPanel.hidden = ["ready", "working"].includes(state.phase);
+  elements.reviewWave.hidden = !(state.phase === "result" && !wave.isException);
+  elements.escalateWave.hidden = !(state.phase === "exception");
+
+  if (state.phase === "ready") {
+    elements.objectState.className = "tag";
+    elements.objectState.textContent = "Not assessed";
+    elements.workflowStatus.textContent = "";
+    setGate("Waiting", "warn", "Assessment required", "No wave can move to factory planning until a named reviewer confirms scope and rationale.");
+  } else if (state.phase === "working") {
+    elements.objectState.className = "tag tag-warn";
+    elements.objectState.textContent = "Assessing";
+    elements.workflowStatus.textContent = "Comparing fictional inventory, lifecycle, and dependency evidence.";
+    setGate("Waiting", "warn", "Assessment in progress", "The review gate remains locked while the sample evidence is evaluated.");
+  } else if (state.phase === "result" || state.phase === "exception") {
+    const tone = wave.isException ? "stop" : "ok";
+    elements.objectState.className = `tag tag-${tone}`;
+    elements.objectState.textContent = wave.isException ? "Blocked" : "Review ready";
+    elements.resultNotice.className = `notice notice-${tone}`;
+    elements.resultTitle.textContent = wave.recommendation;
+    elements.resultDetail.textContent = wave.resultDetail;
+    elements.workflowStatus.textContent = wave.isException
+      ? "Human escalation is required; no planning approval is available."
+      : "Assessment complete. A named reviewer must make the planning decision.";
+    setGate(
+      wave.isException ? "Blocked" : "Review",
+      tone,
+      wave.isException ? "Escalation required" : "Reviewer decision required",
+      wave.isException
+        ? "The unresolved dependency prevents approval. Route it to the application owner and preserve the evidence."
+        : "Jordan must inspect the evidence and record a rationale before this scope enters factory planning."
+    );
+  } else if (state.phase === "approved") {
+    elements.objectState.className = "tag tag-ok";
+    elements.objectState.textContent = "Planning approved";
+    elements.resultNotice.className = "notice notice-ok";
+    elements.resultTitle.textContent = "Approved for factory planning";
+    elements.resultDetail.textContent = "The reviewer recorded a reversible sample planning decision and rationale. No workloads were migrated.";
+    elements.workflowStatus.textContent = "Planning approval recorded in the audit trail.";
+    setGate("Approved", "ok", "Human approval recorded", "Jordan approved this fictional scope for detailed factory planning. Implementation still requires a separate gate.");
+  } else if (state.phase === "escalated") {
+    elements.objectState.className = "tag tag-warn";
+    elements.objectState.textContent = "Escalated";
+    elements.resultNotice.className = "notice notice-warn";
+    elements.resultTitle.textContent = "Exception escalated";
+    elements.resultDetail.textContent = "The application owner was assigned a fictional evidence request. The candidate wave remains blocked.";
+    elements.workflowStatus.textContent = "Escalation recorded; reset the demo to replay.";
+    setGate("Escalated", "warn", "Owner response pending", "The scope remains blocked until a human validates ownership and the downstream replacement path.");
+  }
+  renderWaveQueue();
+}
+
+function renderSelectedWave() {
+  const wave = selectedWave();
+  elements.waveId.textContent = `${wave.id} · candidate migration wave`;
+  elements.objectTitle.textContent = wave.name;
+  elements.objectSub.textContent = `${wave.meta} · ${wave.owner} · ${wave.targetWindow}`;
+  elements.evidenceDate.textContent = wave.evidenceDate;
+  elements.dependencyStatus.className = `tag ${wave.isException ? "tag-stop" : "tag-ok"}`;
+  elements.dependencyStatus.textContent = wave.isException ? "Unresolved" : "Mapped";
+  elements.sourceCoverage.textContent = wave.coverage;
+  renderReadiness(wave);
+  renderDependencies(wave);
+  renderPhase();
+}
+
+function selectWave(id) {
+  if (state.phase === "working" || id === state.selectedId) return;
+  if (state.timer) window.clearTimeout(state.timer);
+  state.selectedId = id;
+  state.phase = "ready";
+  state.audit.push({
+    time: id === "W-04" ? "09:18" : "09:16",
+    actor: DEMO_FIXTURES.organization.reviewer,
+    kind: "human",
+    text: `Selected ${id} for review.`,
+  });
+  renderSelectedWave();
+  renderAudit();
+}
+
+function runAssessment() {
+  const wave = selectedWave();
+  state.phase = "working";
+  renderPhase();
+  elements.progressBar.style.width = "12%";
+  window.requestAnimationFrame(() => {
+    elements.progressBar.style.width = "78%";
+  });
+  state.timer = window.setTimeout(() => {
+    state.timer = null;
+    elements.progressBar.style.width = "100%";
+    state.phase = wave.isException ? "exception" : "result";
+    state.audit.push({
+      time: wave.isException ? "09:19" : "09:17",
+      actor: "Assessment service",
+      kind: "system",
+      text: wave.isException
+        ? `Flagged unresolved dependency in ${wave.id}; approval withheld.`
+        : `Prepared ${wave.id} recommendation for human review.`,
+    });
+    renderPhase();
+    renderAudit();
+  }, 650);
+}
+
+function openReview() {
+  const wave = selectedWave();
+  elements.dialogSubtitle.textContent = `${wave.id} · ${wave.name}`;
+  elements.dialogEvidenceDate.textContent = wave.evidenceDate;
+  elements.dialogEvidence.textContent = `${wave.recommendation}. ${wave.resultDetail}`;
+  elements.rationale.value = wave.rationale;
+  elements.dialogError.textContent = "";
+  if (typeof elements.dialog.showModal === "function") {
+    elements.dialog.showModal();
+  } else {
+    elements.dialog.setAttribute("open", "");
+  }
+}
+
+function closeReview() {
+  if (typeof elements.dialog.close === "function") {
+    elements.dialog.close();
+  } else {
+    elements.dialog.removeAttribute("open");
+  }
+}
+
+function confirmApproval() {
+  const rationale = elements.rationale.value.trim();
+  if (!rationale) {
+    elements.dialogError.textContent = "Enter a rationale before confirming the planning approval.";
+    elements.rationale.focus();
+    return;
+  }
+  const wave = selectedWave();
+  closeReview();
+  state.phase = "approved";
+  state.audit.push({
+    time: "09:20",
+    actor: DEMO_FIXTURES.organization.reviewer,
+    kind: "human",
+    text: `Approved ${wave.id} for factory planning. Rationale: ${rationale}`,
+  });
+  renderPhase();
+  renderAudit();
+}
+
+function escalateException() {
+  const wave = selectedWave();
+  state.phase = "escalated";
+  state.audit.push({
+    time: "09:21",
+    actor: DEMO_FIXTURES.organization.reviewer,
+    kind: "human",
+    text: `Escalated ${wave.id} to the fictional ${wave.owner}; planning remains blocked.`,
+  });
+  renderPhase();
+  renderAudit();
+}
+
+function resetDemo() {
+  if (state.timer) window.clearTimeout(state.timer);
+  state.timer = null;
+  state.selectedId = "W-02";
+  state.phase = "ready";
+  state.audit = DEMO_FIXTURES.initialAudit.map((entry) => ({ ...entry }));
+  elements.progressBar.style.width = "0";
+  if (elements.dialog.hasAttribute("open")) closeReview();
+  renderSelectedWave();
+  renderAudit();
+  elements.workflowStatus.textContent = "Demo reset to the initial candidate wave.";
+}
+
+elements.runAssessment.addEventListener("click", runAssessment);
+elements.reviewWave.addEventListener("click", openReview);
+elements.escalateWave.addEventListener("click", escalateException);
+elements.resetDemo.addEventListener("click", resetDemo);
+elements.closeDialog.addEventListener("click", closeReview);
+elements.cancelReview.addEventListener("click", closeReview);
+elements.confirmApproval.addEventListener("click", confirmApproval);
+elements.dialog.addEventListener("cancel", (event) => {
+  event.preventDefault();
+  closeReview();
+});
+
+renderSources();
+renderSelectedWave();
+renderAudit();
+</script>
+</body>
+</html>

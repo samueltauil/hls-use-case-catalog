@@ -1,0 +1,817 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A self-contained, synthetic member-service call review and post-call note demo.">
+  <title>Member interaction review | Illustrative demo</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per subvertical; add layout CSS.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* Demo tokens are scoped after the shared subvertical bindings. */
+body {
+  --on-accent: #fff;
+  --demo-max: 1540px;
+  --demo-gap: 15px;
+  --demo-queue: 252px;
+  --demo-note: 0.94fr;
+  --demo-canvas: var(--surface);
+}
+
+.btn-primary { color: var(--on-accent); }
+.chip[aria-pressed="true"] { color: var(--on-accent); }
+
+main { width: min(var(--demo-max), 100%); margin: 0 auto; padding: 17px 22px 28px; }
+.workspace-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px 24px; margin-bottom: 14px; }
+.workspace-title { min-width: 0; }
+.eyebrow { margin: 0 0 3px; color: var(--accent-strong); font-size: 12px; font-weight: 700; }
+h1 { margin: 0; font-size: clamp(22px, 2.2vw, 28px); line-height: 1.2; letter-spacing: -.02em; }
+.subtitle { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+.next-step { flex: none; max-width: 34ch; padding: 8px 11px; border-left: 3px solid var(--accent); background: var(--accent-soft); color: var(--ink-soft); font-size: 12.5px; }
+
+.workbench { display: grid; grid-template-columns: var(--demo-queue) minmax(0, 1fr); gap: var(--demo-gap); align-items: start; }
+.queue-card { overflow: hidden; }
+.queue-body { padding: 10px; }
+.queue-list { display: grid; gap: 8px; }
+.queue-item {
+  width: 100%; min-width: 0; padding: 10px 11px; text-align: left;
+  font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line);
+  border-left: 3px solid transparent; border-radius: var(--radius); cursor: pointer;
+}
+.queue-item:hover { background: var(--surface-2); }
+.queue-item[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent-line); border-left-color: var(--accent); }
+.queue-top, .queue-bottom { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.queue-id { font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
+.queue-item strong { display: block; margin: 4px 0 2px; font-size: 13px; line-height: 1.35; }
+.queue-bottom { align-items: flex-end; font-size: 11.5px; color: var(--muted); }
+.agent-context { margin: 11px 10px 10px; padding: 10px; background: var(--surface-2); border-radius: var(--radius); }
+.agent-context strong { display: block; font-size: 12px; }
+.agent-context p { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
+
+.work-area { display: grid; grid-template-columns: minmax(0, 1.06fr) minmax(0, var(--demo-note)); gap: var(--demo-gap); min-width: 0; align-items: start; }
+.call-card, .note-card { min-width: 0; overflow: hidden; }
+.record-body, .note-body { padding: 13px 15px 15px; }
+.record-summary { display: grid; gap: 7px; padding-bottom: 12px; border-bottom: 1px solid var(--line-soft); }
+.record-person { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.record-person h3 { margin: 0; font-size: 18px; line-height: 1.25; }
+.record-meta { display: flex; flex-wrap: wrap; gap: 5px 14px; color: var(--muted); font-size: 12px; }
+.request-line { margin: 0; font-size: 13px; }
+.section-label { margin: 13px 0 7px; font-size: 12px; font-weight: 700; color: var(--muted); }
+.transcript-summary { cursor: pointer; }
+.transcript-details[open] .transcript-summary { margin-bottom: 7px; }
+.transcript { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.transcript li { display: grid; grid-template-columns: 68px minmax(0, 1fr); gap: 9px; align-items: start; }
+.transcript time { color: var(--muted); font-family: var(--mono); font-size: 11px; padding-top: 2px; }
+.transcript p { margin: 0; font-size: 13px; line-height: 1.45; }
+.speaker { display: block; margin-bottom: 1px; color: var(--ink-soft); font-size: 11px; font-weight: 700; }
+.transcript .unclear p { color: #67440a; }
+.source-box { margin-top: 12px; border-top: 1px solid var(--line-soft); padding-top: 10px; }
+.source-box summary { color: var(--accent-strong); font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.source-box[open] summary { margin-bottom: 8px; }
+.source-item + .source-item { margin-top: 9px; }
+.source-title { display: block; margin-bottom: 3px; font-size: 12px; font-weight: 700; }
+.source-excerpt { margin: 0; color: var(--ink-soft); font-size: 12.5px; }
+.source-type { color: var(--muted); font-size: 11.5px; }
+
+.draft-status { display: flex; flex-wrap: wrap; gap: 6px 9px; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.draft-status p { margin: 0; color: var(--muted); font-size: 12px; }
+.field textarea { min-height: 158px; line-height: 1.5; }
+.review-check { margin: 11px 0; }
+.review-check label { display: flex; gap: 9px; align-items: flex-start; color: var(--ink-soft); font-size: 12.5px; }
+.review-check input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; accent-color: var(--accent-strong); }
+.action-row { display: grid; gap: 8px; }
+.action-row .btn { justify-content: center; }
+.helper { margin: 8px 0 0; color: var(--muted); font-size: 12px; }
+.exception-box { margin: 0 0 12px; }
+.result-box { margin-top: 10px; }
+.audit-line { margin: 10px 0 0; padding-top: 9px; border-top: 1px solid var(--line-soft); color: var(--muted); font-size: 12px; }
+.mock-label { margin: 12px 0 0; color: var(--muted); font-size: 11.5px; }
+.footer { gap: 8px 12px; }
+.footer-heading { flex: none; font-weight: 600; color: var(--ink-soft); }
+.built { min-width: 0; }
+.claim { flex-basis: 100%; max-width: none; margin: 2px 0 0; padding-top: 8px; border-top: 1px solid var(--line-soft); }
+
+@media (max-width: 1050px) {
+  main { padding-right: 18px; padding-left: 18px; }
+  .workbench { grid-template-columns: minmax(0, 1fr); }
+  .queue-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .agent-context { display: none; }
+}
+@media (max-width: 700px) {
+  .appbar {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px 8px;
+    align-items: center; padding: 8px 12px;
+  }
+  .brand { grid-column: 1; margin-right: 0; }
+  .who { display: none; }
+  .disclosure { grid-column: 1 / -1; justify-self: start; padding: 4px 8px; }
+  .appbar #resetDemo { grid-column: 2; grid-row: 1; padding: 6px 10px; min-height: 34px; }
+  main { padding: 14px 12px 22px; }
+  .workspace-head { display: block; margin-bottom: 8px; }
+  .next-step { margin-top: 7px; max-width: none; padding: 6px 9px; line-height: 1.3; }
+  .work-area { grid-template-columns: minmax(0, 1fr); }
+  .note-card { order: -1; }
+  .field textarea { min-height: 105px; }
+  .queue-card .card-head { padding: 8px 10px; }
+  .queue-body { padding: 6px; }
+  .queue-item { padding: 6px 8px; }
+  .action-row .btn { min-height: 36px; }
+  .record-person { align-items: flex-start; }
+  .record-person .tag { white-space: normal; text-align: center; }
+  .transcript li { grid-template-columns: 54px minmax(0, 1fr); gap: 7px; }
+  .record-body, .note-body { padding: 12px; }
+  .footer { padding: 11px 12px; }
+  .built { align-items: flex-start; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .queue-item, .btn { transition: background-color .12s ease, border-color .12s ease; }
+}
+  </style>
+</head>
+<body data-subvertical="health-payers">
+  <header class="appbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">●</span>
+      <div>
+        <span class="brand-name">Harborlight Health Plan</span>
+        <span class="brand-sub">Fictional member services workspace</span>
+      </div>
+    </div>
+    <p class="who"><b>Avery Demo</b> · Member services agent</p>
+    <p class="disclosure"><span aria-hidden="true">◆</span> Illustrative demo - synthetic data</p>
+    <button class="btn" id="resetDemo" type="button">Reset demo</button>
+  </header>
+
+  <main>
+    <section class="workspace-head" aria-labelledby="page-title">
+      <div class="workspace-title">
+        <p class="eyebrow">Member services · after-call work</p>
+        <h1 id="page-title">Interaction review</h1>
+        <p class="subtitle">Avery Demo · Contact-center agent</p>
+      </div>
+      <p class="next-step"><strong>Next:</strong> review before saving, or route an unclear detail to a lead.</p>
+    </section>
+
+    <div class="workbench">
+      <aside class="card queue-card" aria-labelledby="queue-title">
+        <div class="card-head">
+          <h2 id="queue-title">Recent interactions</h2>
+          <span class="card-note">2 synthetic calls</span>
+        </div>
+        <div class="queue-body">
+          <nav class="queue-list" id="interactionQueue" aria-label="Choose a synthetic interaction"></nav>
+          <div class="agent-context">
+            <strong>Signed in as Avery Demo</strong>
+            <p>Member services · Pilot workspace · No live system connected</p>
+          </div>
+        </div>
+      </aside>
+
+      <div class="work-area">
+        <section class="card call-card" aria-labelledby="interaction-title">
+          <div class="card-head">
+            <h2 id="interaction-title">Call record</h2>
+            <span class="tag" id="callStatus">Call ended · review needed</span>
+          </div>
+          <div class="record-body">
+            <div class="record-summary">
+              <div class="record-person">
+                <h3 id="memberName"></h3>
+                <span class="tag" id="interactionKind"></span>
+              </div>
+              <div class="record-meta">
+                <span class="mono" id="interactionId"></span>
+                <span id="interactionDate"></span>
+              </div>
+              <p class="request-line"><strong>Member request:</strong> <span id="requestText"></span></p>
+            </div>
+            <details class="transcript-details">
+              <summary class="section-label transcript-summary">Review transcript excerpt · synthetic</summary>
+              <ol class="transcript" id="transcript" aria-label="Synthetic call transcript"></ol>
+            </details>
+            <details class="source-box" id="sourceDetails">
+              <summary>Inspect sample source and grounding</summary>
+              <div id="sourceList"></div>
+            </details>
+          </div>
+        </section>
+
+        <section class="card note-card" aria-labelledby="note-title">
+          <div class="card-head">
+            <h2 id="note-title">Post-call note</h2>
+            <span class="tag" id="draftTag">Suggested · not saved</span>
+          </div>
+          <div class="note-body">
+            <div class="draft-status">
+              <p id="draftOrigin">Suggested note · inspect the cited sample evidence</p>
+              <span class="tag" id="reviewState">Agent review required</span>
+            </div>
+            <div class="notice notice-warn exception-box" id="exceptionNotice" hidden>
+              <span aria-hidden="true">!</span>
+              <div><strong>Unclear detail — do not infer an answer.</strong><span class="notice-note" id="exceptionReason"></span></div>
+            </div>
+            <div class="field">
+              <label for="draftText">Editable note draft</label>
+              <textarea id="draftText" rows="4" spellcheck="true" aria-describedby="draftHelp"></textarea>
+            </div>
+            <p class="helper" id="draftHelp">This local draft is synthetic. Review it against the transcript and sample source before taking action.</p>
+
+            <div class="review-check" id="saveReview">
+              <label for="confirmReview">
+                <input id="confirmReview" type="checkbox">
+                <span>I reviewed the transcript and source, and approve this note for the mock CRM.</span>
+              </label>
+            </div>
+            <div class="review-check" id="routeReview" hidden>
+              <label for="confirmRoute">
+                <input id="confirmRoute" type="checkbox">
+                <span>I reviewed why this detail is unresolved and agree a person must verify it.</span>
+              </label>
+            </div>
+            <div class="action-row" id="saveActions">
+              <button class="btn btn-primary" id="saveNote" type="button" disabled>Save reviewed note</button>
+            </div>
+            <div class="action-row" id="routeActions" hidden>
+              <button class="btn btn-primary" id="routeCase" type="button" disabled>Route to member services lead</button>
+            </div>
+
+            <div class="notice notice-ok result-box" id="successResult" role="status" aria-live="polite" hidden></div>
+            <div class="notice notice-warn result-box" id="routeResult" role="status" aria-live="polite" hidden></div>
+            <p class="status-line" id="workflowStatus" role="status" aria-live="polite" tabindex="-1">Suggested note ready for your review. Nothing has been saved.</p>
+            <p class="audit-line" id="auditLine" hidden></p>
+            <p class="mock-label">Mock CRM only · this page makes no network requests and writes no external record.</p>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <span class="footer-heading">Catalog workload mapping · illustrative only</span>
+    <div class="built" aria-label="Catalog workload names">
+      <span class="svc-chip">Azure OpenAI in Azure AI Foundry Models</span>
+      <span class="svc-chip">Azure AI Bot Service</span>
+      <span class="svc-chip">Azure AI Speech</span>
+      <span class="svc-chip">Azure AI Search</span>
+    </div>
+    <p class="claim"><b>Catalog business value, not a demo result:</b> Average handle time down 15-30%, after-call work down, first-contact resolution up, agent ramp time and attrition down.</p>
+  </footer>
+
+  <script>
+    "use strict";
+
+    // Fixture content is fictional and stays local to this self-contained page.
+    const DEMO_FIXTURES = {
+      organization: "Harborlight Health Plan (fictional)",
+      agent: "Avery Demo",
+      interactions: [
+        {
+          id: "replacement-card",
+          interactionId: "INT-DEMO-2047",
+          member: "Morgan Example",
+          label: "Replacement ID card",
+          request: "Check whether a replacement card will use an address submitted online.",
+          date: "28 Sep 2026 · illustrative timestamp",
+          kind: "Routine request",
+          exception: false,
+          transcript: [
+            { time: "00:18", speaker: "Member · synthetic voice transcript", text: "I submitted an address update online today. Will the replacement card use that address?" },
+            { time: "00:31", speaker: "Avery Demo · agent", text: "I can document that question. I will confirm the mailing step before promising where or when the card will arrive." },
+            { time: "00:54", speaker: "Member · synthetic voice transcript", text: "That works. Please let me know once the mailing step is confirmed." }
+          ],
+          sources: [
+            {
+              title: "Sample ID-card service guide",
+              locator: "Illustrative excerpt · address update follow-up",
+              excerpt: "Confirm the next mailing step before committing to a delivery date. If the step cannot be confirmed during the call, document the question and follow up."
+            }
+          ],
+          draft: "Member asked whether a replacement ID card will use the address submitted online today. I did not confirm fulfillment timing. Follow up after the mailing step is verified."
+        },
+        {
+          id: "unclear-effective-date",
+          interactionId: "INT-DEMO-2051",
+          member: "Taylor Sample",
+          label: "Plan update timing",
+          request: "Ask when a plan update begins; the key date is unclear in the sample recording.",
+          date: "28 Sep 2026 · illustrative timestamp",
+          kind: "Needs human follow-up",
+          exception: true,
+          exceptionReason: "The effective date is masked in this synthetic transcript. No approved sample source confirms it, so this demo will not generate a date or coverage answer.",
+          transcript: [
+            { time: "00:12", speaker: "Member · synthetic voice transcript", text: "Could you tell me when the plan update starts?" },
+            { time: "00:25", speaker: "Avery Demo · agent", text: "I want to verify the date before I answer. The recording is unclear at that point." },
+            { time: "00:39", speaker: "Member · synthetic voice transcript", text: "Okay, please have someone check and follow up." },
+            { time: "00:44", speaker: "Transcript note", text: "[A date in the recording is unintelligible.] ", unclear: true }
+          ],
+          sources: [
+            {
+              title: "No matching approved sample source",
+              locator: "Grounding check · illustrative demo",
+              excerpt: "This fixture contains no approved record of the requested effective date. Leave the date unresolved and route to a person; do not infer a coverage answer."
+            }
+          ],
+          draft: "Member asked when a plan update begins. The relevant date was unclear in the synthetic recording and no approved sample source confirms it. A member services lead must verify the date before an answer is given."
+        }
+      ]
+    };
+
+    const initialDrafts = Object.fromEntries(DEMO_FIXTURES.interactions.map((item) => [item.id, item.draft]));
+    const flow = {
+      activeId: DEMO_FIXTURES.interactions[0].id,
+      phase: "ready",
+      drafts: { ...initialDrafts },
+      reviewed: Object.fromEntries(DEMO_FIXTURES.interactions.map((item) => [item.id, false])),
+      outcomes: {},
+      timer: null
+    };
+
+    const nodes = {
+      queue: document.getElementById("interactionQueue"),
+      memberName: document.getElementById("memberName"),
+      interactionKind: document.getElementById("interactionKind"),
+      interactionId: document.getElementById("interactionId"),
+      interactionDate: document.getElementById("interactionDate"),
+      requestText: document.getElementById("requestText"),
+      callStatus: document.getElementById("callStatus"),
+      transcript: document.getElementById("transcript"),
+      sourceList: document.getElementById("sourceList"),
+      sourceDetails: document.getElementById("sourceDetails"),
+      draftTag: document.getElementById("draftTag"),
+      draftOrigin: document.getElementById("draftOrigin"),
+      reviewState: document.getElementById("reviewState"),
+      exceptionNotice: document.getElementById("exceptionNotice"),
+      exceptionReason: document.getElementById("exceptionReason"),
+      draftText: document.getElementById("draftText"),
+      confirmReview: document.getElementById("confirmReview"),
+      confirmRoute: document.getElementById("confirmRoute"),
+      saveReview: document.getElementById("saveReview"),
+      routeReview: document.getElementById("routeReview"),
+      saveActions: document.getElementById("saveActions"),
+      routeActions: document.getElementById("routeActions"),
+      saveNote: document.getElementById("saveNote"),
+      routeCase: document.getElementById("routeCase"),
+      successResult: document.getElementById("successResult"),
+      routeResult: document.getElementById("routeResult"),
+      workflowStatus: document.getElementById("workflowStatus"),
+      auditLine: document.getElementById("auditLine"),
+      reset: document.getElementById("resetDemo")
+    };
+
+    function activeFixture() {
+      return DEMO_FIXTURES.interactions.find((item) => item.id === flow.activeId);
+    }
+
+    function renderQueue() {
+      nodes.queue.replaceChildren();
+      DEMO_FIXTURES.interactions.forEach((item) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "queue-item";
+        button.dataset.interaction = item.id;
+        button.setAttribute("aria-pressed", String(item.id === flow.activeId));
+
+        const top = document.createElement("span");
+        top.className = "queue-top";
+        const id = document.createElement("span");
+        id.className = "queue-id";
+        id.textContent = item.interactionId;
+        const status = document.createElement("span");
+        status.className = item.exception ? "tag tag-warn" : "tag";
+        status.textContent = item.exception ? "Review" : "Draft";
+        top.append(id, status);
+
+        const title = document.createElement("strong");
+        title.textContent = item.label;
+        const bottom = document.createElement("span");
+        bottom.className = "queue-bottom";
+        const member = document.createElement("span");
+        member.textContent = item.member;
+        const state = document.createElement("span");
+        state.textContent = flow.outcomes[item.id] ? "Handled in demo" : "Call ended";
+        bottom.append(member, state);
+        button.append(top, title, bottom);
+        nodes.queue.append(button);
+      });
+    }
+
+    function renderTranscript(item) {
+      nodes.transcript.replaceChildren();
+      item.transcript.forEach((line) => {
+        const row = document.createElement("li");
+        if (line.unclear) row.className = "unclear";
+        const time = document.createElement("time");
+        time.textContent = line.time;
+        const words = document.createElement("div");
+        const speaker = document.createElement("span");
+        speaker.className = "speaker";
+        speaker.textContent = line.speaker;
+        const text = document.createElement("p");
+        text.textContent = line.text;
+        words.append(speaker, text);
+        row.append(time, words);
+        nodes.transcript.append(row);
+      });
+    }
+
+    function renderSources(item) {
+      nodes.sourceList.replaceChildren();
+      item.sources.forEach((source) => {
+        const container = document.createElement("div");
+        container.className = "source-item";
+        const title = document.createElement("span");
+        title.className = "source-title";
+        title.textContent = source.title;
+        const locator = document.createElement("span");
+        locator.className = "source-type";
+        locator.textContent = source.locator;
+        const excerpt = document.createElement("p");
+        excerpt.className = "source-excerpt";
+        excerpt.textContent = source.excerpt;
+        container.append(title, locator, excerpt);
+        nodes.sourceList.append(container);
+      });
+    }
+
+    function setStatus(message) {
+      nodes.workflowStatus.textContent = message;
+    }
+
+    function syncControls(item) {
+      const busy = flow.phase === "working";
+      const resolved = flow.phase === "result";
+      nodes.confirmReview.checked = flow.reviewed[item.id] === true;
+      nodes.confirmRoute.checked = flow.reviewed[item.id] === true;
+      nodes.draftText.value = flow.drafts[item.id];
+      nodes.draftText.disabled = busy || resolved;
+      nodes.confirmReview.disabled = busy || resolved;
+      nodes.confirmRoute.disabled = busy || resolved;
+      nodes.saveNote.disabled = busy || resolved || !flow.reviewed[item.id] || !flow.drafts[item.id].trim();
+      nodes.routeCase.disabled = busy || resolved || !flow.reviewed[item.id] || !flow.drafts[item.id].trim();
+      nodes.queue.querySelectorAll("button").forEach((button) => { button.disabled = busy; });
+      nodes.reset.disabled = false;
+    }
+
+    function render() {
+      const item = activeFixture();
+      const isException = item.exception;
+      const busy = flow.phase === "working";
+      const resolved = flow.phase === "result";
+
+      renderQueue();
+      nodes.memberName.textContent = item.member;
+      nodes.interactionKind.textContent = item.kind;
+      nodes.interactionId.textContent = item.interactionId;
+      nodes.interactionDate.textContent = item.date;
+      nodes.requestText.textContent = item.request;
+      nodes.callStatus.textContent = busy ? "Action in progress" : resolved ? "Demo action complete" : isException ? "Human follow-up needed" : "Call ended · review needed";
+      nodes.callStatus.className = isException && !resolved ? "tag tag-warn" : resolved ? "tag tag-ok" : "tag";
+      renderTranscript(item);
+      renderSources(item);
+      nodes.draftTag.textContent = resolved ? (flow.outcomes[item.id].kind === "save" ? "Saved in mock CRM" : "Follow-up routed") : isException ? "Unresolved · do not save" : "Suggested · not saved";
+      nodes.draftTag.className = resolved ? "tag tag-ok" : isException ? "tag tag-warn" : "tag";
+      nodes.draftOrigin.textContent = isException
+        ? "Suggested follow-up note · key detail remains unverified"
+        : "Suggested note · inspect the cited sample evidence";
+      nodes.reviewState.textContent = resolved ? "Human action recorded in this demo" : isException ? "Escalation is the safe next step" : "Agent review required";
+      nodes.exceptionNotice.hidden = !isException || resolved;
+      nodes.exceptionReason.textContent = item.exceptionReason || "";
+      nodes.saveReview.hidden = isException || resolved;
+      nodes.routeReview.hidden = !isException || resolved;
+      nodes.saveActions.hidden = isException || resolved;
+      nodes.routeActions.hidden = !isException || resolved;
+      nodes.successResult.hidden = !(resolved && flow.outcomes[item.id].kind === "save");
+      nodes.routeResult.hidden = !(resolved && flow.outcomes[item.id].kind === "route");
+      nodes.auditLine.hidden = !resolved;
+      if (resolved && flow.outcomes[item.id].kind === "save") {
+        nodes.successResult.textContent = "Reviewed note saved to the mock CRM in this page session. No external record was written.";
+      } else if (resolved) {
+        nodes.routeResult.textContent = "Follow-up routed to the fictional member services lead in this page session. No date or coverage answer was added.";
+      }
+      nodes.auditLine.textContent = resolved
+        ? (flow.outcomes[item.id].kind === "save" ? "Demo audit · Avery Demo reviewed and saved the note." : "Demo audit · Avery Demo routed the unresolved question to a member services lead.")
+        : "";
+
+      if (busy) {
+        setStatus(flow.operation === "save" ? "Saving the reviewed note in the mock CRM…" : "Routing this unresolved question to a human lead…");
+      } else if (resolved) {
+        setStatus(flow.outcomes[item.id].kind === "save"
+          ? "Complete. The note is marked saved in this demo session; reset to replay."
+          : "Complete. A human follow-up is marked in this demo session; reset to replay.");
+      } else if (isException) {
+        setStatus("The date is not verified. Review the rationale and route this call for human follow-up.");
+      } else {
+        setStatus("Suggested note ready for your review. Nothing has been saved.");
+      }
+      syncControls(item);
+    }
+
+    function performAction(kind) {
+      const item = activeFixture();
+      if (flow.phase === "working" || flow.phase === "result") return;
+      flow.phase = "working";
+      flow.operation = kind;
+      render();
+      flow.timer = window.setTimeout(() => {
+        flow.outcomes[item.id] = { kind, note: flow.drafts[item.id] };
+        flow.phase = "result";
+        flow.operation = "";
+        flow.timer = null;
+        render();
+        nodes.workflowStatus.focus?.();
+      }, 650);
+    }
+
+    nodes.queue.addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-interaction]");
+      if (!button || button.disabled) return;
+      flow.activeId = button.dataset.interaction;
+      flow.phase = flow.outcomes[flow.activeId] ? "result" : activeFixture().exception ? "exception" : "ready";
+      nodes.sourceDetails.open = false;
+      render();
+    });
+    nodes.draftText.addEventListener("input", () => {
+      flow.drafts[flow.activeId] = nodes.draftText.value;
+      const item = activeFixture();
+      const canAct = flow.phase !== "working" && flow.phase !== "result" && Boolean(flow.drafts[item.id].trim());
+      nodes.saveNote.disabled = item.exception || !flow.reviewed[item.id] || !canAct;
+      nodes.routeCase.disabled = !item.exception || !flow.reviewed[item.id] || !canAct;
+    });
+    nodes.confirmReview.addEventListener("change", () => {
+      flow.reviewed[flow.activeId] = nodes.confirmReview.checked;
+      render();
+    });
+    nodes.confirmRoute.addEventListener("change", () => {
+      flow.reviewed[flow.activeId] = nodes.confirmRoute.checked;
+      render();
+    });
+    nodes.saveNote.addEventListener("click", () => {
+      if (flow.reviewed[flow.activeId] && flow.drafts[flow.activeId].trim()) performAction("save");
+    });
+    nodes.routeCase.addEventListener("click", () => {
+      if (flow.reviewed[flow.activeId] && flow.drafts[flow.activeId].trim()) performAction("route");
+    });
+    nodes.reset.addEventListener("click", () => {
+      if (flow.timer !== null) window.clearTimeout(flow.timer);
+      flow.activeId = DEMO_FIXTURES.interactions[0].id;
+      flow.phase = "ready";
+      flow.drafts = { ...initialDrafts };
+      flow.reviewed = Object.fromEntries(DEMO_FIXTURES.interactions.map((item) => [item.id, false]));
+      flow.outcomes = {};
+      flow.operation = "";
+      flow.timer = null;
+      nodes.sourceDetails.open = false;
+      render();
+      nodes.reset.focus();
+    });
+
+    render();
+  </script>
+</body>
+</html>

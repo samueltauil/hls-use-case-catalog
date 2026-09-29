@@ -1,0 +1,1053 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#201f1e">
+  <title>Claims status workspace | Illustrative payer demo</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* --------------------------------------------------------- workspace layout */
+body[data-subvertical="health-payers"] {
+  --page-max: 1420px;
+  --gap: 16px;
+}
+.appbar .brand-mark {
+  width: 29px;
+  height: 29px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--muted);
+  border-radius: 6px;
+  color: var(--surface);
+  font-weight: 700;
+  font-size: 12px;
+}
+.appbar .brand-name { font-size: 14px; }
+.appbar .brand-sub { color: #d2d0ce; }
+.reset-button { color: var(--surface-2); border-color: #777; background: transparent; }
+.reset-button:hover:not(:disabled) { color: var(--ink); }
+
+.workspace-main {
+  width: min(var(--page-max), calc(100% - 36px));
+  margin: 0 auto;
+  padding: 20px 0 26px;
+}
+.page-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px 24px;
+  margin-bottom: 17px;
+}
+.page-heading h1 {
+  margin: 0;
+  font-size: clamp(22px, 2.3vw, 29px);
+  line-height: 1.2;
+  letter-spacing: -.025em;
+}
+.eyebrow {
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.operator-context {
+  border-left: 2px solid var(--accent-line);
+  padding-left: 11px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.operator-context b { display: block; color: var(--ink); font-size: 13.5px; }
+.lookup-bar {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto;
+  align-items: end;
+  gap: 10px;
+  padding: 12px 14px;
+  margin-bottom: var(--gap);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.lookup-bar .field { min-width: 0; }
+.lookup-bar label, .field label { color: var(--ink-soft); }
+.lookup-bar select, .channel-select {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 34px 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--ink);
+  background: var(--surface);
+  font: inherit;
+}
+.workspace-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(300px, .8fr);
+  gap: var(--gap);
+  align-items: start;
+}
+.record-card { min-width: 0; }
+.record-head {
+  align-items: center;
+  padding: 14px 16px;
+}
+.record-title { min-width: 0; }
+.record-title h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 650;
+}
+.record-id {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font: 12px/1.45 var(--mono);
+}
+.record-body { display: grid; gap: 16px; }
+.claim-state {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  align-items: start;
+  gap: 12px;
+}
+.state-mark {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-size: 20px;
+  font-weight: 700;
+}
+.claim-state h3 {
+  margin: 0 0 2px;
+  font-size: 18px;
+  line-height: 1.35;
+}
+.claim-state p { margin: 0; color: var(--muted); font-size: 13px; }
+.claim-state .state-detail { margin-top: 7px; color: var(--ink-soft); }
+.section-label {
+  margin: 0 0 7px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.facts { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 18px; }
+.facts dd { overflow-wrap: anywhere; }
+.source-box {
+  border-top: 1px solid var(--line-soft);
+  padding-top: 13px;
+}
+.source-topline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 14px;
+  margin-bottom: 9px;
+}
+.source-topline p { margin: 0; font-size: 13px; }
+.source-topline small { color: var(--muted); font-size: 12px; }
+.timeline {
+  list-style: none;
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+}
+.timeline li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 17px minmax(0, 1fr);
+  gap: 10px;
+  padding: 0 0 11px;
+  min-width: 0;
+}
+.timeline li:last-child { padding-bottom: 0; }
+.timeline li:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 15px;
+  bottom: 0;
+  border-left: 1px solid var(--line);
+}
+.timeline-marker {
+  z-index: 1;
+  width: 15px;
+  height: 15px;
+  margin-top: 2px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  background: var(--surface);
+}
+.timeline li.is-current .timeline-marker { background: var(--accent); }
+.timeline li.is-unverified .timeline-marker { border-color: var(--warn); }
+.timeline-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 14px;
+  align-items: baseline;
+  min-width: 0;
+}
+.timeline-content b { font-size: 13px; font-weight: 600; }
+.timeline-content time { color: var(--muted); font-size: 12px; }
+.timeline-content small {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 12px;
+}
+.source-compare {
+  display: grid;
+  gap: 8px;
+}
+.source-row {
+  display: grid;
+  grid-template-columns: minmax(110px, .8fr) minmax(0, 1fr);
+  gap: 8px 12px;
+  padding: 9px 10px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  background: var(--bg);
+  font-size: 12.5px;
+}
+.source-row dt { color: var(--muted); }
+.source-row dd { margin: 0; overflow-wrap: anywhere; }
+.record-caveat { margin: 0; font-size: 12px; color: var(--muted); }
+.review-card { position: sticky; top: 86px; }
+.review-body { display: grid; gap: 13px; }
+.review-body h3 { margin: 0; font-size: 16px; }
+.review-body p { margin: 0; }
+.recipient-block { display: grid; gap: 5px; }
+.recipient-summary { color: var(--muted); font-size: 12.5px; }
+.message-preview {
+  margin: 0;
+  padding: 12px;
+  background: var(--bg);
+  border: 1px solid var(--line-soft);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  font-size: 13.5px;
+}
+.review-rationale {
+  padding-top: 11px;
+  border-top: 1px solid var(--line-soft);
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+.review-rationale b { display: block; margin-bottom: 2px; color: var(--ink); }
+.review-action { display: grid; gap: 8px; }
+.review-action .btn { justify-content: center; width: 100%; }
+.review-result { font-size: 13px; }
+.secondary-note { margin: 0; color: var(--muted); font-size: 12px; }
+.review-evidence {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  background: var(--bg);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+}
+.review-evidence h3 { font-size: 13px; }
+.review-evidence .source-row { background: var(--surface); }
+.trust-rule { margin-top: 14px; }
+.workload-footer {
+  margin-top: 17px;
+  padding: 12px 15px;
+  display: grid;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.workload-footer h2 { margin: 0; font-size: 13px; font-weight: 600; }
+.workload-footer .built { gap: 6px; }
+.workload-footer .svc-chip { font-size: 11.5px; }
+.workload-footer p { margin: 0; color: var(--muted); font-size: 12px; }
+.screen-status { min-height: 21px; margin: 0 0 9px; color: var(--ink-soft); font-size: 13px; }
+.screen-status:empty { display: none; }
+.attest { align-items: flex-start; }
+.attest label { cursor: pointer; }
+.dialog-action-note { margin: 0; color: var(--muted); font-size: 12.5px; }
+dialog[open]:not(:modal) {
+  position: fixed;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  max-height: calc(100vh - 24px);
+  overflow: auto;
+}
+dialog[open]:not(:modal)::before {
+  content: "";
+  position: fixed;
+  inset: -100vh -100vw;
+  z-index: -1;
+  background: rgba(32, 31, 30, .45);
+}
+
+@media (max-width: 800px) {
+  .workspace-grid { grid-template-columns: minmax(0, 1fr); }
+  .review-card { position: static; }
+  .workspace-main { width: min(var(--page-max), calc(100% - 28px)); }
+}
+@media (max-width: 520px) {
+  .workspace-main { width: calc(100% - 24px); padding-top: 15px; }
+  .page-heading { align-items: flex-start; flex-direction: column; gap: 9px; margin-bottom: 13px; }
+  .operator-context { width: 100%; }
+  .lookup-bar { grid-template-columns: minmax(0, 1fr); }
+  .lookup-bar .btn { width: 100%; justify-content: center; }
+  .record-head { align-items: flex-start; }
+  .record-body { padding: 13px; gap: 14px; }
+  .facts { grid-template-columns: minmax(0, 1fr); }
+  .timeline-content { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .timeline-content time { grid-column: 1; }
+  .source-row { grid-template-columns: minmax(0, 1fr); gap: 1px; }
+  .workload-footer .built { align-items: flex-start; }
+  .workload-footer .svc-chip { white-space: normal; }
+  .dlg-foot { justify-content: stretch; }
+  .dlg-foot .btn { flex: 1 1 100%; justify-content: center; }
+}
+  </style>
+</head>
+<body data-subvertical="health-payers">
+  <header class="appbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">CS</span>
+      <div>
+        <span class="brand-name">Cedarline claims workspace</span>
+        <span class="brand-sub">Cedarline Benefit Cooperative · service operations</span>
+      </div>
+    </div>
+    <p class="disclosure"><span aria-hidden="true">●</span> Illustrative demo - synthetic data</p>
+    <button class="btn reset-button" id="reset-demo" type="button">Reset demo</button>
+  </header>
+
+  <main class="workspace-main" id="main-content">
+    <div class="page-heading">
+      <div>
+        <p class="eyebrow">Member and provider service · claim inquiry</p>
+        <h1>Claims status workspace</h1>
+      </div>
+      <p class="operator-context"><b id="operator-name">Avery Brooks · Claims service associate</b>Working a sample status inquiry</p>
+    </div>
+
+    <form class="lookup-bar" id="lookup-form">
+      <div class="field">
+        <label for="claim-choice">Open a synthetic claim record</label>
+        <select id="claim-choice" name="claim">
+          <option value="CLM-DEMO-48217">CLM-DEMO-48217 · Payment issued</option>
+          <option value="CLM-DEMO-73006">CLM-DEMO-73006 · In review · sources disagree</option>
+        </select>
+      </div>
+      <button class="btn" type="submit">Open claim</button>
+    </form>
+
+    <p class="screen-status" id="screen-status" role="status" aria-live="polite"></p>
+
+    <div class="workspace-grid">
+      <article class="card record-card" aria-labelledby="record-heading">
+        <header class="card-head record-head">
+          <div class="record-title">
+            <h2 id="record-heading">Claim record</h2>
+            <span class="record-id" id="claim-id"></span>
+          </div>
+          <span class="tag" id="claim-tag"></span>
+        </header>
+        <div class="card-body record-body">
+          <section class="claim-state" aria-labelledby="claim-state-heading">
+            <span class="state-mark" id="state-mark" aria-hidden="true"></span>
+            <div>
+              <h3 id="claim-state-heading"></h3>
+              <p id="claim-state-caption"></p>
+              <p class="state-detail" id="claim-state-detail"></p>
+            </div>
+          </section>
+
+          <section aria-labelledby="claim-parties-heading">
+            <h3 class="section-label" id="claim-parties-heading">People and service context · fictional sample</h3>
+            <dl class="facts">
+              <div><dt>Member</dt><dd id="member-name"></dd></div>
+              <div><dt>Servicing provider</dt><dd id="provider-name"></dd></div>
+              <div><dt>Service date · sample</dt><dd id="service-date"></dd></div>
+              <div><dt>Claim type · sample</dt><dd id="claim-type"></dd></div>
+            </dl>
+          </section>
+
+          <section class="source-box" aria-labelledby="source-heading">
+            <div class="source-topline">
+              <p id="source-heading"><b>Status evidence</b> · sample source snapshot</p>
+              <small id="snapshot-time"></small>
+            </div>
+            <ol class="timeline" id="claim-timeline" aria-label="Sample claim status history"></ol>
+            <dl class="source-compare" id="source-comparison" hidden></dl>
+            <p class="record-caveat" id="source-caveat"></p>
+          </section>
+        </div>
+      </article>
+
+      <section class="card review-card" aria-labelledby="update-heading">
+        <header class="card-head">
+          <h2 id="update-heading">Status update review</h2>
+          <span class="card-note">Human review required</span>
+        </header>
+        <div class="card-body review-body">
+          <div class="recipient-block">
+            <label for="recipient-choice"><b>Prepare for</b></label>
+            <select class="channel-select" id="recipient-choice">
+              <option value="member">Member</option>
+              <option value="provider">Provider</option>
+            </select>
+            <span class="recipient-summary" id="recipient-summary"></span>
+          </div>
+          <div>
+            <p class="section-label" id="preview-label">Sample status text · not sent</p>
+            <p class="message-preview" id="message-preview"></p>
+          </div>
+          <p class="review-rationale"><b id="rationale-heading">Review rationale</b><span id="review-rationale"></span></p>
+          <div class="review-action">
+            <button class="btn btn-primary" id="review-button" type="button"></button>
+            <p class="secondary-note" id="review-footnote"></p>
+            <div class="notice review-result" id="review-result" role="status" aria-live="polite" hidden>
+              <span id="result-message"></span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <aside class="rule trust-rule" aria-label="Workflow boundary">
+      This workspace displays illustrative status only. It does not decide coverage, change a claim, confirm receipt of funds, or send a message. Conflicting source states stay on hold for a person to reconcile.
+    </aside>
+
+    <section class="workload-footer" aria-labelledby="workload-heading">
+      <h2 id="workload-heading">Catalog workload references · not connected in this demo</h2>
+      <div class="built" aria-label="Canonical workload names from the catalog">
+        <span class="svc-chip">Azure API Management</span>
+        <span class="svc-chip">Azure App Service</span>
+        <span class="svc-chip">Azure Cosmos DB</span>
+        <span class="svc-chip">Azure AI Bot Service</span>
+      </div>
+      <p>These names correspond to the catalog mapping for this use case. This file uses local synthetic fixtures and makes no network requests.</p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>Local, deterministic walkthrough · no live claims or integrations</span>
+    <span class="claim"><b>Human accountability:</b> review status text; hold and escalate mismatched sources.</span>
+  </footer>
+
+  <dialog id="review-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-intro">
+    <form class="review-form" id="review-form">
+      <header class="dlg-head">
+        <div>
+          <h2 id="dialog-title"></h2>
+          <span class="dlg-sub" id="dialog-subtitle"></span>
+        </div>
+      </header>
+      <div class="dlg-body">
+        <p id="dialog-intro"></p>
+        <div class="review-evidence">
+          <h3 id="dialog-evidence-heading">Evidence shown to the reviewer</h3>
+          <dl class="source-compare" id="dialog-evidence"></dl>
+        </div>
+        <p class="evidence" id="dialog-rationale"></p>
+        <p class="evidence" id="dialog-message"></p>
+        <label class="attest" for="review-attestation">
+          <input id="review-attestation" type="checkbox">
+          <span id="attestation-copy"></span>
+        </label>
+        <p class="dialog-action-note" id="dialog-boundary"></p>
+      </div>
+      <footer class="dlg-foot">
+        <button class="btn" id="cancel-review" type="button">Return without recording</button>
+        <button class="btn btn-primary" id="confirm-review" type="button" disabled></button>
+      </footer>
+    </form>
+  </dialog>
+
+  <script>
+    // One fixture object owns every fictional identity, status, date, and source.
+    // The interaction is local only: ready/exception -> working -> result; reset replays ready.
+    const DEMO_FIXTURES = {
+      organization: "Cedarline Benefit Cooperative",
+      operator: { name: "Avery Brooks", role: "Claims service associate" },
+      defaultClaimId: "CLM-DEMO-48217",
+      claims: {
+        "CLM-DEMO-48217": {
+          id: "CLM-DEMO-48217",
+          kind: "ready",
+          status: "Payment issued",
+          statusCaption: "Sample adjudication state",
+          statusDetail: "The illustrative status record marks the claim finalized and payment issued. This is not confirmation that funds were received.",
+          member: "Casey Linden",
+          provider: "Juniper Grove Pediatrics",
+          serviceDate: "June 11, 2026",
+          claimType: "Office visit · synthetic",
+          snapshot: "June 16, 2026 · 10:42 AM · sample time",
+          defaultAudience: "member",
+          sourceName: "Sample adjudication snapshot",
+          rationale: "The sample source is internally consistent. A person checks the state and the wording before a status update is marked reviewed.",
+          history: [
+            { title: "Received", date: "June 12, 2026", note: "Sample intake event" },
+            { title: "In review", date: "June 13, 2026", note: "Sample adjudication step" },
+            { title: "Finalized", date: "June 15, 2026", note: "Sample status event" },
+            { title: "Payment issued", date: "June 16, 2026", note: "Latest sample status · review before sharing", current: true }
+          ],
+          messages: {
+            member: "Your sample claim is finalized. Its status record marks payment as issued. This is a status update, not confirmation that funds have arrived.",
+            provider: "This sample claim is finalized. Its status record marks payment as issued. This view does not represent a payment receipt."
+          }
+        },
+        "CLM-DEMO-73006": {
+          id: "CLM-DEMO-73006",
+          kind: "exception",
+          status: "In review · source mismatch",
+          statusCaption: "Status not ready to share",
+          statusDetail: "The sample sources disagree about the in-flight claim state. Hold any external status update until a person reconciles them.",
+          member: "Taylor Reed",
+          provider: "Harborlight Family Clinic",
+          serviceDate: "June 9, 2026",
+          claimType: "Diagnostic service · synthetic",
+          snapshot: "June 16, 2026 · sample timestamps differ",
+          defaultAudience: "provider",
+          sourceName: "Two illustrative status snapshots",
+          rationale: "The two fictional sources show different in-flight states. Their disagreement is not resolved automatically; a human reviewer must hold communication and escalate for reconciliation.",
+          history: [
+            { title: "Received", date: "June 10, 2026", note: "Sample intake event" },
+            { title: "In review", date: "June 15, 2026", note: "Sample adjudication step" }
+          ],
+          sourceRows: [
+            { label: "Claims status sample", value: "In review · June 16, 2026 · 10:43 AM" },
+            { label: "Channel snapshot sample", value: "Documents requested · June 16, 2026 · 10:31 AM" }
+          ],
+          messages: {
+            member: "No status update is available to share while the sample source records disagree.",
+            provider: "No status update is available to share while the sample source records disagree."
+          }
+        }
+      }
+    };
+
+    const state = {
+      phase: "ready",
+      claimId: DEMO_FIXTURES.defaultClaimId,
+      audience: null,
+      completedClaimId: null
+    };
+
+    const elements = {
+      main: document.getElementById("main-content"),
+      lookupForm: document.getElementById("lookup-form"),
+      claimChoice: document.getElementById("claim-choice"),
+      recipientChoice: document.getElementById("recipient-choice"),
+      operatorName: document.getElementById("operator-name"),
+      claimId: document.getElementById("claim-id"),
+      claimTag: document.getElementById("claim-tag"),
+      stateMark: document.getElementById("state-mark"),
+      stateHeading: document.getElementById("claim-state-heading"),
+      stateCaption: document.getElementById("claim-state-caption"),
+      stateDetail: document.getElementById("claim-state-detail"),
+      memberName: document.getElementById("member-name"),
+      providerName: document.getElementById("provider-name"),
+      serviceDate: document.getElementById("service-date"),
+      claimType: document.getElementById("claim-type"),
+      snapshotTime: document.getElementById("snapshot-time"),
+      timeline: document.getElementById("claim-timeline"),
+      sourceComparison: document.getElementById("source-comparison"),
+      sourceCaveat: document.getElementById("source-caveat"),
+      recipientSummary: document.getElementById("recipient-summary"),
+      previewLabel: document.getElementById("preview-label"),
+      messagePreview: document.getElementById("message-preview"),
+      rationaleHeading: document.getElementById("rationale-heading"),
+      reviewRationale: document.getElementById("review-rationale"),
+      reviewButton: document.getElementById("review-button"),
+      reviewFootnote: document.getElementById("review-footnote"),
+      reviewResult: document.getElementById("review-result"),
+      resultMessage: document.getElementById("result-message"),
+      screenStatus: document.getElementById("screen-status"),
+      resetButton: document.getElementById("reset-demo"),
+      dialog: document.getElementById("review-dialog"),
+      dialogTitle: document.getElementById("dialog-title"),
+      dialogSubtitle: document.getElementById("dialog-subtitle"),
+      dialogIntro: document.getElementById("dialog-intro"),
+      dialogEvidenceHeading: document.getElementById("dialog-evidence-heading"),
+      dialogEvidence: document.getElementById("dialog-evidence"),
+      dialogRationale: document.getElementById("dialog-rationale"),
+      dialogMessage: document.getElementById("dialog-message"),
+      attestation: document.getElementById("review-attestation"),
+      attestationCopy: document.getElementById("attestation-copy"),
+      dialogBoundary: document.getElementById("dialog-boundary"),
+      cancelReview: document.getElementById("cancel-review"),
+      confirmReview: document.getElementById("confirm-review")
+    };
+
+    function activeClaim() {
+      return DEMO_FIXTURES.claims[state.claimId];
+    }
+
+    function setPhase(phase, message) {
+      state.phase = phase;
+      elements.main.dataset.phase = phase;
+      elements.screenStatus.textContent = message || "";
+    }
+
+    function appendSourceRow(container, label, value) {
+      const row = document.createElement("div");
+      row.className = "source-row";
+      const term = document.createElement("dt");
+      term.textContent = label;
+      const description = document.createElement("dd");
+      description.textContent = value;
+      row.append(term, description);
+      container.append(row);
+    }
+
+    function renderTimeline(claim) {
+      elements.timeline.replaceChildren();
+      claim.history.forEach((item, index) => {
+        const row = document.createElement("li");
+        if (item.current) row.classList.add("is-current");
+        if (claim.kind === "exception" && index === claim.history.length - 1) row.classList.add("is-unverified");
+        const marker = document.createElement("span");
+        marker.className = "timeline-marker";
+        marker.setAttribute("aria-hidden", "true");
+        const content = document.createElement("span");
+        content.className = "timeline-content";
+        const title = document.createElement("b");
+        title.textContent = item.title;
+        const date = document.createElement("time");
+        date.textContent = item.date;
+        const note = document.createElement("small");
+        note.textContent = item.note;
+        content.append(title, date, note);
+        row.append(marker, content);
+        elements.timeline.append(row);
+      });
+    }
+
+    function render() {
+      const claim = activeClaim();
+      const isException = claim.kind === "exception";
+      const isComplete = state.completedClaimId === claim.id;
+      elements.operatorName.textContent = `${DEMO_FIXTURES.operator.name} · ${DEMO_FIXTURES.operator.role}`;
+      elements.claimId.textContent = claim.id;
+      elements.claimTag.textContent = isException ? "Needs reconciliation" : "Sample state available";
+      elements.claimTag.className = isException ? "tag tag-warn" : "tag tag-ok";
+      elements.stateMark.textContent = isException ? "!" : "✓";
+      elements.stateHeading.textContent = claim.status;
+      elements.stateCaption.textContent = claim.statusCaption;
+      elements.stateDetail.textContent = claim.statusDetail;
+      elements.memberName.textContent = claim.member;
+      elements.providerName.textContent = claim.provider;
+      elements.serviceDate.textContent = claim.serviceDate;
+      elements.claimType.textContent = claim.claimType;
+      elements.snapshotTime.textContent = claim.snapshot;
+      renderTimeline(claim);
+
+      elements.sourceComparison.replaceChildren();
+      if (claim.sourceRows) {
+        claim.sourceRows.forEach((item) => appendSourceRow(elements.sourceComparison, item.label, item.value));
+        elements.sourceComparison.hidden = false;
+        elements.sourceCaveat.textContent = "The source disagreement is a deliberate synthetic exception, not an adjudication decision.";
+      } else {
+        elements.sourceComparison.hidden = true;
+        elements.sourceCaveat.textContent = "Sample source only · no live system is queried.";
+      }
+
+      const audience = state.audience || claim.defaultAudience;
+      state.audience = audience;
+      elements.recipientChoice.value = audience;
+      const recipientName = audience === "provider" ? claim.provider : claim.member;
+      elements.recipientSummary.textContent = `Sample recipient: ${recipientName}`;
+      elements.previewLabel.textContent = isException ? "Safe response · update withheld" : "Sample status text · not sent";
+      elements.messagePreview.textContent = claim.messages[audience];
+      elements.rationaleHeading.textContent = isException ? "Why this stays on hold" : "Review rationale";
+      elements.reviewRationale.textContent = claim.rationale;
+      elements.reviewButton.textContent = isComplete
+        ? (isException ? "Escalation recorded" : "Review recorded")
+        : (isException ? "Review discrepancy" : "Review status update");
+      elements.reviewButton.disabled = isComplete;
+      elements.reviewFootnote.textContent = isException
+        ? "Escalation is a local demonstration only; no work item or message is created."
+        : "The reviewer marks this sample update as reviewed. Nothing is sent.";
+      elements.reviewResult.hidden = !isComplete;
+      elements.reviewResult.className = isException ? "notice notice-warn review-result" : "notice notice-ok review-result";
+      elements.resultMessage.textContent = isException
+        ? "A human reviewer recorded a hold and a sample escalation for source reconciliation. No external update was sent."
+        : `Human review recorded for ${audience === "provider" ? "the provider" : "the member"} status text. No external message was sent.`;
+      elements.main.dataset.phase = state.phase;
+    }
+
+    function configureReviewDialog() {
+      const claim = activeClaim();
+      const isException = claim.kind === "exception";
+      elements.attestation.checked = false;
+      elements.confirmReview.disabled = true;
+      elements.dialogEvidence.replaceChildren();
+      elements.dialogEvidenceHeading.textContent = isException ? "Conflicting sample evidence" : "Sample status source";
+      elements.dialogTitle.textContent = isException ? "Hold and escalate this discrepancy" : "Review the status update";
+      elements.dialogSubtitle.textContent = `${claim.id} · synthetic record`;
+      elements.dialogIntro.textContent = isException
+        ? "The channel and claims snapshots show different in-flight states. Do not choose one as correct from this screen."
+        : `Check the sample source state and the wording prepared for ${state.audience === "provider" ? "the provider" : "the member"} before recording your review.`;
+
+      if (claim.sourceRows) {
+        claim.sourceRows.forEach((item) => appendSourceRow(elements.dialogEvidence, item.label, item.value));
+      } else {
+        appendSourceRow(elements.dialogEvidence, "Source", claim.sourceName);
+        appendSourceRow(elements.dialogEvidence, "Sample state", claim.status);
+        appendSourceRow(elements.dialogEvidence, "Sample snapshot time", claim.snapshot);
+      }
+
+      elements.dialogRationale.textContent = claim.rationale;
+      elements.dialogMessage.textContent = isException
+        ? "Action: keep the status update on hold and refer the source mismatch for human reconciliation."
+        : `Proposed sample wording: “${claim.messages[state.audience]}”`;
+      elements.attestationCopy.textContent = isException
+        ? "I reviewed the mismatch and confirm this sample update should remain on hold pending manual reconciliation."
+        : "I reviewed the sample source and status wording. Mark this illustrative update as reviewed; do not send it.";
+      elements.confirmReview.textContent = isException ? "Record hold and escalation" : "Mark reviewed";
+      elements.dialogBoundary.textContent = isException
+        ? "This records a local demo state only. No real queue, claim, or recipient is contacted."
+        : "This records a local demo state only. No coverage, payment, or outbound communication is changed.";
+    }
+
+    function openReview() {
+      const claim = activeClaim();
+      if (state.completedClaimId === claim.id) return;
+      setPhase("working", claim.kind === "exception" ? "Opening the discrepancy for human review." : "Opening the sample status text for human review.");
+      configureReviewDialog();
+      if (typeof elements.dialog.showModal === "function") {
+        elements.dialog.showModal();
+      } else {
+        elements.dialog.setAttribute("open", "");
+      }
+      elements.attestation.focus();
+    }
+
+    function closeReview() {
+      if (typeof elements.dialog.close === "function" && elements.dialog.open) {
+        elements.dialog.close();
+      } else {
+        elements.dialog.removeAttribute("open");
+      }
+    }
+
+    elements.lookupForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const candidate = elements.claimChoice.value;
+      if (!Object.prototype.hasOwnProperty.call(DEMO_FIXTURES.claims, candidate)) return;
+      state.claimId = candidate;
+      state.audience = null;
+      state.completedClaimId = null;
+      const claim = activeClaim();
+      setPhase(claim.kind === "exception" ? "exception" : "ready",
+        claim.kind === "exception"
+          ? "Exception path opened: sources disagree; status updates stay on hold."
+          : "Sample claim opened. Review the source before recording a status update.");
+      render();
+    });
+
+    elements.recipientChoice.addEventListener("change", () => {
+      state.audience = elements.recipientChoice.value === "provider" ? "provider" : "member";
+      render();
+      elements.screenStatus.textContent = `Sample status wording updated for the ${state.audience} channel.`;
+    });
+
+    elements.reviewButton.addEventListener("click", openReview);
+
+    elements.attestation.addEventListener("change", () => {
+      elements.confirmReview.disabled = !elements.attestation.checked;
+    });
+
+    elements.cancelReview.addEventListener("click", () => {
+      const claim = activeClaim();
+      setPhase(claim.kind === "exception" ? "exception" : "ready", "Review closed without recording a change.");
+      closeReview();
+    });
+
+    elements.confirmReview.addEventListener("click", () => {
+      if (!elements.attestation.checked) return;
+      const claim = activeClaim();
+      state.completedClaimId = claim.id;
+      setPhase("result", claim.kind === "exception"
+        ? "Human review recorded a hold and sample escalation."
+        : "Human review recorded for the sample status update.");
+      render();
+      closeReview();
+    });
+
+    elements.dialog.addEventListener("cancel", () => {
+      const claim = activeClaim();
+      setPhase(claim.kind === "exception" ? "exception" : "ready", "Review closed without recording a change.");
+    });
+    elements.dialog.addEventListener("close", () => {
+      elements.reviewButton.focus();
+    });
+
+    elements.resetButton.addEventListener("click", () => {
+      state.phase = "reset";
+      state.claimId = DEMO_FIXTURES.defaultClaimId;
+      state.audience = null;
+      state.completedClaimId = null;
+      elements.claimChoice.value = DEMO_FIXTURES.defaultClaimId;
+      setPhase("ready", "Demo reset to the sample payment-issued claim. Review it again or open the discrepancy example.");
+      render();
+    });
+
+    state.audience = activeClaim().defaultAudience;
+    setPhase("ready", "");
+    render();
+  </script>
+</body>
+</html>

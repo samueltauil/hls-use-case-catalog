@@ -1,0 +1,818 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Case management workbench | Illustrative payer demo</title>
+<style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* Demo tokens: shared palette first; layout-specific aliases follow the body binding. */
+body { --on-accent: var(--surface); --work-max: 1440px; --queue-width: 286px; }
+.btn-primary { color: var(--on-accent); }
+
+.page { max-width: var(--work-max); margin: 0 auto; padding: 18px 24px 26px; }
+.page-heading {
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 12px 20px;
+  padding: 0 0 15px; border-bottom: 1px solid var(--line); margin-bottom: 14px;
+}
+.eyebrow { margin: 0 0 3px; color: var(--muted); font-size: 12px; }
+.page-heading h1 { margin: 0; font-size: clamp(20px, 2.2vw, 25px); line-height: 1.2; font-weight: 650; }
+.page-heading p { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
+.reset { flex: none; }
+.workbench { display: grid; grid-template-columns: minmax(0, 1fr) var(--queue-width); grid-template-areas: "work queue"; gap: 16px; align-items: start; }
+.work-card { grid-area: work; min-width: 0; overflow: clip; }
+.queue { grid-area: queue; min-width: 0; }
+.card-top { padding: 15px 17px 12px; border-bottom: 1px solid var(--line-soft); }
+.record-crumb { margin: 0 0 5px; color: var(--muted); font-size: 12px; }
+.record-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.record-head h2 { margin: 0; font-size: clamp(18px, 2vw, 22px); line-height: 1.25; }
+.record-id { margin: 5px 0 0; font-size: 12px; color: var(--muted); }
+.record-status { margin-top: 2px; }
+.case-body { display: grid; gap: 14px; padding: 15px 17px 17px; }
+.facts { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 16px; }
+.facts dt { margin: 0 0 2px; }
+.facts dd { overflow-wrap: anywhere; }
+.section-label { margin: 0 0 7px; font-size: 13px; font-weight: 650; }
+.source-block { border-left: 3px solid var(--line); padding-left: 11px; }
+.source-meta { display: flex; flex-wrap: wrap; gap: 5px 12px; margin-bottom: 5px; color: var(--muted); font-size: 12px; }
+.source-note { margin: 0; font-size: 13.5px; line-height: 1.55; }
+.source-caveat { margin: 6px 0 0; color: var(--muted); font-size: 12px; }
+.recommendation {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 8px 16px;
+  border: 1px solid var(--accent-line); border-left: 4px solid var(--accent);
+  background: var(--accent-soft); padding: 12px 14px;
+}
+.recommendation h3 { margin: 0; font-size: 13px; font-weight: 650; }
+.recommendation .route { margin: 3px 0 0; font-size: 16px; font-weight: 650; }
+.recommendation .why { grid-column: 1 / -1; margin: 0; font-size: 12.5px; color: var(--ink-soft); }
+.confidence { align-self: center; }
+.next-step { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.next-step p { margin: 0; color: var(--muted); font-size: 12.5px; }
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.detail-section { min-width: 0; }
+.events { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.events li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 8px; font-size: 12.5px; }
+.events time { color: var(--muted); font-family: var(--mono); font-size: 11px; }
+.system-note { color: var(--muted); font-size: 12px; margin: 0; }
+.review-panel, .outcome-panel { border-top: 1px solid var(--line); background: #fff; padding: 15px 17px 17px; }
+.review-panel { display: grid; gap: 12px; }
+.review-panel h3, .outcome-panel h3 { margin: 0; font-size: 15px; }
+.review-copy { margin: -5px 0 0; color: var(--muted); font-size: 12.5px; }
+.review-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.field select {
+  width: 100%; min-height: 40px; padding: 8px 10px; font: inherit; font-size: 13px;
+  color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+}
+.review-panel .attest { margin: 0; }
+.review-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 9px; }
+.outcome-panel { display: grid; gap: 9px; }
+.outcome-panel p { margin: 0; }
+.queue .card-head { padding: 12px 14px; }
+.queue .card-body { padding: 8px; }
+.queue-list { display: grid; gap: 4px; }
+.case-option {
+  display: grid; gap: 5px; width: 100%; min-width: 0; padding: 10px;
+  text-align: left; font: inherit; color: var(--ink); background: transparent;
+  border: 1px solid transparent; border-radius: 6px; cursor: pointer;
+}
+.case-option:hover { background: var(--surface-2); }
+.case-option[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent-line); }
+.case-option:disabled { cursor: default; opacity: .7; }
+.option-title { font-weight: 600; font-size: 13px; line-height: 1.35; }
+.option-meta { color: var(--muted); font-size: 11.5px; }
+.option-id { font-family: var(--mono); color: var(--muted); font-size: 11px; }
+.queue-footer { border-top: 1px solid var(--line-soft); margin-top: 7px; padding: 10px 7px 4px; color: var(--muted); font-size: 11.5px; }
+.route-preview { margin: 0; padding: 10px 12px; border: 1px solid var(--line-soft); background: var(--surface-2); border-radius: var(--radius); font-size: 12px; }
+.route-preview b { color: var(--ink); }
+.status-banner { min-height: 24px; margin: 0 0 12px; font-size: 13px; color: var(--ink-soft); }
+.status-banner[data-kind="success"] { color: #0b5c0b; }
+.status-banner[data-kind="warning"] { color: #7a4e08; }
+.status-banner[data-kind="error"] { color: #8b1f25; }
+.disclosure-foot { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px 24px; padding: 12px 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+.disclosure-foot p { margin: 0; }
+.disclosure-foot .workloads { display: flex; flex-wrap: wrap; gap: 5px; }
+.disclosure-foot .svc-chip { font-size: 11px; }
+.claim-line { flex-basis: 100%; max-width: none; margin: 0; }
+
+@media (min-width: 1100px) {
+  .work-card { display: grid; grid-template-columns: minmax(0, 1fr) 300px; }
+  .work-card > .card-top, .work-card > .case-body, .work-card > .review-panel, .work-card > .outcome-panel { grid-column: 1 / -1; }
+}
+@media (max-width: 900px) {
+  .page { padding: 16px 18px 22px; }
+  .workbench { grid-template-columns: minmax(0, 1fr) 250px; gap: 12px; }
+}
+@media (max-width: 700px) {
+  .page { padding: 14px 12px 18px; }
+  .page-heading { align-items: flex-start; flex-wrap: wrap; padding-bottom: 12px; }
+  .page-heading .reset { margin-left: auto; }
+  .workbench { grid-template-columns: minmax(0, 1fr); grid-template-areas: "work" "queue"; gap: 12px; }
+  .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .detail-grid, .review-grid { grid-template-columns: minmax(0, 1fr); }
+  .record-head { flex-wrap: wrap; }
+  .recommendation { grid-template-columns: minmax(0, 1fr); }
+  .recommendation .why { grid-column: auto; }
+  .confidence { justify-self: start; }
+  .disclosure-foot { padding: 11px 12px; }
+  .review-actions { justify-content: stretch; }
+  .review-actions .btn { flex: 1 1 100%; justify-content: center; }
+}
+@media (max-width: 380px) {
+  .appbar { padding-inline: 10px; }
+  .disclosure { font-size: 11px; padding: 4px 7px; }
+  .facts { grid-template-columns: minmax(0, 1fr); }
+  .case-body, .card-top, .review-panel, .outcome-panel { padding-inline: 13px; }
+}
+</style>
+</head>
+<body data-subvertical="health-payers">
+<header class="appbar">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true">◈</span>
+    <span><span class="brand-name">Case operations</span><span class="brand-sub">Unified case workbench</span></span>
+  </div>
+  <p class="disclosure"><span aria-hidden="true">●</span> Illustrative demo - synthetic data</p>
+  <p class="who">Signed in as <b>J. Rivera</b> · Case operations lead (fictional)</p>
+</header>
+
+<main class="page">
+  <div class="page-heading">
+    <div>
+      <p class="eyebrow">Claims, payment &amp; core administration / pilot workflow</p>
+      <h1>Service and operations cases</h1>
+      <p>Review the incoming request, resolve routing uncertainty, and keep a person accountable for every handoff.</p>
+    </div>
+    <button class="btn reset" id="resetButton" type="button">Reset demo</button>
+  </div>
+
+  <p class="status-banner" id="liveStatus" role="status" aria-live="polite">Ready for human review. Select a case or review the open item.</p>
+
+  <div class="workbench">
+    <article class="card work-card" aria-labelledby="caseTitle">
+      <div class="card-top">
+        <p class="record-crumb">Incoming work <span aria-hidden="true">/</span> Service desk handoff</p>
+        <div class="record-head">
+          <div>
+            <h2 id="caseTitle">Duplicate service request</h2>
+            <p class="record-id mono" id="caseId">DEMO-CASE-2408</p>
+          </div>
+          <span class="tag tag-warn record-status" id="caseStatus">Human review needed</span>
+        </div>
+      </div>
+
+      <div class="case-body">
+        <dl class="facts" aria-label="Case context">
+          <div><dt>Received</dt><dd id="caseReceived">09:18 · sample operational time</dd></div>
+          <div><dt>Current owner</dt><dd id="caseOwner">Intake desk (fictional)</dd></div>
+          <div><dt>Work type</dt><dd id="caseType">Service request · synthetic</dd></div>
+        </dl>
+
+        <section class="detail-section" aria-labelledby="sourceHeading">
+          <h3 class="section-label" id="sourceHeading">Request context</h3>
+          <div class="source-block">
+            <div class="source-meta">
+              <span id="sourceName">Synthetic intake note</span>
+              <span id="sourceChannel">Source: service desk · sample</span>
+            </div>
+            <p class="source-note" id="sourceText">The same service-status request appears twice in the intake queue. One copy is tagged “Billing”; the other is tagged “Service operations.” No coverage or payment decision is requested.</p>
+            <p class="source-caveat" id="sourceCaveat">Fictional case summary; no member or patient details are present.</p>
+          </div>
+        </section>
+
+        <section aria-labelledby="recommendationHeading">
+          <div class="recommendation">
+            <div>
+              <h3 id="recommendationHeading">AI-assisted triage suggestion · draft only</h3>
+              <p class="route" id="recommendedRoute">Service operations</p>
+            </div>
+            <span class="tag tag-warn confidence" id="confidenceLabel">Low confidence · signals conflict</span>
+            <p class="why" id="recommendationWhy">The duplicate-request signal points to service operations, but the two intake tags disagree. Do not route automatically; review the source and choose an accountable handoff.</p>
+          </div>
+        </section>
+
+        <div class="next-step" id="nextStep">
+          <button class="btn btn-primary" id="reviewButton" type="button">Review triage</button>
+          <p>Suggested routing is not applied until a human reviews it.</p>
+        </div>
+
+        <div class="detail-grid">
+          <section class="detail-section" aria-labelledby="activityHeading">
+            <h3 class="section-label" id="activityHeading">Recent activity · sample</h3>
+            <ol class="events" id="eventList">
+              <li><time>09:18</time><span>Request received from the service desk.</span></li>
+              <li><time>09:19</time><span>Duplicate signal and conflicting tags flagged for review.</span></li>
+            </ol>
+          </section>
+          <section class="detail-section" aria-labelledby="handoffHeading">
+            <h3 class="section-label" id="handoffHeading">Handoff preview</h3>
+            <p class="route-preview"><b id="previewDestination">Proposed queue:</b> <span id="previewRoute">Service operations</span></p>
+            <p class="system-note" style="margin-top:7px">Demo-only preview. No external case system is connected and no record is sent.</p>
+          </section>
+        </div>
+      </div>
+
+      <section class="review-panel" id="reviewPanel" aria-labelledby="reviewHeading" hidden>
+        <h3 id="reviewHeading">Human routing decision</h3>
+        <p class="review-copy" id="reviewCopy">Inspect the conflicting source indicators, choose a safe next step, and record why.</p>
+        <div class="review-grid">
+          <div class="field">
+            <label for="decisionChoice">Decision</label>
+            <select id="decisionChoice"></select>
+          </div>
+          <div class="field">
+            <label for="rationaleChoice">Rationale to record</label>
+            <select id="rationaleChoice"></select>
+          </div>
+        </div>
+        <label class="attest" for="reviewedEvidence">
+          <input id="reviewedEvidence" type="checkbox">
+          <span>I reviewed the source context and am accountable for this routing decision.</span>
+        </label>
+        <div class="review-actions">
+          <button class="btn" id="cancelReviewButton" type="button">Back to case</button>
+          <button class="btn btn-primary" id="applyDecisionButton" type="button" disabled>Apply human decision</button>
+        </div>
+      </section>
+
+      <section class="outcome-panel" id="outcomePanel" aria-labelledby="outcomeHeading" hidden>
+        <h3 id="outcomeHeading">Decision recorded in this demo</h3>
+        <p id="outcomeText"></p>
+        <p class="system-note">This is a local, illustrative state change only. It does not update an enterprise service-management system.</p>
+        <button class="btn" id="reviewAgainButton" type="button">Review this case again</button>
+      </section>
+    </article>
+
+    <nav class="card queue" aria-labelledby="queueHeading">
+      <div class="card-head">
+        <h2 id="queueHeading">My work queue</h2>
+        <span class="card-note">Synthetic sample</span>
+      </div>
+      <div class="card-body">
+        <div class="queue-list" id="queueList" aria-label="Cases awaiting review"></div>
+        <p class="queue-footer">Illustrative operational records for a fictional payer. Queue labels and times are sample data, not performance outcomes.</p>
+      </div>
+    </nav>
+  </div>
+</main>
+
+<footer class="disclosure-foot">
+  <p><strong>Illustrative demo - synthetic data.</strong> Fictional organization and records; no PHI, live integrations, or automated case updates.</p>
+  <div class="workloads" aria-label="Catalog workloads">
+    <span class="svc-chip">Apps: Logic Apps</span>
+    <span class="svc-chip">Apps: App Service</span>
+    <span class="svc-chip">AI: Foundry Models - OpenAI (Standard)</span>
+    <span class="svc-chip">Data: Cosmos DB</span>
+  </div>
+  <p class="claim-line">Catalog business value: <b>Case cycle time down, SLA adherence up, duplicate-handling down, operational visibility up.</b></p>
+</footer>
+
+<script>
+"use strict";
+
+// State model: ready -> review -> working -> result | exception. Cancel returns
+// to ready; reset restores the opening synthetic case. Every simulated action is local.
+const CASE_FIXTURES = {
+  openingCaseId: "DEMO-CASE-2411",
+  cases: [
+    {
+      id: "DEMO-CASE-2408",
+      title: "Duplicate service request",
+      initialDecision: "escalate",
+      initialRationale: "Intake tags conflict; a second reviewer should resolve the queue assignment.",
+      received: "09:18 · sample operational time",
+      owner: "Intake desk (fictional)",
+      type: "Service request · synthetic",
+      sourceName: "Synthetic intake note",
+      sourceChannel: "Source: service desk · sample",
+      sourceText: "The same service-status request appears twice in the intake queue. One copy is tagged “Billing”; the other is tagged “Service operations.” No coverage or payment decision is requested.",
+      sourceCaveat: "Fictional case summary; no member or patient details are present.",
+      confidence: "Low confidence · signals conflict",
+      recommendation: "Service operations",
+      explanation: "The duplicate-request signal points to service operations, but the two intake tags disagree. Do not route automatically; review the source and choose an accountable handoff.",
+      events: [
+        ["09:18", "Request received from the service desk."],
+        ["09:19", "Duplicate signal and conflicting tags flagged for review."]
+      ],
+      decisions: [
+        { value: "escalate", label: "Escalate for second human review", destination: "Second-level case review", kind: "exception" },
+        { value: "hold", label: "Keep with intake for source reconciliation", destination: "Intake desk", kind: "exception" }
+      ],
+      rationales: [
+        "Intake tags conflict; a second reviewer should resolve the queue assignment.",
+        "The duplicate signal needs reconciliation before a handoff."
+      ],
+      queueNote: "Conflicting tags · review required",
+      queueKind: "tag-warn"
+    },
+    {
+      id: "DEMO-CASE-2411",
+      title: "Service status clarification",
+      initialDecision: "route",
+      initialRationale: "Source note matches the service-status work type.",
+      received: "09:26 · sample operational time",
+      owner: "Operations intake (fictional)",
+      type: "Status question · synthetic",
+      sourceName: "Synthetic service desk note",
+      sourceChannel: "Source: internal handoff · sample",
+      sourceText: "A requester is asking for an update on an existing service request. The note contains no billing, eligibility, or coverage question.",
+      sourceCaveat: "Fictional case summary; source text contains no personal details.",
+      confidence: "Clear signal · human confirmation required",
+      recommendation: "Service operations",
+      explanation: "The request is a status question and the source note has no competing category. This is a routing suggestion only; a case owner still confirms the handoff.",
+      events: [
+        ["09:26", "Status question received from a fictional service desk."],
+        ["09:27", "Triage suggestion prepared for human confirmation."]
+      ],
+      decisions: [
+        { value: "route", label: "Confirm suggested route", destination: "Service operations", kind: "result" },
+        { value: "escalate", label: "Escalate for second human review", destination: "Second-level case review", kind: "exception" }
+      ],
+      rationales: [
+        "Source note matches the service-status work type.",
+        "A second reviewer should confirm the destination before handoff."
+      ],
+      queueNote: "Status question · ready for confirmation",
+      queueKind: "tag-ok"
+    }
+  ]
+};
+
+const elements = {
+  caseTitle: document.getElementById("caseTitle"),
+  caseId: document.getElementById("caseId"),
+  caseStatus: document.getElementById("caseStatus"),
+  caseReceived: document.getElementById("caseReceived"),
+  caseOwner: document.getElementById("caseOwner"),
+  caseType: document.getElementById("caseType"),
+  sourceName: document.getElementById("sourceName"),
+  sourceChannel: document.getElementById("sourceChannel"),
+  sourceText: document.getElementById("sourceText"),
+  sourceCaveat: document.getElementById("sourceCaveat"),
+  confidenceLabel: document.getElementById("confidenceLabel"),
+  recommendedRoute: document.getElementById("recommendedRoute"),
+  recommendationWhy: document.getElementById("recommendationWhy"),
+  previewRoute: document.getElementById("previewRoute"),
+  eventList: document.getElementById("eventList"),
+  queueList: document.getElementById("queueList"),
+  liveStatus: document.getElementById("liveStatus"),
+  reviewPanel: document.getElementById("reviewPanel"),
+  outcomePanel: document.getElementById("outcomePanel"),
+  decisionChoice: document.getElementById("decisionChoice"),
+  rationaleChoice: document.getElementById("rationaleChoice"),
+  reviewedEvidence: document.getElementById("reviewedEvidence"),
+  applyDecisionButton: document.getElementById("applyDecisionButton"),
+  outcomeText: document.getElementById("outcomeText"),
+  reviewButton: document.getElementById("reviewButton"),
+  nextStep: document.getElementById("nextStep")
+};
+
+let selectedCaseId = CASE_FIXTURES.openingCaseId;
+let workflowState = "ready";
+let completionTimer = null;
+
+function activeCase() {
+  return CASE_FIXTURES.cases.find((item) => item.id === selectedCaseId);
+}
+
+function setText(element, value) {
+  element.textContent = value;
+}
+
+function setStatus(message, kind) {
+  setText(elements.liveStatus, message);
+  if (kind) elements.liveStatus.dataset.kind = kind;
+  else delete elements.liveStatus.dataset.kind;
+}
+
+function renderQueue() {
+  elements.queueList.replaceChildren();
+  CASE_FIXTURES.cases.slice()
+    .sort((first, second) => Number(second.id === selectedCaseId) - Number(first.id === selectedCaseId))
+    .forEach((item) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "case-option";
+    button.setAttribute("aria-pressed", String(item.id === selectedCaseId));
+    button.disabled = workflowState === "working";
+
+    const title = document.createElement("span");
+    title.className = "option-title";
+    title.textContent = item.title;
+    const note = document.createElement("span");
+    note.className = `tag ${item.queueKind}`;
+    note.textContent = item.queueNote;
+    const id = document.createElement("span");
+    id.className = "option-id";
+    id.textContent = item.id;
+
+    button.append(title, note, id);
+    button.addEventListener("click", () => {
+      if (workflowState === "working") return;
+      selectedCaseId = item.id;
+      workflowState = "ready";
+      render();
+      setStatus(`Opened ${item.id}. Review the source context before taking action.`);
+    });
+    elements.queueList.append(button);
+  });
+}
+
+function fillSelect(select, options, selectedValue) {
+  select.replaceChildren();
+  options.forEach((option) => {
+    const node = document.createElement("option");
+    if (typeof option === "string") {
+      node.value = option;
+      node.textContent = option;
+    } else {
+      node.value = option.value;
+      node.textContent = option.label;
+    }
+    select.append(node);
+  });
+  if (selectedValue) select.value = selectedValue;
+}
+
+function renderCase() {
+  const item = activeCase();
+  setText(elements.caseTitle, item.title);
+  setText(elements.caseId, item.id);
+  setText(elements.caseReceived, item.received);
+  setText(elements.caseOwner, item.owner);
+  setText(elements.caseType, item.type);
+  setText(elements.sourceName, item.sourceName);
+  setText(elements.sourceChannel, item.sourceChannel);
+  setText(elements.sourceText, item.sourceText);
+  setText(elements.sourceCaveat, item.sourceCaveat);
+  setText(elements.confidenceLabel, item.confidence);
+  setText(elements.recommendedRoute, item.recommendation);
+  setText(elements.recommendationWhy, item.explanation);
+  setText(elements.previewRoute, item.recommendation);
+  elements.eventList.replaceChildren();
+  item.events.forEach(([time, detail]) => {
+    const row = document.createElement("li");
+    const stamp = document.createElement("time");
+    stamp.textContent = time;
+    const text = document.createElement("span");
+    text.textContent = detail;
+    row.append(stamp, text);
+    elements.eventList.append(row);
+  });
+
+  const needsReview = item.confidence.startsWith("Low confidence");
+  elements.caseStatus.className = `tag record-status ${needsReview ? "tag-warn" : "tag-ok"}`;
+  setText(elements.caseStatus, workflowState === "result" ? "Decision confirmed" :
+    workflowState === "exception" ? "Escalated / held for review" :
+    needsReview ? "Human review needed" : "Ready for confirmation");
+  elements.reviewButton.textContent = workflowState === "result" || workflowState === "exception" ? "Review triage again" : "Review triage";
+  elements.reviewButton.disabled = workflowState === "working";
+  elements.nextStep.hidden = workflowState === "review";
+  elements.reviewPanel.hidden = workflowState !== "review";
+  elements.outcomePanel.hidden = workflowState !== "result" && workflowState !== "exception";
+  elements.queueList.querySelectorAll("button").forEach((button) => {
+    button.disabled = workflowState === "working";
+  });
+}
+
+function renderReview() {
+  const item = activeCase();
+  fillSelect(elements.decisionChoice, item.decisions, item.initialDecision);
+  fillSelect(elements.rationaleChoice, item.rationales.map((text) => ({ value: text, label: text })), item.initialRationale);
+  elements.reviewedEvidence.checked = false;
+  elements.applyDecisionButton.disabled = true;
+  setText(document.getElementById("reviewCopy"), item.explanation);
+  updateApplyLabel();
+}
+
+function updateApplyLabel() {
+  const chosen = activeCase().decisions.find((decision) => decision.value === elements.decisionChoice.value);
+  elements.applyDecisionButton.textContent = chosen && chosen.kind === "exception" ? "Record and escalate" : "Confirm routing decision";
+}
+
+function render() {
+  renderCase();
+  renderQueue();
+}
+
+function openReview() {
+  if (workflowState === "working") return;
+  workflowState = "review";
+  render();
+  renderReview();
+  setStatus("Review is open. Inspect the source and record your human decision.");
+  elements.decisionChoice.focus();
+}
+
+function applyHumanDecision() {
+  if (!elements.reviewedEvidence.checked) {
+    setStatus("Confirm that you reviewed the source context before applying a decision.", "warning");
+    elements.reviewedEvidence.focus();
+    return;
+  }
+  const item = activeCase();
+  const decision = item.decisions.find((option) => option.value === elements.decisionChoice.value);
+  const rationale = elements.rationaleChoice.value;
+  if (!decision || !rationale) {
+    setStatus("Choose a decision and rationale before continuing.", "warning");
+    return;
+  }
+
+  workflowState = "working";
+  renderCase();
+  setStatus("Recording the demo-only decision…");
+  completionTimer = window.setTimeout(() => {
+    completionTimer = null;
+    workflowState = decision.kind === "result" ? "result" : "exception";
+    const confirmation = decision.kind === "result"
+      ? `You confirmed ${decision.destination}. Rationale: ${rationale}`
+      : `You selected ${decision.destination}. Rationale: ${rationale}`;
+    setText(elements.outcomeText, confirmation);
+    render();
+    setStatus(decision.kind === "result"
+      ? "Human routing decision recorded. No external system was updated."
+      : "Case is held or escalated for further human review. No external system was updated.",
+    decision.kind === "result" ? "success" : "warning");
+    document.getElementById("outcomeHeading").focus?.();
+  }, 420);
+}
+
+function resetDemo() {
+  if (completionTimer !== null) {
+    window.clearTimeout(completionTimer);
+    completionTimer = null;
+  }
+  selectedCaseId = CASE_FIXTURES.openingCaseId;
+  workflowState = "ready";
+  elements.reviewedEvidence.checked = false;
+  setText(elements.outcomeText, "");
+  render();
+  setStatus("Demo reset. The original synthetic case is ready for review.");
+  elements.reviewButton.focus();
+}
+
+elements.reviewButton.addEventListener("click", openReview);
+document.getElementById("cancelReviewButton").addEventListener("click", () => {
+  workflowState = "ready";
+  render();
+  setStatus("Review closed without a routing change.");
+  elements.reviewButton.focus();
+});
+document.getElementById("reviewedEvidence").addEventListener("change", () => {
+  elements.applyDecisionButton.disabled = !elements.reviewedEvidence.checked;
+});
+elements.decisionChoice.addEventListener("change", updateApplyLabel);
+elements.applyDecisionButton.addEventListener("click", applyHumanDecision);
+document.getElementById("resetButton").addEventListener("click", resetDemo);
+document.getElementById("reviewAgainButton").addEventListener("click", openReview);
+
+render();
+</script>
+</body>
+</html>

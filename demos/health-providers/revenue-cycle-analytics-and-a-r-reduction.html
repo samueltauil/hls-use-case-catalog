@@ -1,0 +1,965 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>A/R cohort review — Example Harbor Health Network</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* -----------------------------------------------------------------------
+   A/R review workspace. Layout aliases are body-scoped so the shared
+   subvertical accent remains the source of truth.
+   ----------------------------------------------------------------------- */
+body {
+  --panel-shadow: 0 1px 2px rgba(32, 31, 30, .06);
+  min-height: 100%;
+}
+
+html, body { height: auto; }
+body { min-height: 100vh; }
+
+.appbar { min-height: 58px; }
+.brand-mark {
+  display: grid; place-items: center; width: 31px; height: 31px;
+  border: 1px solid var(--muted); border-radius: 6px; color: #fff;
+  font-size: 12px; font-weight: 700; letter-spacing: .04em;
+}
+.brand-sub { max-width: 360px; }
+.who { max-width: 280px; }
+
+.workspace {
+  width: min(100% - 44px, 1540px);
+  margin: 0 auto;
+  padding: 23px 0 32px;
+}
+.page-heading {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 16px; margin-bottom: 18px;
+}
+.page-heading h1 { margin: 2px 0 3px; font-size: clamp(23px, 2.2vw, 30px); line-height: 1.2; letter-spacing: -.02em; }
+.page-heading p { margin: 0; max-width: 74ch; color: var(--muted); font-size: 14px; }
+.eyebrow {
+  margin: 0; color: var(--accent-strong); font-size: 12px; font-weight: 700;
+  letter-spacing: .035em;
+}
+.heading-tools { display: flex; align-items: center; gap: 11px; padding-top: 3px; }
+.snapshot-label { color: var(--muted); font-size: 12.5px; white-space: nowrap; }
+
+.metric-strip {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0 0 19px; border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--surface); box-shadow: var(--panel-shadow);
+}
+.metric {
+  display: grid; grid-template-columns: auto 1fr; align-items: center;
+  gap: 2px 11px; min-width: 0; padding: 11px 16px;
+}
+.metric + .metric { border-left: 1px solid var(--line-soft); }
+.metric-value { grid-row: span 2; font-size: 22px; font-weight: 650; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.metric-label { font-size: 13px; font-weight: 600; }
+.metric-note { color: var(--muted); font-size: 11.5px; }
+
+.review-grid {
+  display: grid; grid-template-columns: minmax(0, 1.8fr) minmax(265px, .82fr);
+  align-items: start; gap: 18px;
+}
+.queue-section > .section-heading {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: 10px; margin: 0 0 8px;
+}
+.section-heading h2 { margin: 0; font-size: 15px; }
+.section-heading p { margin: 0; color: var(--muted); font-size: 12px; }
+.queue-list { display: grid; gap: 10px; }
+.queue-item {
+  min-width: 0; overflow: hidden; border: 1px solid var(--line);
+  border-radius: var(--radius); background: var(--surface);
+  box-shadow: var(--panel-shadow);
+}
+.queue-item.featured { border-left: 3px solid var(--accent); }
+.queue-top {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 12px; padding: 13px 14px 11px;
+}
+.queue-title-group { min-width: 0; }
+.queue-kicker {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 7px;
+  margin: 0 0 3px; color: var(--muted); font-size: 11.5px;
+}
+.queue-item h3 { margin: 0; font-size: 16px; line-height: 1.3; font-weight: 650; overflow-wrap: anywhere; }
+.queue-subtitle { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+.queue-action { flex: none; }
+.cohort-facts {
+  display: grid; grid-template-columns: minmax(110px, .85fr) minmax(120px, .8fr) minmax(120px, 1fr);
+  gap: 10px 18px; margin: 0; padding: 10px 14px 12px;
+  border-top: 1px solid var(--line-soft); background: #fff;
+}
+.cohort-facts dt { color: var(--muted); font-size: 11.5px; }
+.cohort-facts dd { margin: 1px 0 0; font-size: 13.5px; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.fixture-label { color: var(--muted); font-size: 11px; font-weight: 400; }
+
+.item-detail {
+  padding: 13px 14px 14px; border-top: 1px solid var(--line);
+  background: var(--bg);
+}
+.item-detail [tabindex="-1"] { scroll-margin-top: 88px; }
+.detail-title-row {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 12px; margin-bottom: 10px;
+}
+.detail-title-row h4 { margin: 0; font-size: 14px; }
+.detail-title-row p { margin: 2px 0 0; color: var(--muted); font-size: 12.5px; }
+.evidence-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.evidence-block { min-width: 0; padding: 10px 11px; border: 1px solid var(--line-soft); border-radius: 6px; background: var(--surface); }
+.evidence-block h5 { margin: 0 0 5px; font-size: 12px; }
+.evidence-block p { margin: 0; color: var(--ink-soft); font-size: 12.5px; line-height: 1.5; overflow-wrap: anywhere; }
+.source-list { display: grid; gap: 5px; margin: 0; padding: 0; list-style: none; }
+.source-list li { display: grid; grid-template-columns: minmax(92px, .78fr) minmax(0, 1.22fr); gap: 8px; font-size: 12px; }
+.source-list b { font-weight: 600; }
+.source-list span { overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.definition-list { display: grid; gap: 7px; margin: 0; }
+.definition-list dt { font-size: 12px; font-weight: 700; }
+.definition-list dd { margin: 1px 0 0; color: var(--ink-soft); font-size: 12px; line-height: 1.45; }
+.detail-action {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line);
+}
+.detail-action p { max-width: 63ch; margin: 0; color: var(--muted); font-size: 12px; }
+.detail-action .btn { flex: none; }
+.action-result { margin-top: 10px; }
+.action-result .notice { font-size: 13px; }
+.working-indicator { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); font-size: 12px; }
+.working-indicator::before {
+  content: ""; width: 8px; height: 8px; border: 2px solid var(--accent-line);
+  border-top-color: var(--accent-strong); border-radius: 50%; animation: turn .8s linear infinite;
+}
+@keyframes turn { to { transform: rotate(360deg); } }
+
+.review-rail { display: grid; gap: 12px; }
+.rail-panel {
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--surface); box-shadow: var(--panel-shadow);
+}
+.rail-head { padding: 11px 13px 9px; border-bottom: 1px solid var(--line-soft); }
+.rail-head h2 { margin: 0; font-size: 14px; }
+.rail-body { padding: 11px 13px 13px; }
+.rail-body p { margin: 0; color: var(--ink-soft); font-size: 12.5px; }
+.rail-body p + p { margin-top: 9px; }
+.review-rules { margin: 0; padding-left: 18px; color: var(--ink-soft); font-size: 12.5px; }
+.review-rules li + li { margin-top: 7px; }
+.guardrail { border-left: 3px solid var(--warn); padding-left: 10px; }
+.exception { border-left: 3px solid var(--warn); }
+.exception .cohort-facts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.exception .queue-kicker .tag { white-space: normal; }
+.exception-detail .evidence-block { background: #fff; }
+.exception-detail .detail-action { align-items: flex-start; }
+
+.queue-audit {
+  margin-top: 12px; border-top: 1px solid var(--line-soft); padding-top: 9px;
+}
+.queue-audit h4 { margin: 0 0 6px; color: var(--muted); font-size: 11.5px; font-weight: 650; }
+.queue-audit ol { display: grid; gap: 5px; margin: 0; padding: 0; list-style: none; }
+.queue-audit li { display: flex; flex-wrap: wrap; gap: 3px 7px; color: var(--muted); font-size: 11.5px; }
+.queue-audit time { flex: none; font-family: var(--mono); font-size: 11px; }
+.queue-audit .audit-actor { color: var(--ink-soft); font-weight: 650; }
+
+.page-footer {
+  margin-top: 18px; display: grid; gap: 7px;
+  color: var(--muted); font-size: 11.5px;
+}
+.page-footer .built { gap: 5px; }
+.page-footer .svc-chip { overflow-wrap: anywhere; }
+.page-footer-note { margin: 0; }
+.status-region {
+  position: fixed; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+@media (max-width: 980px) {
+  .review-grid { grid-template-columns: minmax(0, 1fr); }
+  .review-rail { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 700px) {
+  .workspace { width: min(100% - 28px, 1540px); padding-top: 17px; }
+  .page-heading { display: block; margin-bottom: 14px; }
+  .heading-tools { justify-content: space-between; margin-top: 10px; }
+  .metric-strip { margin-bottom: 14px; }
+  .metric { display: block; padding: 9px 10px; }
+  .metric-value { display: block; margin-bottom: 2px; font-size: 18px; }
+  .metric-label { display: block; font-size: 11.5px; line-height: 1.3; }
+  .metric-note { display: none; }
+  .queue-top { display: block; }
+  .queue-action { margin-top: 10px; }
+  .queue-action .btn { width: 100%; justify-content: center; }
+  .cohort-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; }
+  .exception .cohort-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .evidence-grid { grid-template-columns: minmax(0, 1fr); }
+  .detail-action { align-items: flex-start; flex-direction: column; }
+  .detail-action .btn { width: 100%; justify-content: center; }
+  .review-rail { grid-template-columns: minmax(0, 1fr); }
+  .footer { padding-inline: 14px; }
+}
+@media (max-width: 390px) {
+  .workspace { width: calc(100% - 24px); }
+  .appbar { padding-inline: 12px; }
+  .disclosure { font-size: 11px; padding-inline: 8px; }
+  .who { width: 100%; max-width: none; text-align: left; }
+  .metric { padding-inline: 7px; }
+  .metric-value { font-size: 17px; }
+  .metric-label { font-size: 10.5px; }
+  .source-list li { grid-template-columns: minmax(82px, .8fr) minmax(0, 1.2fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .working-indicator::before { animation: none; }
+}
+  </style>
+</head>
+<body data-subvertical="health-providers">
+  <header class="appbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">EH</span>
+      <div>
+        <span class="brand-name">Harbor finance workspace</span>
+        <span class="brand-sub">Example Harbor Health Network · fictional organization</span>
+      </div>
+    </div>
+    <p class="disclosure"><span aria-hidden="true">◆</span> Illustrative demo - synthetic data</p>
+    <p class="who"><b>Signed in as CFO</b> · Weekly finance review</p>
+  </header>
+
+  <main class="workspace">
+    <div class="page-heading">
+      <div>
+        <p class="eyebrow">Revenue cycle · Operational review queue</p>
+        <h1>A/R cohort review</h1>
+        <p>Review the source evidence behind an aging cohort, then route a follow-up for human validation. No financial action is taken here.</p>
+      </div>
+      <div class="heading-tools">
+        <span class="snapshot-label">Synthetic snapshot · <span id="snapshot-date"></span></span>
+        <button class="btn" id="reset-button" type="button">Reset review</button>
+      </div>
+    </div>
+
+    <section class="metric-strip" aria-label="Synthetic finance review context">
+      <div class="metric">
+        <span class="metric-value" id="metric-ar"></span>
+        <span class="metric-label">Days in A/R</span>
+        <span class="metric-note">Synthetic fixture · not a measured outcome</span>
+      </div>
+      <div class="metric">
+        <span class="metric-value" id="metric-collection"></span>
+        <span class="metric-label">Net collection rate</span>
+        <span class="metric-note">Synthetic fixture · not a measured outcome</span>
+      </div>
+      <div class="metric">
+        <span class="metric-value" id="metric-period"></span>
+        <span class="metric-label">Reporting period</span>
+        <span class="metric-note">Synthetic fixture · finance definitions need review</span>
+      </div>
+    </section>
+
+    <div class="review-grid">
+      <section class="queue-section" aria-labelledby="queue-heading">
+        <div class="section-heading">
+          <h2 id="queue-heading">A/R work queue</h2>
+          <p>Synthetic cohort fixtures · aggregate only</p>
+        </div>
+        <div class="queue-list">
+          <article class="queue-item featured" aria-labelledby="featured-title">
+            <div class="queue-top">
+              <div class="queue-title-group">
+                <p class="queue-kicker">
+                  <span>Featured for human review</span>
+                  <span class="tag tag-ok" id="featured-status">Evidence available</span>
+                </p>
+                <h3 id="featured-title"><span id="featured-plan"></span> · <span id="featured-service"></span></h3>
+                <p class="queue-subtitle">Aging cohort surfaced for review from its open amount and age; Finance validates any prioritization.</p>
+              </div>
+              <div class="queue-action">
+                <button class="btn btn-primary" id="open-featured" type="button" aria-expanded="false" aria-controls="featured-detail">Open cohort &amp; evidence</button>
+              </div>
+            </div>
+            <dl class="cohort-facts">
+              <div><dt>Work item</dt><dd class="mono" id="featured-id"></dd></div>
+              <div><dt>Aging band</dt><dd><span id="featured-aging"></span> <span class="fixture-label">synthetic</span></dd></div>
+              <div><dt>Open A/R</dt><dd><span id="featured-amount"></span> <span class="fixture-label">synthetic</span></dd></div>
+            </dl>
+            <section class="item-detail" id="featured-detail" aria-labelledby="featured-detail-heading" hidden>
+              <div class="detail-title-row">
+                <div>
+                  <h4 id="featured-detail-heading" tabindex="-1">Cohort evidence</h4>
+                  <p>Sample figures and working KPI definitions · validate before comparison or prioritization.</p>
+                </div>
+                <span class="tag">Synthetic fixture data</span>
+              </div>
+              <div class="evidence-grid">
+                <section class="evidence-block" aria-labelledby="featured-source-heading">
+                  <h5 id="featured-source-heading">Source freshness and reconciliation</h5>
+                  <ul class="source-list">
+                    <li><b>A/R snapshot</b><span><span id="featured-source-id" class="mono"></span> · <time id="featured-source-time"></time></span></li>
+                    <li><b>Ledger check</b><span><span id="featured-ledger-id" class="mono"></span> · <time id="featured-ledger-time"></time></span></li>
+                    <li><b>Reconciliation</b><span id="featured-reconciliation"></span></li>
+                    <li><b>Reporting window</b><span id="featured-period"></span></li>
+                  </ul>
+                </section>
+                <section class="evidence-block" aria-labelledby="definitions-heading">
+                  <h5 id="definitions-heading">KPI definitions · demo working draft</h5>
+                  <dl class="definition-list">
+                    <div><dt>Days in A/R · <span id="definition-ar-value"></span></dt><dd id="definition-ar"></dd></div>
+                    <div><dt>Net collection rate · <span id="definition-collection-value"></span></dt><dd id="definition-collection"></dd></div>
+                  </dl>
+                </section>
+                <section class="evidence-block" aria-labelledby="review-rationale-heading">
+                  <h5 id="review-rationale-heading">Why this is in the review queue</h5>
+                  <p id="featured-rationale"></p>
+                </section>
+                <section class="evidence-block" aria-labelledby="assignment-boundary-heading">
+                  <h5 id="assignment-boundary-heading">Human-owned next step</h5>
+                  <p id="assignment-boundary"></p>
+                </section>
+              </div>
+              <div class="detail-action">
+                <p>Assigning creates a simulated follow-up for a human reviewer only. It does not change a ledger, collection, payment, write-off, staffing, or patient record.</p>
+                <button class="btn btn-primary" id="assign-featured" type="button">Assign validation</button>
+              </div>
+              <div class="action-result" id="featured-result" tabindex="-1" hidden>
+                <div class="notice notice-ok">
+                  <div><strong id="featured-result-title">Assigned for validation</strong><span class="notice-note" id="featured-result-copy"></span></div>
+                </div>
+              </div>
+              <div class="working-indicator" id="featured-working" role="status" tabindex="-1" hidden>Recording simulated follow-up…</div>
+              <div class="queue-audit" aria-label="Featured cohort status history">
+                <h4>Status history · demo only</h4>
+                <ol id="featured-audit"></ol>
+              </div>
+            </section>
+          </article>
+
+          <article class="queue-item exception" aria-labelledby="exception-title">
+            <div class="queue-top">
+              <div class="queue-title-group">
+                <p class="queue-kicker">
+                  <span>Held out of prioritization</span>
+                  <span class="tag tag-warn" id="exception-status">Source mismatch</span>
+                </p>
+                <h3 id="exception-title"><span id="exception-plan"></span> · <span id="exception-service"></span></h3>
+                <p class="queue-subtitle">Source age and unreconciled balance do not support a confident comparison.</p>
+              </div>
+              <div class="queue-action">
+                <button class="btn" id="open-exception" type="button" aria-expanded="false" aria-controls="exception-detail">Review exception</button>
+              </div>
+            </div>
+            <dl class="cohort-facts">
+              <div><dt>Work item</dt><dd class="mono" id="exception-id"></dd></div>
+              <div><dt>Aging band</dt><dd><span id="exception-aging"></span> <span class="fixture-label">synthetic</span></dd></div>
+              <div><dt>Open A/R</dt><dd><span id="exception-amount"></span> <span class="fixture-label">synthetic</span></dd></div>
+            </dl>
+            <section class="item-detail exception-detail" id="exception-detail" aria-labelledby="exception-detail-heading" hidden>
+              <div class="detail-title-row">
+                <div>
+                  <h4 id="exception-detail-heading" tabindex="-1">Source exception</h4>
+                  <p>Keep this cohort out of prioritization until Finance and an analyst resolve the source difference.</p>
+                </div>
+                <span class="tag tag-warn">Synthetic fixture data</span>
+              </div>
+              <div class="evidence-grid">
+                <section class="evidence-block" aria-labelledby="exception-source-heading">
+                  <h5 id="exception-source-heading">Source timestamps</h5>
+                  <ul class="source-list">
+                    <li><b>Billing snapshot</b><span><span id="exception-billing-id" class="mono"></span> · <time id="exception-billing-time"></time></span></li>
+                    <li><b>Ledger snapshot</b><span><span id="exception-ledger-id" class="mono"></span> · <time id="exception-ledger-time"></time></span></li>
+                    <li><b>Unreconciled variance</b><span id="exception-variance"></span></li>
+                    <li><b>Reporting window</b><span id="exception-period"></span></li>
+                  </ul>
+                </section>
+                <section class="evidence-block" aria-labelledby="exception-hold-heading">
+                  <h5 id="exception-hold-heading">Why prioritization is held</h5>
+                  <p id="exception-rationale"></p>
+                </section>
+              </div>
+              <div class="detail-action">
+                <p>Request a human analyst check; this mock request does not post or reconcile financial data.</p>
+                <button class="btn" id="request-analyst" type="button">Request analyst validation</button>
+              </div>
+              <div class="working-indicator" id="exception-working" role="status" tabindex="-1" hidden>Recording analyst follow-up…</div>
+              <div class="action-result" id="exception-result" tabindex="-1" hidden>
+                <div class="notice notice-warn">
+                  <div><strong>Analyst validation requested</strong><span class="notice-note" id="exception-result-copy"></span></div>
+                </div>
+              </div>
+              <div class="queue-audit" aria-label="Exception cohort status history">
+                <h4>Status history · demo only</h4>
+                <ol id="exception-audit"></ol>
+              </div>
+            </section>
+          </article>
+        </div>
+      </section>
+
+      <aside class="review-rail" aria-label="Review guidance">
+        <section class="rail-panel">
+          <div class="rail-head"><h2>Review guardrails</h2></div>
+          <div class="rail-body">
+            <ol class="review-rules">
+              <li>Finance confirms KPI definitions, period, and exclusions before using a comparison.</li>
+              <li>Human reviewers decide whether any cohort warrants follow-up; the queue is not a financial recommendation.</li>
+              <li>Assignments are simulated review tasks only. No collection, payment, ledger, write-off, staffing, or patient action is available.</li>
+            </ol>
+          </div>
+        </section>
+        <section class="rail-panel">
+          <div class="rail-head"><h2>Weekly review context</h2></div>
+          <div class="rail-body">
+            <p id="context-copy"></p>
+            <p class="guardrail">The exception route is analyst validation. If source mismatch remains unresolved, keep the work item held and escalate through finance review.</p>
+          </div>
+        </section>
+        <section class="rail-panel">
+          <div class="rail-head"><h2>Assessment focus</h2></div>
+          <div class="rail-body">
+            <p>Confirm which revenue-cycle sources and highest-value KPIs belong in a consolidated view. Existing BI investment and integration effort remain discovery topics, not assumptions about a target design.</p>
+          </div>
+        </section>
+      </aside>
+    </div>
+
+    <p class="status-region" id="status-announcer" role="status" aria-live="polite" aria-atomic="true"></p>
+    <footer class="page-footer">
+      <p class="page-footer-note">All amounts, rates, dates, timestamps, IDs, and queue states on this screen are fictional fixture data, not measured customer outcomes. Example Harbor Health Network is fictional.</p>
+      <div class="built" aria-label="Catalog workload names">
+        <span class="svc-chip">Microsoft Fabric</span>
+        <span class="svc-chip">Azure Databricks</span>
+        <span class="svc-chip">Power BI</span>
+        <span class="svc-chip">Microsoft Purview</span>
+        <span class="svc-chip">Starting motion: Assessment</span>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    "use strict";
+
+    // Interaction model: ready/reset -> cohort-detail -> working -> assigned-result.
+    // The exception branch is ready/reset -> exception-detail -> exception-working
+    // -> exception-result. All transitions are local, fixture-driven and reversible.
+    const DEMO_FIXTURES = Object.freeze({
+      organization: "Example Harbor Health Network",
+      snapshotDate: "2026-09-28",
+      reportingPeriod: "2026-09-01 through 2026-09-28",
+      metrics: {
+        daysInAR: "48.6",
+        netCollectionRate: "93.7%"
+      },
+      featured: {
+        id: "SIM-AR-2609-014",
+        plan: "Example Plan 07",
+        service: "Sample Outpatient Imaging",
+        aging: "61–90 days",
+        openAmount: "$2.8M",
+        sourceId: "SIM-AR-260928",
+        sourceTime: "2026-09-28 06:00",
+        ledgerId: "SIM-GL-260928",
+        ledgerTime: "2026-09-28 06:15",
+        reconciliation: "Matched in this synthetic fixture; no discrepancy shown.",
+        rationale: "This sample cohort combines an older aging band and a visible open amount, so it is available for a human evidence review. These fixture values do not establish collectability, cause, or a financial outcome.",
+        assignmentRole: "Director Patient Financial Services",
+        assignmentTime: "08:42",
+        initialAuditTime: "08:15",
+        definitionAR: "Open receivables divided by average daily net patient service revenue for the sample reporting window. Finance must confirm the denominator, window, and exclusions.",
+        definitionCollection: "Net collections divided by adjusted net charges for the same sample window. Finance must confirm adjustment and timing rules.",
+        assignmentCopy: "Mock follow-up routed to the Director Patient Financial Services role for human validation. No financial record changed."
+      },
+      exception: {
+        id: "SIM-AR-2609-021",
+        plan: "Example Plan 12",
+        service: "Sample Ambulatory Services",
+        aging: "31–60 days",
+        openAmount: "$1.1M",
+        billingId: "SIM-BILL-260928",
+        billingTime: "2026-09-28 06:00",
+        ledgerId: "SIM-GL-260927",
+        ledgerTime: "2026-09-27 23:00",
+        variance: "$84,000",
+        rationale: "The synthetic billing snapshot is newer than the ledger snapshot and the displayed $84,000 variance is unreconciled. A confident comparison is not available; keep this work item out of prioritization until a human analyst validates the sources.",
+        analystRole: "Finance analyst",
+        requestTime: "08:44",
+        initialAuditTime: "08:15",
+        resultCopy: "Mock request routed to the Finance analyst role. The cohort remains held from prioritization pending source review."
+      },
+      workflow: {
+        reportingContext: "Synthetic weekly finance review. The screen presents aggregate cohort fixtures for discussion; it is not a live feed or a validated finance report.",
+        workDelayMs: 650
+      }
+    });
+
+    const state = {
+      mode: "ready",
+      featuredOpen: false,
+      exceptionOpen: false,
+      featuredAssigned: false,
+      exceptionRequested: false,
+      timeoutId: null,
+      featuredHistory: [],
+      exceptionHistory: []
+    };
+
+    const byId = (id) => document.getElementById(id);
+    const put = (id, value) => { byId(id).textContent = value; };
+
+    function addAudit(listId, time, actor, message) {
+      const item = document.createElement("li");
+      const clock = document.createElement("time");
+      clock.textContent = time;
+      const who = document.createElement("span");
+      who.className = "audit-actor";
+      who.textContent = actor;
+      const text = document.createElement("span");
+      text.textContent = message;
+      item.append(clock, who, text);
+      byId(listId).append(item);
+    }
+
+    function announce(message) {
+      put("status-announcer", message);
+    }
+
+    function renderFixtures() {
+      const f = DEMO_FIXTURES.featured;
+      const x = DEMO_FIXTURES.exception;
+      put("snapshot-date", DEMO_FIXTURES.snapshotDate);
+      put("metric-ar", DEMO_FIXTURES.metrics.daysInAR);
+      put("metric-collection", DEMO_FIXTURES.metrics.netCollectionRate);
+      put("metric-period", DEMO_FIXTURES.reportingPeriod);
+      put("context-copy", DEMO_FIXTURES.workflow.reportingContext);
+
+      put("featured-plan", f.plan);
+      put("featured-service", f.service);
+      put("featured-id", f.id);
+      put("featured-aging", f.aging);
+      put("featured-amount", f.openAmount);
+      put("featured-source-id", f.sourceId);
+      put("featured-source-time", f.sourceTime);
+      put("featured-ledger-id", f.ledgerId);
+      put("featured-ledger-time", f.ledgerTime);
+      put("featured-reconciliation", f.reconciliation);
+      put("featured-period", DEMO_FIXTURES.reportingPeriod);
+      put("definition-ar-value", DEMO_FIXTURES.metrics.daysInAR);
+      put("definition-ar", f.definitionAR);
+      put("definition-collection-value", DEMO_FIXTURES.metrics.netCollectionRate);
+      put("definition-collection", f.definitionCollection);
+      put("featured-rationale", f.rationale);
+      put("assignment-boundary", `If Finance approves follow-up, assign a mock validation task to the ${f.assignmentRole} role. This is not an automated financial decision.`);
+
+      put("exception-plan", x.plan);
+      put("exception-service", x.service);
+      put("exception-id", x.id);
+      put("exception-aging", x.aging);
+      put("exception-amount", x.openAmount);
+      put("exception-billing-id", x.billingId);
+      put("exception-billing-time", x.billingTime);
+      put("exception-ledger-id", x.ledgerId);
+      put("exception-ledger-time", x.ledgerTime);
+      put("exception-variance", x.variance);
+      put("exception-period", DEMO_FIXTURES.reportingPeriod);
+      put("exception-rationale", x.rationale);
+      put("featured-result-copy", f.assignmentCopy);
+      put("exception-result-copy", x.resultCopy);
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const f = DEMO_FIXTURES.featured;
+      const x = DEMO_FIXTURES.exception;
+      byId("featured-audit").replaceChildren();
+      byId("exception-audit").replaceChildren();
+      addAudit("featured-audit", f.initialAuditTime, "CFO", "Synthetic review queue opened; no assignment yet.");
+      state.featuredHistory.forEach((entry) => addAudit("featured-audit", entry.time, entry.actor, entry.message));
+      addAudit("exception-audit", x.initialAuditTime, "CFO", "Source mismatch detected in synthetic fixture; cohort held.");
+      state.exceptionHistory.forEach((entry) => addAudit("exception-audit", entry.time, entry.actor, entry.message));
+    }
+
+    function renderState() {
+      const featuredIsWorking = state.mode === "working";
+      const exceptionIsWorking = state.mode === "exception-working";
+      const isWorking = featuredIsWorking || exceptionIsWorking;
+      const featuredIsAssigned = state.featuredAssigned;
+      const exceptionIsRequested = state.exceptionRequested;
+
+      byId("featured-detail").hidden = !state.featuredOpen;
+      byId("exception-detail").hidden = !state.exceptionOpen;
+      byId("open-featured").disabled = isWorking;
+      byId("open-exception").disabled = isWorking;
+      byId("open-featured").setAttribute("aria-expanded", String(state.featuredOpen));
+      byId("open-featured").textContent = state.featuredOpen ? "Close cohort evidence" : "Open cohort & evidence";
+      byId("open-exception").setAttribute("aria-expanded", String(state.exceptionOpen));
+      byId("open-exception").textContent = state.exceptionOpen ? "Close exception" : "Review exception";
+
+      byId("assign-featured").hidden = featuredIsAssigned;
+      byId("assign-featured").disabled = featuredIsWorking;
+      byId("featured-working").hidden = !featuredIsWorking;
+      byId("featured-result").hidden = !featuredIsAssigned;
+      byId("featured-status").textContent = featuredIsAssigned ? "Assigned for validation" : "Evidence available";
+      byId("featured-status").className = "tag tag-ok";
+
+      byId("request-analyst").hidden = exceptionIsRequested;
+      byId("request-analyst").disabled = isWorking;
+      byId("exception-working").hidden = !exceptionIsWorking;
+      byId("exception-result").hidden = !exceptionIsRequested;
+      byId("exception-status").textContent = exceptionIsRequested ? "Analyst validation requested · held" : "Source mismatch";
+      byId("exception-status").className = "tag tag-warn";
+      renderHistory();
+    }
+
+    function focusDetail(id) {
+      byId(id).focus({ preventScroll: true });
+      byId(id).scrollIntoView({
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+        block: "nearest"
+      });
+    }
+
+    function openDetail(kind) {
+      if (state.mode === "working" || state.mode === "exception-working") return;
+      const isFeatured = kind === "featured";
+      const wasOpen = isFeatured ? state.featuredOpen : state.exceptionOpen;
+      if (isFeatured) {
+        state.featuredOpen = !wasOpen;
+        state.exceptionOpen = false;
+        state.mode = state.featuredOpen
+          ? (state.featuredAssigned ? "assigned-result" : "cohort-detail")
+          : (state.featuredAssigned ? "assigned-result" : "ready");
+      } else {
+        state.exceptionOpen = !wasOpen;
+        state.featuredOpen = false;
+        state.mode = state.exceptionOpen
+          ? (state.exceptionRequested ? "exception-result" : "exception-detail")
+          : (state.exceptionRequested ? "exception-result" : "ready");
+      }
+      renderState();
+      if (!wasOpen) {
+        focusDetail(isFeatured ? "featured-detail-heading" : "exception-detail-heading");
+        announce(isFeatured
+          ? "Cohort evidence opened. Review the synthetic source timestamps and KPI definitions before assigning validation."
+          : "Exception evidence opened. The cohort remains held from prioritization because the sources are not reconciled.");
+      } else {
+        byId(isFeatured ? "open-featured" : "open-exception").focus();
+        announce("Evidence panel closed. Queue status is unchanged.");
+      }
+    }
+
+    function beginFeaturedAssignment() {
+      if (state.mode !== "cohort-detail") return;
+      state.mode = "working";
+      renderState();
+      byId("featured-working").focus();
+      announce("Recording a simulated validation assignment. No financial data will be changed.");
+      state.timeoutId = window.setTimeout(() => {
+        state.timeoutId = null;
+        state.mode = "assigned-result";
+        state.featuredAssigned = true;
+        state.featuredHistory.push({
+          time: DEMO_FIXTURES.featured.assignmentTime,
+          actor: "CFO",
+          message: `Assigned for validation to ${DEMO_FIXTURES.featured.assignmentRole}; mock follow-up only.`
+        });
+        renderState();
+        announce(`Assigned for validation to ${DEMO_FIXTURES.featured.assignmentRole}. Mock status and audit history updated; no financial record changed.`);
+        byId("featured-result-title").textContent = "Assigned for validation";
+        byId("featured-result").focus();
+      }, DEMO_FIXTURES.workflow.workDelayMs);
+    }
+
+    function beginAnalystRequest() {
+      if (state.mode !== "exception-detail") return;
+      state.mode = "exception-working";
+      renderState();
+      byId("exception-working").focus();
+      announce("Recording a simulated request for analyst validation. The cohort remains held.");
+      state.timeoutId = window.setTimeout(() => {
+        state.timeoutId = null;
+        state.mode = "exception-result";
+        state.exceptionRequested = true;
+        state.exceptionHistory.push({
+          time: DEMO_FIXTURES.exception.requestTime,
+          actor: "CFO",
+          message: `Analyst validation requested from ${DEMO_FIXTURES.exception.analystRole}; cohort remains held.`
+        });
+        renderState();
+        announce(`Analyst validation requested from ${DEMO_FIXTURES.exception.analystRole}. Source discrepancy remains unresolved and the cohort stays held.`);
+        byId("exception-result").focus();
+      }, DEMO_FIXTURES.workflow.workDelayMs);
+    }
+
+    function resetReview() {
+      if (state.timeoutId !== null) window.clearTimeout(state.timeoutId);
+      state.timeoutId = null;
+      state.mode = "reset";
+      state.featuredOpen = false;
+      state.exceptionOpen = false;
+      state.featuredAssigned = false;
+      state.exceptionRequested = false;
+      state.featuredHistory = [];
+      state.exceptionHistory = [];
+      renderState();
+      byId("reset-button").focus();
+      announce("Review reset. Both synthetic cohorts are back at their starting status; you can replay either path.");
+    }
+
+    byId("open-featured").addEventListener("click", () => openDetail("featured"));
+    byId("open-exception").addEventListener("click", () => openDetail("exception"));
+    byId("assign-featured").addEventListener("click", beginFeaturedAssignment);
+    byId("request-analyst").addEventListener("click", beginAnalystRequest);
+    byId("reset-button").addEventListener("click", resetReview);
+
+    renderFixtures();
+    renderState();
+  </script>
+</body>
+</html>

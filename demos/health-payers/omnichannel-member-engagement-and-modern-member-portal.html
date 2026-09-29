@@ -1,0 +1,845 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Illustrative member service workspace using synthetic data.">
+  <title>Member service workspace — Omnichannel member engagement (illustrative demo)</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* Demo tokens: shared colors and type remain owned by the shell. */
+body[data-subvertical="health-payers"] {
+  --on-accent: #ffffff;
+  --workspace-max: 1780px;
+  --workspace-gap: 14px;
+  --rail-size: 238px;
+}
+
+.page-heading {
+  max-width: var(--workspace-max);
+  margin: 0 auto;
+  padding: 12px 22px 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+}
+.page-heading h1 { margin: 0; font-size: clamp(20px, 2vw, 25px); line-height: 1.2; letter-spacing: -.3px; }
+.eyebrow { margin: 0 0 4px; color: var(--muted); font-size: 12.5px; }
+.heading-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.tenant { color: var(--muted); font-size: 12.5px; }
+
+.work-area {
+  max-width: var(--workspace-max);
+  margin: 0 auto;
+  padding: 0 22px 22px;
+  display: grid;
+  grid-template-columns: minmax(205px, var(--rail-size)) minmax(0, 1fr) minmax(235px, 295px);
+  gap: var(--workspace-gap);
+  align-items: start;
+}
+.queue-panel, .context-panel { min-width: 0; }
+.queue-panel { padding: 13px; }
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.section-heading h2, .section-heading h3 { margin: 0; font-size: 14px; font-weight: 650; }
+.section-heading .count { color: var(--muted); font-size: 12px; }
+.queue-list { display: grid; gap: 7px; }
+.queue-case {
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px;
+  cursor: pointer;
+}
+.queue-case:hover { border-color: var(--accent); }
+.queue-case[aria-pressed="true"] {
+  border-color: var(--accent);
+  box-shadow: inset 3px 0 0 var(--accent);
+  background: var(--accent-soft);
+}
+.queue-topline { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.queue-id { font: 600 12px/1.4 var(--mono); }
+.queue-topic { display: block; margin: 4px 0 2px; font-size: 13px; font-weight: 600; }
+.queue-meta { display: block; color: var(--muted); font-size: 12px; }
+.queue-legend { margin: 11px 1px 0; color: var(--muted); font-size: 12px; }
+
+.case-workbench { min-width: 0; overflow: hidden; }
+.case-header { padding: 10px 16px 8px; border-bottom: 1px solid var(--line-soft); }
+.case-title-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.case-title-row h2 { margin: 0; font-size: 17px; line-height: 1.35; }
+.case-meta { display: flex; flex-wrap: wrap; gap: 7px 14px; margin-top: 6px; color: var(--muted); font-size: 12.5px; }
+.person-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px 12px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.person-name { font-size: 15px; font-weight: 650; }
+.person-id { color: var(--muted); font: 12px var(--mono); }
+.person-plan { color: var(--muted); font-size: 12.5px; }
+.intent {
+  padding: 7px 16px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line-soft);
+}
+.intent-label { display: block; color: var(--muted); font-size: 11.5px; margin-bottom: 2px; }
+.intent p { margin: 0; font-size: 13px; }
+.conversation-block { padding: 8px 16px 5px; }
+.conversation-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 5px 10px; margin-bottom: 7px; }
+.conversation-head h3 { margin: 0; font-size: 13.5px; }
+.conversation-head span { color: var(--muted); font-size: 11.5px; }
+.timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.timeline li { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 8px; align-items: start; }
+.timeline time { padding-top: 5px; color: var(--muted); font: 11px var(--mono); }
+.event {
+  min-width: 0;
+  padding: 5px 8px;
+  border-left: 2px solid var(--accent-line);
+  background: var(--bg);
+  font-size: 12.5px;
+}
+.event strong { font-weight: 650; }
+.event p { display: inline; margin: 0 0 0 4px; }
+.event.is-outbound { border-left-color: var(--ok); background: var(--ok-bg); }
+
+.reply-area { border-top: 1px solid var(--line-soft); padding: 9px 16px 10px; }
+.reply-heading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 5px 9px; margin-bottom: 7px; }
+.reply-heading h3 { margin: 0; font-size: 13.5px; }
+.reply-heading span { color: var(--muted); font-size: 11.5px; }
+.reply-copy {
+  margin: 0 0 7px;
+  padding: 7px 9px;
+  border: 1px solid var(--accent-line);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: var(--accent-soft);
+  font-size: 13px;
+}
+.review-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 0 0 7px;
+  padding: 6px 8px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  font-size: 12.5px;
+}
+.review-check input { flex: none; width: 18px; height: 18px; margin: 0; accent-color: var(--accent-strong); }
+.decision-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; }
+.decision-row .btn-primary { color: var(--on-accent); }
+.decision-note { max-width: 45ch; margin: 0; color: var(--muted); font-size: 11.5px; }
+.exception-panel { padding: 14px 16px 16px; border-top: 1px solid var(--line-soft); }
+.exception-panel h3 { margin: 0 0 5px; font-size: 14px; }
+.exception-panel p { margin: 0 0 10px; font-size: 13px; }
+.exception-panel .review-check { margin-bottom: 10px; }
+.context-panel { padding: 13px; }
+.context-panel section + section { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line-soft); }
+.context-panel h2, .context-panel h3 { margin: 0 0 7px; font-size: 13.5px; }
+.context-list { display: grid; gap: 8px; margin: 0; }
+.context-list div { min-width: 0; }
+.context-list dt { color: var(--muted); font-size: 11.5px; }
+.context-list dd { margin: 1px 0 0; font-size: 12.5px; overflow-wrap: anywhere; }
+.source-list { display: grid; gap: 7px; margin: 0; padding-left: 18px; font-size: 12.5px; }
+.source-list li::marker { color: var(--accent-strong); }
+.context-rule { margin-top: 11px; }
+.state-message { margin: 11px 0 0; padding: 8px 10px; border-radius: var(--radius); font-size: 12.5px; }
+.state-message.ok { background: var(--ok-bg); color: #0b5c0b; border: 1px solid #a7d9a7; }
+.state-message.warn { background: var(--warn-bg); color: #7a4e08; border: 1px solid #e6d08a; }
+.state-message.stop { background: var(--stop-bg); color: #8b1f25; border: 1px solid #e5b4b7; }
+.footer { margin-top: 0; }
+.workloads { color: var(--ink-soft); }
+.workloads strong { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 1120px) {
+  .work-area { grid-template-columns: minmax(185px, 220px) minmax(0, 1fr); }
+  .context-panel { grid-column: 2; }
+}
+@media (max-width: 700px) {
+  .page-heading { padding: 15px 14px 12px; }
+  .work-area { grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 0 14px 16px; }
+  .queue-panel, .case-workbench, .context-panel { grid-column: 1; }
+  .queue-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .queue-case { min-height: 94px; }
+  .case-header { padding: 12px; }
+  .person-line, .intent { padding-left: 12px; padding-right: 12px; }
+  .conversation-block { padding: 11px 12px 8px; }
+  .reply-area, .exception-panel { padding: 11px 12px 12px; }
+  .timeline li { grid-template-columns: 59px minmax(0, 1fr); gap: 6px; }
+  .decision-row { align-items: stretch; }
+  .decision-row .btn { width: 100%; justify-content: center; }
+  .decision-note { max-width: none; }
+  .footer { padding: 11px 14px; }
+}
+@media (max-width: 390px) {
+  .queue-list { grid-template-columns: minmax(0, 1fr); }
+  .queue-case { min-height: 0; }
+  .heading-tools { width: 100%; justify-content: space-between; }
+  .case-title-row h2 { font-size: 16px; }
+}
+  </style>
+</head>
+<body data-subvertical="health-payers">
+  <header class="appbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">●</span>
+      <div>
+        <span class="brand-name">Willowbend member services</span>
+        <span class="brand-sub">Member experience workspace · sample environment</span>
+      </div>
+    </div>
+    <p class="disclosure"><span aria-hidden="true">◆</span> Illustrative demo - synthetic data</p>
+    <p class="who">Signed in as <b>Avery Chen</b> · Member experience specialist</p>
+  </header>
+
+  <main>
+    <div class="page-heading">
+      <div>
+        <p class="eyebrow">Service operations / Member conversations</p>
+        <h1>Member case desk</h1>
+      </div>
+      <div class="heading-tools">
+        <span class="tenant">Willowbend Health Plan · synthetic tenant</span>
+        <button class="btn" id="reset-demo" type="button">Reset demo</button>
+      </div>
+    </div>
+
+    <div class="work-area">
+      <nav class="queue-panel card" aria-label="Member service case queue">
+        <div class="section-heading">
+          <h2>My queue</h2>
+          <span class="count">2 sample cases</span>
+        </div>
+        <div class="queue-list" id="case-queue">
+          <button class="queue-case" id="case-default" type="button" data-case-id="routine" aria-pressed="true">
+            <span class="queue-topline">
+              <span class="queue-id">SYN-2417</span>
+              <span class="tag tag-warn" data-queue-state="routine">New</span>
+            </span>
+            <span class="queue-topic">Digital ID card question</span>
+            <span class="queue-meta">Portal message · sample · 09:14</span>
+          </button>
+          <button class="queue-case" type="button" data-case-id="exception" aria-pressed="false">
+            <span class="queue-topline">
+              <span class="queue-id">SYN-2418</span>
+              <span class="tag tag-stop" data-queue-state="exception">Needs review</span>
+            </span>
+            <span class="queue-topic">Conflicting channel identity</span>
+            <span class="queue-meta">Phone note · sample · 09:19</span>
+          </button>
+        </div>
+        <p class="queue-legend">Queue names and wait times are fictional operational data.</p>
+      </nav>
+
+      <article class="case-workbench card" aria-labelledby="case-title">
+        <header class="case-header">
+          <div class="case-title-row">
+            <h2 id="case-title">Case SYN-2417 · Digital ID card question</h2>
+            <span class="tag tag-warn" id="case-status">New · review required</span>
+          </div>
+          <div class="case-meta">
+            <span id="case-channel">Latest contact: member portal message</span>
+            <span id="case-received">Received 09:14 · sample time</span>
+          </div>
+        </header>
+        <div class="person-line">
+          <span class="person-name" id="member-name">Mara Venn</span>
+          <span class="person-id" id="member-id">SYN-M-042</span>
+          <span class="person-plan" id="member-plan">Willowbend Choice · sample plan</span>
+        </div>
+        <section class="intent" aria-labelledby="intent-heading">
+          <span class="intent-label" id="intent-heading">Member request</span>
+          <p id="member-intent">“I changed my mailing address. Do I need to request a new ID card?”</p>
+        </section>
+
+        <section class="conversation-block" aria-labelledby="conversation-heading">
+          <div class="conversation-head">
+            <h3 id="conversation-heading">Unified channel timeline</h3>
+            <span id="timeline-note">Three linked touchpoints · sample records</span>
+          </div>
+          <ol class="timeline" id="timeline" aria-label="Case contact timeline"></ol>
+        </section>
+
+        <section class="reply-area" id="reply-panel" aria-labelledby="reply-heading">
+          <div class="reply-heading">
+            <h3 id="reply-heading">Suggested member reply</h3>
+            <span id="reply-grounding">Grounded in 2 synthetic case sources</span>
+          </div>
+          <p class="reply-copy" id="reply-copy"></p>
+          <label class="review-check" id="reply-review">
+            <input type="checkbox" id="approve-review">
+            <span><strong>Human review required.</strong> I checked the timeline and sample source notes; this reply is appropriate to send.</span>
+          </label>
+          <div class="decision-row">
+            <button class="btn btn-primary" id="primary-action" type="button" disabled>Approve and send reply</button>
+            <p class="decision-note" id="decision-note">No message is sent until the specialist approves. This simulation does not contact a real member.</p>
+          </div>
+        </section>
+
+        <section class="exception-panel" id="exception-panel" aria-labelledby="exception-heading" hidden>
+          <h3 id="exception-heading">Hold: channel identity does not match</h3>
+          <p id="exception-description">The portal event and phone note reference different synthetic member IDs. Do not merge this context or send a reply; route it for identity review.</p>
+          <label class="review-check" id="exception-review">
+            <input type="checkbox" id="acknowledge-exception">
+            <span><strong>Human review required.</strong> I will keep the records separate and request identity verification before continuing.</span>
+          </label>
+          <div class="decision-row">
+            <button class="btn btn-primary" id="escalate-action" type="button" disabled>Route to identity review</button>
+            <p class="decision-note">The escalation is simulated; no external queue is contacted.</p>
+          </div>
+        </section>
+        <p class="state-message" id="state-message" role="status" aria-live="polite" hidden></p>
+      </article>
+
+      <aside class="context-panel card" aria-label="Member context and source notes">
+        <section>
+          <div class="section-heading">
+            <h2>Member context</h2>
+            <span class="tag tag-ok" id="context-integrity">Linked sample context</span>
+          </div>
+          <dl class="context-list" id="context-list"></dl>
+        </section>
+        <section>
+          <h3>Sources for this case</h3>
+          <ul class="source-list" id="source-list"></ul>
+          <div class="rule context-rule">
+            <span aria-hidden="true">i</span>
+            <span id="human-note">Agent owns the reply. If the card displays unexpected details, stop and route for specialist review.</span>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="built workloads">
+      <strong>Catalog workload references:</strong>
+      <span class="svc-chip">Azure App Service</span>
+      <span class="svc-chip">Azure API Management</span>
+      <span class="svc-chip">Azure Database for PostgreSQL</span>
+      <span class="svc-chip">Azure Cosmos DB</span>
+      <span class="svc-chip">GitHub Copilot</span>
+    </div>
+    <span class="claim"><b>Catalog value:</b> Member engagement and digital adoption up, repeat-contact rate down, Net Promoter Score up, cost-to-serve down.</span>
+  </footer>
+
+  <script>
+    "use strict";
+
+    // All content in this object is fictional operational fixture data.
+    const DEMO_FIXTURES = Object.freeze({
+      cases: {
+        routine: {
+          kind: "routine",
+          id: "SYN-2417",
+          title: "Digital ID card question",
+          status: "New · review required",
+          channel: "Latest contact: member portal message",
+          received: "Received 09:14 · sample time",
+          member: "Mara Venn",
+          memberId: "SYN-M-042",
+          plan: "Willowbend Choice · sample plan",
+          intent: "“I changed my mailing address. Do I need to request a new ID card?”",
+          timelineNote: "Three linked touchpoints · sample records",
+          timeline: [
+            { time: "09:02", channel: "Member portal", text: "Synthetic profile event: mailing-address update saved." },
+            { time: "09:08", channel: "Web help", text: "Opened the digital ID card guide; no account change requested." },
+            { time: "09:14", channel: "Portal inbox", text: "Asked whether an address update means a new card is needed." }
+          ],
+          reply: "Your address update is recorded in the sample portal. You can view your current digital ID card under Profile → ID card. If the card displays details you believe are incorrect, reply here and a member specialist can review it.",
+          context: [
+            ["Member reference", "SYN-M-042 · synthetic identifier"],
+            ["Plan context", "Willowbend Choice · sample plan"],
+            ["Profile event", "Address update saved · 09:02 sample time"],
+            ["Preferred channel", "Portal inbox · sample preference"]
+          ],
+          sources: [
+            "Synthetic member profile event · 09:02",
+            "Digital ID card help article · sample content"
+          ],
+          humanNote: "Agent owns the reply. If the card displays unexpected details, stop and route for specialist review."
+        },
+        exception: {
+          kind: "exception",
+          id: "SYN-2418",
+          title: "Conflicting channel identity",
+          status: "Hold · identity review",
+          channel: "Latest contact: phone note",
+          received: "Received 09:19 · sample time",
+          member: "Unlinked sample contacts",
+          memberId: "Do not merge",
+          plan: "Plan context not verified",
+          intent: "“Can you resend the card I asked about earlier?”",
+          timelineNote: "Two unlinked touchpoints · sample records",
+          timeline: [
+            { time: "09:11", channel: "Portal event", text: "Digital card help opened for synthetic reference SYN-M-052." },
+            { time: "09:19", channel: "Phone note", text: "Caller note references synthetic reference SYN-M-025; identity not verified." }
+          ],
+          reply: "",
+          context: [
+            ["Portal reference", "SYN-M-052 · synthetic identifier"],
+            ["Phone-note reference", "SYN-M-025 · synthetic identifier"],
+            ["Profile link", "No verified match"],
+            ["Safe next step", "Keep records separate; request identity review"]
+          ],
+          sources: [
+            "Synthetic portal event · SYN-M-052",
+            "Synthetic phone note · SYN-M-025"
+          ],
+          humanNote: "Do not infer identity or disclose member-specific information. A human specialist verifies before the channels are linked."
+        }
+      }
+    });
+
+    const ui = {
+      queue: document.getElementById("case-queue"),
+      reset: document.getElementById("reset-demo"),
+      caseTitle: document.getElementById("case-title"),
+      caseStatus: document.getElementById("case-status"),
+      caseChannel: document.getElementById("case-channel"),
+      caseReceived: document.getElementById("case-received"),
+      memberName: document.getElementById("member-name"),
+      memberId: document.getElementById("member-id"),
+      memberPlan: document.getElementById("member-plan"),
+      memberIntent: document.getElementById("member-intent"),
+      timelineNote: document.getElementById("timeline-note"),
+      timeline: document.getElementById("timeline"),
+      replyPanel: document.getElementById("reply-panel"),
+      replyCopy: document.getElementById("reply-copy"),
+      replyReview: document.getElementById("reply-review"),
+      replyCheckbox: document.getElementById("approve-review"),
+      primaryAction: document.getElementById("primary-action"),
+      decisionNote: document.getElementById("decision-note"),
+      exceptionPanel: document.getElementById("exception-panel"),
+      exceptionDescription: document.getElementById("exception-description"),
+      exceptionCheckbox: document.getElementById("acknowledge-exception"),
+      escalateAction: document.getElementById("escalate-action"),
+      stateMessage: document.getElementById("state-message"),
+      contextIntegrity: document.getElementById("context-integrity"),
+      contextList: document.getElementById("context-list"),
+      sourceList: document.getElementById("source-list"),
+      humanNote: document.getElementById("human-note")
+    };
+
+    // State model: ready -> working -> result; exception -> working -> escalated;
+    // queue selection returns to ready/exception; reset replays the first case.
+    const state = { caseId: "routine", phase: "ready", timer: null };
+
+    function addTimelineEvent(time, actor, message, outbound) {
+      const row = document.createElement("li");
+      const stamp = document.createElement("time");
+      stamp.textContent = time;
+      const event = document.createElement("div");
+      event.className = outbound ? "event is-outbound" : "event";
+      const title = document.createElement("strong");
+      title.textContent = actor;
+      const detail = document.createElement("p");
+      detail.textContent = message;
+      event.append(title, detail);
+      row.append(stamp, event);
+      ui.timeline.append(row);
+    }
+
+    function render() {
+      const fixture = DEMO_FIXTURES.cases[state.caseId];
+      const isException = fixture.kind === "exception";
+      const isComplete = state.phase === "result" || state.phase === "escalated";
+      const isWorking = state.phase === "working";
+
+      ui.caseTitle.textContent = `Case ${fixture.id} · ${fixture.title}`;
+      ui.caseStatus.textContent = isWorking ? "Processing sample action" :
+        state.phase === "result" ? "Reply recorded · sample" :
+        state.phase === "escalated" ? "Escalated · sample" : fixture.status;
+      ui.caseStatus.className = `tag ${isException ? "tag-stop" : isComplete ? "tag-ok" : "tag-warn"}`;
+      ui.caseChannel.textContent = fixture.channel;
+      ui.caseReceived.textContent = fixture.received;
+      ui.memberName.textContent = fixture.member;
+      ui.memberId.textContent = fixture.memberId;
+      ui.memberPlan.textContent = fixture.plan;
+      ui.memberIntent.textContent = fixture.intent;
+      ui.timelineNote.textContent = fixture.timelineNote;
+      ui.timeline.replaceChildren();
+      fixture.timeline.forEach((item) => addTimelineEvent(item.time, item.channel, item.text, false));
+
+      if (state.phase === "result") {
+        addTimelineEvent("Now", "Avery Chen · specialist", "Reviewed reply recorded in this synthetic case. No real message was sent.", true);
+      }
+      if (state.phase === "escalated") {
+        addTimelineEvent("Now", "Avery Chen · specialist", "Identity review requested. The synthetic records remain separate.", true);
+      }
+
+      ui.replyPanel.hidden = isException;
+      ui.exceptionPanel.hidden = !isException;
+      ui.replyCopy.textContent = fixture.reply;
+      ui.contextIntegrity.textContent = isException ? "Context not linked" : "Linked sample context";
+      ui.contextIntegrity.className = `tag ${isException ? "tag-stop" : "tag-ok"}`;
+      ui.contextList.replaceChildren();
+      fixture.context.forEach(([label, value]) => {
+        const pair = document.createElement("div");
+        const term = document.createElement("dt");
+        const definition = document.createElement("dd");
+        term.textContent = label;
+        definition.textContent = value;
+        pair.append(term, definition);
+        ui.contextList.append(pair);
+      });
+      ui.sourceList.replaceChildren();
+      fixture.sources.forEach((source) => {
+        const item = document.createElement("li");
+        item.textContent = source;
+        ui.sourceList.append(item);
+      });
+      ui.humanNote.textContent = fixture.humanNote;
+      ui.exceptionDescription.textContent = "The portal event and phone note reference different synthetic member IDs. Do not merge this context or send a reply; route it for identity review.";
+
+      ui.replyCheckbox.checked = false;
+      ui.exceptionCheckbox.checked = false;
+      ui.replyCheckbox.disabled = isWorking || state.phase === "result";
+      ui.exceptionCheckbox.disabled = isWorking || state.phase === "escalated";
+      ui.primaryAction.hidden = isException;
+      ui.escalateAction.hidden = !isException;
+      ui.primaryAction.disabled = isWorking || state.phase === "result" || !ui.replyCheckbox.checked;
+      ui.escalateAction.disabled = isWorking || state.phase === "escalated" || !ui.exceptionCheckbox.checked;
+      ui.primaryAction.textContent = isWorking && !isException ? "Recording sample reply…" :
+        state.phase === "result" ? "Reply recorded" : "Approve and send reply";
+      ui.escalateAction.textContent = isWorking && isException ? "Preparing sample handoff…" :
+        state.phase === "escalated" ? "Identity review requested" : "Route to identity review";
+      ui.decisionNote.textContent = state.phase === "result"
+        ? "The reviewed action is visible in this synthetic timeline only; no member was contacted."
+        : "No message is sent until the specialist approves. This simulation does not contact a real member.";
+
+      document.querySelectorAll(".queue-case").forEach((button) => {
+        const selected = button.dataset.caseId === state.caseId;
+        button.setAttribute("aria-pressed", String(selected));
+      });
+      document.querySelectorAll("[data-queue-state]").forEach((tag) => {
+        const caseType = tag.dataset.queueState;
+        tag.textContent = caseType === "routine"
+          ? state.phase === "result" ? "Replied · sample" : "New"
+          : state.phase === "escalated" ? "Escalated · sample" : "Needs review";
+      });
+
+      ui.stateMessage.hidden = !isComplete;
+      ui.stateMessage.className = `state-message ${state.phase === "result" ? "ok" : "warn"}`;
+      ui.stateMessage.textContent = state.phase === "result"
+        ? "Reply approved by Avery Chen and recorded in the sample case timeline. No network request or real message occurred."
+        : state.phase === "escalated"
+          ? "Identity review handoff recorded for the sample case. The two synthetic records remain unlinked."
+          : "";
+    }
+
+    function clearPendingAction() {
+      if (state.timer !== null) {
+        window.clearTimeout(state.timer);
+        state.timer = null;
+      }
+    }
+
+    function finishAfterReview() {
+      clearPendingAction();
+      state.phase = "working";
+      render();
+      ui.stateMessage.hidden = false;
+      ui.stateMessage.className = "state-message";
+      ui.stateMessage.textContent = "Recording the approved sample action…";
+      state.timer = window.setTimeout(() => {
+        state.timer = null;
+        state.phase = state.caseId === "routine" ? "result" : "escalated";
+        render();
+      }, 420);
+    }
+
+    ui.queue.addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-case-id]");
+      if (!button) return;
+      clearPendingAction();
+      state.caseId = button.dataset.caseId;
+      state.phase = state.caseId === "routine" ? "ready" : "exception";
+      render();
+    });
+
+    ui.replyCheckbox.addEventListener("change", () => {
+      ui.primaryAction.disabled = !ui.replyCheckbox.checked || state.phase !== "ready";
+    });
+    ui.exceptionCheckbox.addEventListener("change", () => {
+      ui.escalateAction.disabled = !ui.exceptionCheckbox.checked || state.phase !== "exception";
+    });
+    ui.primaryAction.addEventListener("click", () => {
+      if (state.caseId !== "routine" || state.phase !== "ready" || !ui.replyCheckbox.checked) return;
+      finishAfterReview();
+    });
+    ui.escalateAction.addEventListener("click", () => {
+      if (state.caseId !== "exception" || state.phase !== "exception" || !ui.exceptionCheckbox.checked) return;
+      finishAfterReview();
+    });
+    ui.reset.addEventListener("click", () => {
+      clearPendingAction();
+      state.caseId = "routine";
+      state.phase = "ready";
+      render();
+      document.getElementById("case-default").focus();
+    });
+
+    render();
+  </script>
+</body>
+</html>

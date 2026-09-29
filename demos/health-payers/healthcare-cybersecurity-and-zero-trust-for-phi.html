@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PHI exposure review | Alder Quay security desk (illustrative demo)</title>
+<style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* Incident review workbench */
+body { --on-accent: var(--surface); }
+.workspace { max-width: 1560px; padding: 18px; margin: auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(265px, 330px); gap: 16px; }
+.case { min-width: 0; display: grid; gap: 15px; align-content: start; }
+.case-title { display: flex; justify-content: space-between; align-items: start; gap: 12px; flex-wrap: wrap; }
+h1 { font-size: clamp(21px, 2vw, 27px); line-height: 1.25; margin: 2px 0 5px; }
+.eyebrow { font-size: 12px; color: var(--muted); margin: 0; }
+.subtitle, .small { color: var(--muted); font-size: 13px; margin: 0; }
+.case-title .subtitle { max-width: 70ch; }
+.phase { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.decision { border-left: 4px solid var(--accent); }
+.decision .card-body { display: grid; gap: 12px; }
+.decision h2 { font-size: 17px; margin: 0; }
+.decision p { margin: 0; }
+.decision .actions { align-items: center; }
+.facts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.facts dd { overflow-wrap: anywhere; }
+.columns { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 15px; align-items: start; }
+.source { padding: 12px 0; border-bottom: 1px solid var(--line-soft); }
+.source:first-child { padding-top: 0; }
+.source:last-child { padding-bottom: 0; border-bottom: 0; }
+.source-top { display: flex; gap: 8px; justify-content: space-between; flex-wrap: wrap; }
+.source strong { font-size: 13.5px; }
+.source p { margin: 5px 0 0; font-size: 13px; }
+.source .small { margin-top: 4px; }
+.step { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 9px; padding: 9px 0; border-bottom: 1px solid var(--line-soft); font-size: 13.5px; }
+.step:last-child { border: 0; padding-bottom: 0; }
+.step:first-child { padding-top: 0; }
+.step b { display: inline-grid; place-items: center; background: var(--accent-soft); color: var(--accent-strong); width: 24px; height: 24px; border-radius: 50%; }
+.step strong, .step span { display: block; }
+.step span { color: var(--muted); }
+.rail { min-width: 0; display: grid; gap: 15px; align-content: start; }
+.rail .card-body { display: grid; gap: 12px; }
+.rail p { margin: 0; }
+.status-box { background: var(--accent-soft); border: 1px solid var(--accent-line); padding: 11px 12px; border-radius: var(--radius); font-size: 13px; }
+.status-box strong, .status-box span { display: block; }
+.status-box span { margin-top: 3px; }
+.btn-primary { color: var(--on-accent); }
+.state-ok { border-left-color: var(--ok); }
+.state-warn { border-left-color: var(--warn); }
+select { font: inherit; width: 100%; padding: 9px 10px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--ink); }
+.dlg-body p { margin: 0; font-size: 13.5px; }
+.footer .built { max-width: 100%; }
+@media (max-width: 980px) {
+  .workspace { grid-template-columns: 1fr; }
+  .rail { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 700px) {
+  .workspace { padding: 12px; }
+  .columns, .rail { grid-template-columns: 1fr; }
+  .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .btn { min-height: 44px; }
+  .decision .actions .btn { flex: 1; justify-content: center; }
+}
+@media (max-width: 430px) {
+  .facts { grid-template-columns: 1fr; }
+  .disclosure { white-space: normal; }
+}
+</style>
+</head>
+<body data-subvertical="health-payers">
+<header class="appbar">
+  <div class="brand"><span class="brand-mark" aria-hidden="true">◆</span><span class="brand-name">Alder Quay | Security desk<span class="brand-sub">PHI exposure review · assessment workspace</span></span></div>
+  <p class="disclosure">Illustrative demo - synthetic data</p>
+  <p class="who">Review owner: <b>Morgan Vale, CISO (fictional)</b></p>
+</header>
+<main class="workspace">
+  <div class="case">
+    <div class="case-title">
+      <div>
+        <p class="eyebrow">Security review / SAMPLE-PHI-024 · 18 Aug 2026 · fictional operational values</p>
+        <h1>Claims export needs a containment rehearsal</h1>
+        <p class="subtitle">A fictional payer claims analyst requested an unusually large export. Decide whether a phased response plan is ready for rehearsal or requires privacy escalation.</p>
+      </div>
+      <span class="tag tag-warn" id="case-tag">Awaiting CISO review</span>
+    </div>
+    <section class="card decision" id="decision">
+      <div class="card-body">
+        <div class="phase"><span class="tag tag-stop">PHI exposure signal</span><span class="small">No real access or export is controlled by this page.</span></div>
+        <h2 id="next-title">Review a phased containment plan</h2>
+        <p id="next-copy">Two sample observations support review; check the source trail before approving a rehearsal. No blocking or policy rollout occurs.</p>
+        <div class="actions">
+          <button class="btn btn-primary" id="review" type="button">Review rehearsal plan</button>
+          <button class="btn" id="gap" type="button">Simulate missing evidence</button>
+          <button class="btn" id="reset" type="button">Reset case</button>
+        </div>
+        <p class="status-line" id="status" role="status" aria-live="polite">Waiting for human review. Proposed controls are not active.</p>
+      </div>
+    </section>
+    <section class="card" aria-labelledby="context-heading">
+      <div class="card-head"><h2 id="context-heading">Case context</h2><span class="card-note">Sample values · not an observed customer incident</span></div>
+      <div class="card-body">
+        <dl class="facts">
+          <div><dt>Asset</dt><dd>Claims export service · fictional</dd></div>
+          <div><dt>Request</dt><dd>50,000 sample claim records</dd></div>
+          <div><dt>Account scope</dt><dd>Analyst role · privileged export</dd></div>
+          <div><dt>Potential impact</dt><dd>PHI boundary review needed</dd></div>
+          <div><dt>Response posture</dt><dd>Phased rehearsal only</dd></div>
+          <div><dt>Human owner</dt><dd>CISO · privacy team on escalation</dd></div>
+        </dl>
+      </div>
+    </section>
+    <div class="columns">
+      <section class="card" aria-labelledby="sources-heading">
+        <div class="card-head"><h2 id="sources-heading">Evidence to inspect</h2><span class="card-note">Fictional source excerpts · 18 Aug 2026</span></div>
+        <div class="card-body">
+          <div class="source"><div class="source-top"><strong>Export request ledger · SAMPLE-LOG-17</strong><span class="tag tag-ok">Available</span></div><p>09:12 — request for 50,000 sample claim records from the analyst role; request marked pending, not sent.</p><p class="small">Source type: sample export telemetry · observation, not a confirmed breach.</p></div>
+          <div class="source"><div class="source-top"><strong>Access scope register · SAMPLE-ACL-08</strong><span class="tag" id="source-tag">Available</span></div><p id="source-copy">09:14 — approved role scope lists routine review access, not bulk export.</p><p class="small">Source type: sample entitlement snapshot · corroboration is illustrative.</p></div>
+          <p class="notice notice-warn" id="gap-note" hidden>Access scope register unavailable in this simulation. The recommendation is now uncorroborated; do not approve a rehearsal without review.</p>
+        </div>
+      </section>
+      <section class="card" aria-labelledby="plan-heading">
+        <div class="card-head"><h2 id="plan-heading">Proposed phased response</h2><span class="card-note">Draft · no changes applied</span></div>
+        <div class="card-body">
+          <div class="step"><b>1</b><div><strong>Verify the request</strong><span>Confirm export intent and role scope with security operations and the data owner.</span></div></div>
+          <div class="step"><b>2</b><div><strong>Rehearse least-privilege controls</strong><span>Test a narrower export permission in a fictional rehearsal; assess disruption before any rollout.</span></div></div>
+          <div class="step"><b>3</b><div><strong>Route the production decision</strong><span>Privacy and security owners review findings. No automatic block, notification, or change is issued.</span></div></div>
+        </div>
+      </section>
+    </div>
+  </div>
+  <aside class="rail" aria-label="Review and accountability">
+    <section class="card">
+      <div class="card-head"><h2>Review state</h2><span class="card-note">SAMPLE-PHI-024</span></div>
+      <div class="card-body">
+        <div class="status-box" id="state-box"><strong id="state-name">Awaiting human review</strong><span id="state-detail">Evidence available; no action executed.</span></div>
+        <p class="small">Evidence confidence: <strong id="confidence">Corroborated for review, not proof of exfiltration.</strong></p>
+        <p class="small">Escalation owner: Chief Privacy Officer and VP Security Operations (fictional).</p>
+      </div>
+    </section>
+    <section class="card">
+      <div class="card-head"><h2>Case activity</h2><span class="card-note">Local, disposable audit preview</span></div>
+      <div class="card-body"><ol class="audit" id="audit"><li><time>09:14</time><span><span class="actor is-system">Sample system</span> opened the case for CISO review. No controls applied.</span></li></ol></div>
+    </section>
+  </aside>
+</main>
+<footer class="footer">
+  <div class="built"><span>Catalog workloads:</span><span class="svc-chip">Microsoft Sentinel</span><span class="svc-chip">Microsoft Defender for Cloud</span><span class="svc-chip">Azure network security (Firewall, WAF, DDoS, Front Door, Bastion)</span><span class="svc-chip">Microsoft Security Copilot</span></div>
+  <span class="claim">Zero Trust framing: verify explicitly, use least privilege, assume breach (Microsoft Learn). Product labels do not imply a live integration.</span>
+</footer>
+<dialog id="review-dialog" aria-labelledby="dialog-title">
+  <div class="dlg-head"><div><h2 id="dialog-title">Approve rehearsal plan</h2><span class="dlg-sub" id="dialog-subtitle">Human review required · SAMPLE-PHI-024</span></div></div>
+  <form id="decision-form">
+    <div class="dlg-body">
+      <p id="dialog-explanation">Approval records a simulated rehearsal request only. It does not restrict access, block an export, or notify a real team.</p>
+      <dl class="meta-grid"><div><dt>Proposed scope</dt><dd id="dialog-scope">Test narrower export permissions; no production changes</dd></div><div><dt>Accountable reviewer</dt><dd>Morgan Vale · fictional CISO</dd></div></dl>
+      <div class="field"><label for="rationale">Review rationale</label><select id="rationale" required><option value="">Select a reason</option><option value="Corroborated sample sources; rehearse least privilege only">Corroborated sources; rehearsal only</option><option value="Source gap; request privacy and security investigation">Source gap; investigate before any rehearsal</option></select></div>
+      <p class="dlg-error" id="form-error" role="alert" hidden></p>
+    </div>
+    <div class="dlg-foot"><button class="btn" type="button" id="cancel">Cancel</button><button class="btn btn-primary" type="submit" id="confirm">Approve for rehearsal</button></div>
+  </form>
+</dialog>
+<script>
+(() => {
+  const fixture = Object.freeze({
+    caseId: "SAMPLE-PHI-024",
+    reviewer: "Morgan Vale · fictional CISO",
+    initialAudit: "opened the case for CISO review. No controls applied.",
+    gapAudit: "marked the entitlement source missing. Review changed to escalation.",
+    approvedAudit: "approved a simulated rehearsal plan. No production controls changed.",
+    escalatedAudit: "routed an evidence-gap review to fictional privacy and security owners."
+  });
+  const $ = (id) => document.getElementById(id);
+  const dialog = $("review-dialog");
+  let state = "ready";
+
+  function addAudit(time, actor, text) {
+    const item = document.createElement("li");
+    const stamp = document.createElement("time");
+    const detail = document.createElement("span");
+    const name = document.createElement("span");
+    stamp.textContent = time;
+    name.className = "actor " + (actor === "Sample system" ? "is-system" : "is-human");
+    name.textContent = actor;
+    detail.append(name, document.createTextNode(" " + text));
+    item.append(stamp, detail);
+    $("audit").append(item);
+  }
+
+  function render() {
+    const gap = state === "exception" || state === "escalated";
+    const complete = state === "approved" || state === "escalated";
+    $("gap-note").hidden = !gap;
+    $("source-tag").textContent = gap ? "Unavailable" : "Available";
+    $("source-tag").className = gap ? "tag tag-warn" : "tag";
+    $("source-copy").textContent = gap
+      ? "Entitlement snapshot did not arrive. Role scope cannot be corroborated."
+      : "09:14 — approved role scope lists routine review access, not bulk export.";
+    $("confidence").textContent = gap
+      ? "Incomplete: entitlement source missing."
+      : "Corroborated for review, not proof of exfiltration.";
+    $("review").disabled = complete;
+    $("gap").disabled = complete || gap;
+    $("review").textContent = gap ? "Escalate source gap" : "Review rehearsal plan";
+    $("case-tag").textContent = ({
+      ready: "Awaiting CISO review", exception: "Evidence gap", approved: "Rehearsal approved", escalated: "Escalated for review"
+    })[state];
+    $("case-tag").className = state === "approved" ? "tag tag-ok" : "tag tag-warn";
+    $("decision").classList.toggle("state-ok", state === "approved");
+    $("decision").classList.toggle("state-warn", gap);
+    const messages = {
+      ready: ["Review a phased containment plan", "Two sample observations support review; check the source trail before approving a rehearsal. No blocking or policy rollout occurs.", "Waiting for human review. Proposed controls are not active.", "Awaiting human review", "Evidence available; no action executed."],
+      exception: ["Source missing: escalate the review", "The entitlement snapshot is unavailable. A rehearsal cannot be approved on this packet; route the gap to the privacy and security owners.", "Evidence gap recorded. Escalation is the safe next step.", "Evidence incomplete", "No rehearsal approved; human escalation required."],
+      approved: ["Rehearsal approved for planning", "The CISO approved a fictional test plan only. Production access, exports, and incident response remain unchanged.", "Simulated approval recorded. Reset to replay.", "Rehearsal plan approved", "Human rationale recorded; no live controls applied."],
+      escalated: ["Evidence gap escalated", "Privacy and security owners must investigate the missing source before any rehearsal decision.", "Simulated escalation recorded. Reset to replay.", "Pending privacy and security review", "No rehearsal or production change approved."]
+    };
+    const [title, copy, status, name, detail] = messages[state];
+    $("next-title").textContent = title;
+    $("next-copy").textContent = copy;
+    $("status").textContent = status;
+    $("state-name").textContent = name;
+    $("state-detail").textContent = detail;
+  }
+
+  $("gap").addEventListener("click", () => {
+    if (state !== "ready") return;
+    state = "exception";
+    addAudit("09:15", "Sample system", fixture.gapAudit);
+    render();
+  });
+  $("review").addEventListener("click", () => {
+    if (state !== "ready" && state !== "exception") return;
+    const gap = state === "exception";
+    $("decision-form").reset();
+    $("form-error").hidden = true;
+    $("dialog-title").textContent = gap ? "Escalate evidence gap" : "Approve rehearsal plan";
+    $("dialog-explanation").textContent = gap
+      ? "Route this simulated case to the fictional privacy and security owners. Do not approve a rehearsal with missing evidence."
+      : "Approval records a simulated rehearsal request only. It does not restrict access, block an export, or notify a real team.";
+    $("dialog-scope").textContent = gap ? "Investigate missing entitlement source; no rehearsal" : "Test narrower export permissions; no production changes";
+    $("rationale").options[1].disabled = gap;
+    $("rationale").options[2].disabled = !gap;
+    $("confirm").textContent = gap ? "Send for review" : "Approve for rehearsal";
+    dialog.showModal();
+  });
+  $("cancel").addEventListener("click", () => dialog.close());
+  $("decision-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    const gap = state === "exception";
+    const reason = $("rationale").value;
+    const expected = gap ? fixture.escalatedAudit : fixture.approvedAudit;
+    if ((state !== "ready" && !gap) || !reason || (gap && reason !== $("rationale").options[2].value) || (!gap && reason !== $("rationale").options[1].value)) {
+      $("form-error").textContent = "Select the rationale that matches the current evidence before continuing.";
+      $("form-error").hidden = false;
+      return;
+    }
+    state = gap ? "escalated" : "approved";
+    addAudit(gap ? "09:17" : "09:16", fixture.reviewer, expected + " Rationale: " + reason + ".");
+    dialog.close();
+    render();
+    $("reset").focus();
+  });
+  $("reset").addEventListener("click", () => {
+    state = "ready";
+    $("audit").replaceChildren();
+    addAudit("09:14", "Sample system", fixture.initialAudit);
+    render();
+    $("review").focus();
+  });
+  render();
+})();
+</script>
+</body>
+</html>

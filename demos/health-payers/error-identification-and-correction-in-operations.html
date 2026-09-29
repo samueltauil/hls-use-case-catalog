@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Operations error review | Illustrative demo</title>
+<style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+body { --on-accent: var(--surface); }
+.btn-primary { color: var(--on-accent); }
+.appbar .brand-mark { font-size: 22px; line-height: 1; }
+.heading { padding: 16px 20px 12px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 20px; }
+.heading h1 { margin: 0; font-size: clamp(19px, 2vw, 24px); line-height: 1.2; }
+.heading p { margin: 3px 0 0; color: var(--muted); font-size: 13px; }
+.workbench { display: grid; grid-template-columns: minmax(220px, 280px) minmax(0, 1fr); gap: 14px; padding: 0 20px 20px; align-items: start; }
+.queue { grid-column: 1; grid-row: 1 / 3; }
+.signal { grid-column: 2; min-width: 0; }
+.trail { grid-column: 2; }
+.queue-list { display: grid; gap: 8px; }
+.queue-item { text-align: left; width: 100%; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 10px; cursor: pointer; color: var(--ink); font: inherit; }
+.queue-item:hover { border-color: var(--accent-strong); }
+.queue-item[aria-current="true"] { border-color: var(--accent-strong); background: var(--accent-soft); box-shadow: inset 3px 0 var(--accent-strong); }
+.queue-item span { display: block; }
+.queue-id { font: 12px var(--mono); color: var(--muted); }
+.queue-title { font-weight: 600; margin: 4px 0; }
+.queue-state { font-size: 12px; color: var(--muted); }
+.signal-head { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 12px; justify-content: space-between; }
+.signal-head h2 { margin: 0; font-size: 19px; line-height: 1.3; }
+.signal-head .mono { font-size: 12px; color: var(--muted); }
+.signal-body { display: grid; gap: 15px; }
+.signal-body p { margin: 0; }
+.decision { background: var(--accent-soft); border: 1px solid var(--accent-line); border-left: 4px solid var(--accent-strong); padding: 12px 14px; border-radius: var(--radius); display: grid; gap: 8px; }
+.decision h3, .evidence-section h3 { margin: 0; font-size: 14px; }
+.decision .btn { justify-self: start; }
+.decision .status-line { overflow-wrap: anywhere; }
+.evidence-section { display: grid; gap: 9px; }
+.comparison { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.compare-cell { border: 1px solid var(--line); background: var(--bg); padding: 10px; border-radius: var(--radius); min-width: 0; }
+.compare-cell strong, .compare-cell span { display: block; overflow-wrap: anywhere; }
+.compare-cell strong { font-size: 12px; color: var(--muted); }
+.compare-cell span { font-size: 14px; margin-top: 4px; }
+.source { border-top: 1px solid var(--line-soft); padding-top: 9px; }
+.source summary { cursor: pointer; font-weight: 600; color: var(--accent-strong); }
+.source p { margin: 8px 0 0; overflow-wrap: anywhere; }
+.small { font-size: 12.5px; color: var(--muted); }
+.audit li { grid-template-columns: 54px minmax(0, 1fr); }
+.dialog-select { font: inherit; border: 1px solid var(--line); border-radius: var(--radius); padding: 8px; background: var(--surface); color: var(--ink); width: 100%; }
+.footer { align-items: flex-start; }
+@media (max-width: 850px) {
+  .workbench { display: flex; flex-direction: column; }
+  .workbench > * { width: 100%; }
+  .signal { order: 0; }
+  .queue { order: 1; }
+  .trail { order: 2; }
+}
+@media (max-width: 500px) {
+  .heading { padding: 12px 14px; }
+  .workbench { padding: 0 14px 14px; }
+  .appbar .who { width: 100%; }
+  .comparison { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body data-subvertical="health-payers">
+<header class="appbar">
+  <div class="brand"><span class="brand-mark" aria-hidden="true">◆</span><span class="brand-name">Operations error review<span class="brand-sub">Demo payer / claims quality workbench</span></span></div>
+  <p class="disclosure">Illustrative demo - synthetic data</p>
+  <p class="who">Review owner: <b>VP Operational Excellence</b></p>
+</header>
+<main>
+  <div class="heading"><div><h1>Configuration error signals</h1><p>Sample claims operations · recommend-then-fix review, not a source-system change</p></div><button type="button" class="btn" id="reset">Reset demo</button></div>
+  <div class="workbench">
+    <aside class="card queue" aria-labelledby="queue-title"><div class="card-head"><h2 id="queue-title">Prioritized signals</h2><span class="card-note">Sample operational data</span></div><div class="card-body queue-list" id="queue-list"></div></aside>
+    <article class="card signal" aria-labelledby="signal-title">
+      <div class="card-head signal-head"><div><span class="mono" id="signal-id"></span><h2 id="signal-title"></h2></div><span class="tag" id="signal-tag"></span></div>
+      <div class="card-body signal-body">
+        <p id="signal-summary"></p>
+        <section class="decision" aria-labelledby="decision-title">
+          <h3 id="decision-title">Proposed next step · human review required</h3>
+          <p id="recommendation"></p>
+          <p class="small" id="rationale"></p>
+          <button type="button" class="btn btn-primary" id="primary-action"></button>
+          <p class="status-line" id="status" role="status" aria-live="polite"></p>
+        </section>
+        <section class="evidence-section" aria-labelledby="evidence-title">
+          <h3 id="evidence-title">Compare sample evidence</h3>
+          <div class="comparison"><div class="compare-cell"><strong>Rules snapshot</strong><span id="baseline"></span></div><div class="compare-cell"><strong>Observed processing</strong><span id="observed"></span></div></div>
+          <details class="source" id="source"><summary>Inspect source and provenance</summary><p id="source-detail"></p></details>
+        </section>
+      </div>
+    </article>
+    <section class="card trail" aria-labelledby="trail-title"><div class="card-head"><h2 id="trail-title">Review trail</h2><span class="card-note">Local simulation only</span></div><div class="card-body"><ol class="audit" id="audit"></ol></div></section>
+  </div>
+</main>
+<footer class="footer"><div class="built"><span>Catalog workloads:</span><span class="svc-chip">Azure Machine Learning</span><span class="svc-chip">Microsoft Fabric</span><span class="svc-chip">Azure Functions</span><span class="svc-chip">Azure OpenAI in Azure AI Foundry Models</span></div><span class="claim">Illustrative workflow only. No claims, payments, rules, or systems are changed.</span></footer>
+<dialog id="review-dialog" aria-labelledby="dialog-title">
+  <div class="dlg-head"><div><h2 id="dialog-title"></h2><span class="dlg-sub" id="dialog-sub"></span></div></div>
+  <form id="review-form">
+    <div class="dlg-body"><p id="dialog-rationale"></p>
+      <div class="field" id="reason-field" hidden><label for="reason">Reason for escalation</label><select class="dialog-select" id="reason"><option value="">Select a reason</option><option value="Missing rules snapshot">Missing rules snapshot</option><option value="Conflicting sample evidence">Conflicting sample evidence</option><option value="Needs claims quality investigation">Needs claims quality investigation</option></select></div>
+      <label class="attest"><input type="checkbox" id="attest"><span id="attest-label"></span></label>
+      <p class="dlg-error" id="dialog-error" role="alert"></p>
+    </div>
+    <div class="dlg-foot"><button type="button" class="btn" id="cancel">Cancel</button><button type="submit" class="btn btn-primary" id="confirm"></button></div>
+  </form>
+</dialog>
+<script>
+"use strict";
+const fixture = {
+  signals: [
+    {
+      id: "SYN-ERR-101", title: "Benefit rule mismatch", priority: "Prioritize review", confidence: "Corroborated sample pattern",
+      summary: "A synthetic benefit configuration snapshot and sample processing log disagree for one fictional plan group.",
+      baseline: "Demo plan group ALPHA: review flag required for sample category R.",
+      observed: "Demo processing log: category R bypassed review flag in 3 sample events.",
+      source: "Synthetic rules snapshot SYN-RULE-04 (dated 2026-09-16); synthetic processing extract SYN-LOG-07 (dated 2026-09-22). Three fictional events are not a measured customer outcome.",
+      recommendation: "Recommend that a Configuration Lead compare rule version SYN-RULE-04 with the current approved rule and draft a scoped change request.",
+      rationale: "Pattern analytics suggest a shared configuration origin; no rule edit or payment action is authorized by this screen.",
+      action: "Review correction proposal", result: "Sent to Configuration Lead for change-control review", mode: "review"
+    },
+    {
+      id: "SYN-ERR-102", title: "Unverified processing drift", priority: "Needs investigation", confidence: "Uncorroborated",
+      summary: "The synthetic processing extract shows a deviation, but the corresponding rules snapshot is missing.",
+      baseline: "No matching rules snapshot available in this sample.",
+      observed: "Demo processing log: category Q routed differently in 2 sample events.",
+      source: "Synthetic processing extract SYN-LOG-09 (dated 2026-09-22). No matching sample rule version is available; root cause is unknown.",
+      recommendation: "Do not propose a source correction. Escalate to Claims Quality to obtain the missing rule version and validate the signal.",
+      rationale: "Insufficient evidence for a configuration recommendation; suppressing an unverified correction avoids a false alert becoming a change request.",
+      action: "Escalate for investigation", result: "Escalated to Director Claims Quality for investigation", mode: "escalate"
+    }
+  ]
+};
+const byId = (id) => document.getElementById(id);
+let selected = fixture.signals[0];
+const outcomes = new Map();
+let trail = [];
+function setText(id, value) { byId(id).textContent = value; }
+function render() {
+  const signal = selected;
+  const outcome = outcomes.get(signal.id);
+  const queue = byId("queue-list");
+  queue.replaceChildren();
+  fixture.signals.forEach((item) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "queue-item";
+    button.setAttribute("aria-current", String(item.id === signal.id));
+    const id = document.createElement("span");
+    id.className = "queue-id";
+    id.textContent = item.id;
+    const title = document.createElement("span");
+    title.className = "queue-title";
+    title.textContent = item.title;
+    const state = document.createElement("span");
+    state.className = "queue-state";
+    state.textContent = outcomes.get(item.id) || item.priority + " · " + item.confidence;
+    button.append(id, title, state);
+    button.addEventListener("click", () => {
+      selected = item;
+      render();
+      setText("status", item.id + " selected. " + (outcomes.get(item.id) || item.confidence + " — review the source before acting."));
+    });
+    queue.append(button);
+  });
+  setText("signal-id", signal.id);
+  setText("signal-title", signal.title);
+  setText("signal-tag", outcome || signal.confidence);
+  byId("signal-tag").className = "tag " + (outcome ? "tag-ok" : signal.mode === "escalate" ? "tag-warn" : "tag-ok");
+  setText("signal-summary", signal.summary);
+  setText("recommendation", signal.recommendation);
+  setText("rationale", signal.rationale);
+  setText("baseline", signal.baseline);
+  setText("observed", signal.observed);
+  setText("source-detail", signal.source);
+  byId("source").open = false;
+  setText("primary-action", outcome ? "Action recorded" : signal.action);
+  byId("primary-action").disabled = Boolean(outcome);
+  setText("status", outcome || "Awaiting human review. No source-system changes are made.");
+  const audit = byId("audit");
+  audit.replaceChildren();
+  const entries = [{ id: signal.id, actor: "Sample system", message: "Signal surfaced for human review; " + signal.confidence + "." }, ...trail.filter((entry) => entry.id === signal.id)];
+  entries.forEach((entry) => {
+    const li = document.createElement("li");
+    const label = document.createElement("span");
+    label.className = "mono";
+    label.textContent = entry.actor === "Sample system" ? "Sample" : "Review";
+    const body = document.createElement("span");
+    body.textContent = entry.actor + " · " + entry.message;
+    li.append(label, body);
+    audit.append(li);
+  });
+}
+byId("primary-action").addEventListener("click", () => {
+  const exception = selected.mode === "escalate";
+  setText("dialog-title", exception ? "Escalate unverified signal" : "Route correction proposal");
+  setText("dialog-sub", selected.id + " · simulated handoff only");
+  setText("dialog-rationale", selected.rationale + " Source: " + selected.source);
+  setText("attest-label", exception ? "I reviewed the available sample evidence and will request the missing rule snapshot." : "I reviewed the sample evidence and understand a Configuration Lead must approve any source change.");
+  setText("confirm", exception ? "Record escalation" : "Send for change-control review");
+  byId("reason-field").hidden = !exception;
+  byId("reason").value = "";
+  byId("attest").checked = false;
+  setText("dialog-error", "");
+  byId("review-dialog").showModal();
+});
+byId("cancel").addEventListener("click", () => byId("review-dialog").close());
+byId("review-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  if (!byId("attest").checked) {
+    setText("dialog-error", "Confirm your review before recording this simulated handoff.");
+    byId("attest").focus();
+    return;
+  }
+  if (selected.mode === "escalate" && !byId("reason").value) {
+    setText("dialog-error", "Select an escalation reason.");
+    byId("reason").focus();
+    return;
+  }
+  const message = selected.result + (selected.mode === "escalate" ? " · " + byId("reason").value : " · proposal only, no rule change");
+  outcomes.set(selected.id, message);
+  trail.push({ id: selected.id, actor: "VP Operational Excellence", message });
+  byId("review-dialog").close();
+  render();
+  byId("reset").focus();
+});
+byId("reset").addEventListener("click", () => {
+  selected = fixture.signals[0];
+  outcomes.clear();
+  trail = [];
+  render();
+  setText("status", "Demo reset. Both sample signals are ready for review.");
+  byId("primary-action").focus();
+});
+render();
+</script>
+</body>
+</html>

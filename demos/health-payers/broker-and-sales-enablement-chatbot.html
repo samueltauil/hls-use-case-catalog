@@ -1,0 +1,783 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Broker answer desk — illustrative demo</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* ------------------------------ broker desk tokens and stateful workspace */
+body[data-subvertical="health-payers"] {
+  --on-accent: #ffffff;
+  --desk-width: 1540px;
+  --desk-gutter: clamp(16px, 3vw, 34px);
+  --desk-gap: 18px;
+  --desk-reading: 68ch;
+}
+
+.btn-primary { color: var(--on-accent); }
+.page { width: min(calc(100% - 2 * var(--desk-gutter)), var(--desk-width)); margin: 0 auto; padding: 21px 0 30px; }
+.workspace-heading { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; margin-bottom: 17px; }
+.eyebrow { margin: 0 0 4px; color: var(--muted); font-size: 12.5px; }
+h1 { margin: 0; font-size: clamp(23px, 3vw, 31px); line-height: 1.15; letter-spacing: -.02em; }
+.workspace-subtitle { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+.heading-actions { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+.heading-actions .btn { white-space: nowrap; }
+
+.opportunity { margin-bottom: var(--desk-gap); overflow: hidden; }
+.opportunity-layout { display: grid; grid-template-columns: minmax(220px, 1.2fr) minmax(0, 2fr); gap: 18px; align-items: center; padding: 15px 17px; }
+.object-title { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; }
+.object-title h2 { margin: 0; font-size: 18px; line-height: 1.3; }
+.object-id { margin: 5px 0 0; color: var(--muted); font: 12px/1.4 var(--mono); }
+.facts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.facts dd { font-weight: 600; }
+.opportunity-note { border-top: 1px solid var(--line-soft); background: var(--surface-2); padding: 8px 17px; color: var(--ink-soft); font-size: 12.5px; }
+.opportunity-note strong { color: var(--ink); }
+
+.desk-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(310px, .85fr); gap: var(--desk-gap); align-items: start; }
+.conversation, .source-panel { min-width: 0; }
+.conversation .card-head { align-items: flex-start; }
+.conversation-title { display: grid; gap: 2px; }
+.conversation-title h2 { font-size: 15px; }
+.conversation-body { display: grid; gap: 14px; }
+.opening { margin: 0; max-width: var(--desk-reading); color: var(--ink-soft); font-size: 14px; }
+.prompt-label { margin: 0; font-size: 12px; font-weight: 600; color: var(--muted); }
+.prompt-list { display: grid; gap: 8px; }
+.prompt {
+  display: flex; width: 100%; justify-content: space-between; align-items: center; gap: 14px;
+  padding: 10px 12px; text-align: left; color: var(--ink); background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--radius); font: inherit; font-size: 13.5px;
+  cursor: pointer; min-height: 44px;
+}
+.prompt:hover:not(:disabled) { background: var(--accent-soft); border-color: var(--accent-line); }
+.prompt:disabled { opacity: .6; cursor: wait; }
+.prompt-mark { color: var(--accent-strong); font-size: 17px; flex: none; }
+.conversation-log { display: grid; gap: 12px; }
+.assistant-intro { margin: 0; padding: 12px 13px; background: var(--surface-2); border-left: 3px solid var(--accent); border-radius: 0 var(--radius) var(--radius) 0; color: var(--ink-soft); font-size: 13.5px; }
+.answer { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.answer-head { padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--line-soft); }
+.answer-head h3 { margin: 0; font-size: 13.5px; }
+.answer-copy { margin: 0; padding: 12px; line-height: 1.6; }
+.answer-caution { margin: 0 12px 12px; padding: 9px 10px; background: var(--warn-bg); border: 1px solid #e6d08a; border-radius: var(--radius); color: #684108; font-size: 12.5px; }
+.answer-citations { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 12px 12px; }
+.citation-button { min-height: 36px; color: var(--accent-strong); background: var(--surface); border: 1px solid var(--accent-line); border-radius: 5px; padding: 6px 9px; text-align: left; font: inherit; font-size: 12px; cursor: pointer; }
+.citation-button:hover, .citation-button[aria-expanded="true"] { background: var(--accent-soft); }
+.answer-actions { padding: 11px 12px; background: var(--surface-2); border-top: 1px solid var(--line-soft); display: grid; gap: 7px; }
+.answer-actions .btn { justify-self: start; }
+.helper { margin: 0; color: var(--muted); font-size: 12px; }
+.answer-status { margin: 0; color: var(--muted); font-size: 12px; min-height: 18px; }
+.success-panel { padding: 11px 12px; background: var(--ok-bg); border: 1px solid #a7d9a7; border-radius: var(--radius); color: #0b5c0b; }
+.success-panel h3 { margin: 0 0 4px; font-size: 13.5px; }
+.success-panel p { margin: 0; font-size: 13px; }
+.handoff-panel { padding: 11px 12px; background: var(--warn-bg); border: 1px solid #e6d08a; border-radius: var(--radius); }
+.handoff-panel h3 { margin: 0 0 4px; font-size: 13.5px; color: #684108; }
+.handoff-panel p { margin: 0; color: #684108; font-size: 13px; }
+.exception-reason { margin: 0; padding: 10px 11px; color: #684108; background: #fffaf0; border: 1px solid #e6d08a; border-radius: var(--radius); font-size: 13px; }
+.handoff-action { margin-top: 11px; }
+
+.source-body { display: grid; gap: 14px; }
+.source-intro { margin: 0; color: var(--muted); font-size: 13px; }
+.source-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
+.source-item { padding: 10px 11px; border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--bg); }
+.source-name { display: block; font-size: 13px; font-weight: 600; }
+.source-meta { display: block; margin-top: 3px; color: var(--muted); font-size: 11.5px; }
+.inspector { padding: 12px; border: 1px solid var(--accent-line); border-left: 3px solid var(--accent); border-radius: 0 var(--radius) var(--radius) 0; background: var(--accent-soft); }
+.inspector h3 { margin: 0; font-size: 13.5px; }
+.inspector-meta { display: block; margin-top: 3px; color: var(--muted); font-size: 11.5px; }
+.inspector-excerpt { margin: 9px 0 0; color: var(--ink-soft); font-size: 13px; line-height: 1.55; }
+.inspector-state { margin: 9px 0 0; color: var(--accent-strong); font-size: 12px; font-weight: 600; }
+.guardrail { padding: 10px 11px; border-top: 1px solid var(--line-soft); }
+.guardrail h3 { margin: 0 0 4px; font-size: 12.5px; }
+.guardrail p { margin: 0; color: var(--muted); font-size: 12.5px; }
+.guardrail + .guardrail { padding-top: 0; border-top: 0; }
+.guardrail strong { color: var(--ink-soft); }
+.footer { align-items: flex-start; }
+.footer .built { flex: 1 1 100%; }
+.footer .claim { margin-left: 0; max-width: 80ch; }
+
+@media (max-width: 980px) {
+  .desk-grid { grid-template-columns: minmax(0, 1.25fr) minmax(270px, .9fr); gap: 14px; }
+  .opportunity-layout { grid-template-columns: 1fr; gap: 12px; }
+}
+@media (max-width: 700px) {
+  .page { padding-top: 16px; }
+  .workspace-heading { align-items: flex-start; flex-direction: column; margin-bottom: 13px; }
+  .heading-actions { width: 100%; justify-content: space-between; }
+  .opportunity-layout { padding: 13px; }
+  .facts { grid-template-columns: 1fr; gap: 8px; }
+  .facts div { display: grid; grid-template-columns: minmax(106px, .75fr) 1.25fr; gap: 8px; align-items: baseline; }
+  .facts dt { margin: 0; }
+  .desk-grid { grid-template-columns: minmax(0, 1fr); }
+  .conversation .card-body, .source-panel .card-body { padding: 12px; }
+  .answer-actions .btn { width: 100%; justify-content: center; }
+  .footer .svc-chip { white-space: normal; }
+}
+@media (max-width: 390px) {
+  .disclosure { font-size: 11px; padding: 5px 8px; }
+  .brand { gap: 7px; }
+  .brand-name { font-size: 13.5px; }
+  .workspace-subtitle { font-size: 12px; }
+  .prompt { padding: 9px 10px; font-size: 13px; }
+}
+  </style>
+</head>
+<body data-subvertical="health-payers">
+  <header class="appbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">●</span>
+      <span><span class="brand-name">Broker desk</span><span class="brand-sub">Health plan sales · pilot workspace</span></span>
+    </div>
+    <p class="who">Signed in as <b id="broker-name">sample broker</b></p>
+    <p class="disclosure"><span aria-hidden="true">●</span> Illustrative demo - synthetic data</p>
+  </header>
+
+  <main class="page" id="main-content">
+    <div class="workspace-heading">
+      <div>
+        <p class="eyebrow">Broker workspace <span aria-hidden="true">/</span> Plan comparison queue</p>
+        <h1>Quote question desk</h1>
+        <p class="workspace-subtitle">Answer from the sample product folder, inspect evidence, then decide what belongs in the opportunity notes.</p>
+      </div>
+      <div class="heading-actions">
+        <span class="tag" id="workflow-state">Ready for a sample question</span>
+        <button class="btn" type="button" id="reset-demo">Reset walkthrough</button>
+      </div>
+    </div>
+
+    <section class="card opportunity" aria-labelledby="opportunity-heading">
+      <div class="opportunity-layout">
+        <div>
+          <div class="object-title">
+            <h2 id="opportunity-heading">Sample group opportunity</h2>
+            <span class="tag">Fictional work item</span>
+          </div>
+          <p class="object-id" id="opportunity-id">Sample record identifier</p>
+        </div>
+        <dl class="facts" aria-label="Sample opportunity context">
+          <div><dt>Prospect</dt><dd id="employer-name">Fictional prospect</dd></div>
+          <div><dt>Group census</dt><dd id="group-size">Synthetic sample group</dd></div>
+          <div><dt>Requested effective date</dt><dd id="effective-date">Fictional sample date</dd></div>
+        </dl>
+      </div>
+      <div class="opportunity-note"><strong>Next safe action:</strong> <span id="next-action">check a cited sample comparison before drafting a broker reply; this workspace cannot issue a quote or confirm eligibility.</span></div>
+    </section>
+
+    <div class="desk-grid">
+      <section class="card conversation" aria-labelledby="conversation-heading">
+        <div class="card-head">
+          <div class="conversation-title">
+            <h2 id="conversation-heading">Conversation for this opportunity</h2>
+            <span class="card-note">Fixed questions · no member or broker data entry</span>
+          </div>
+          <span class="tag" id="answer-badge">No answer yet</span>
+        </div>
+        <div class="card-body conversation-body">
+          <p class="opening" id="assistant-opening"></p>
+          <p class="prompt-label">Choose a sample request</p>
+          <div class="prompt-list">
+            <button class="prompt" type="button" data-prompt="comparison">
+              <span id="comparison-prompt"></span><span class="prompt-mark" aria-hidden="true">›</span>
+            </button>
+            <button class="prompt" type="button" data-prompt="eligibility">
+              <span id="eligibility-prompt"></span><span class="prompt-mark" aria-hidden="true">›</span>
+            </button>
+          </div>
+          <p class="answer-status" id="live-status" aria-live="polite">Choose a fixed sample request to begin.</p>
+
+          <section class="conversation-log" id="conversation-result" aria-label="Assistant response" hidden>
+            <article class="answer" id="grounded-answer" hidden>
+              <div class="answer-head">
+                <h3>Draft answer · human review required</h3>
+                <span class="tag tag-warn">Not an issued quote</span>
+              </div>
+              <p class="answer-copy" id="answer-copy"></p>
+              <p class="answer-caution" id="answer-rationale"></p>
+              <div class="answer-citations" id="answer-citations" aria-label="Cited synthetic sources"></div>
+              <div class="answer-actions">
+                <p class="helper">Inspect at least one cited source before adding a human-reviewed draft to this sample opportunity.</p>
+                <button class="btn btn-primary" type="button" id="approve-note" disabled>I reviewed the source — add draft note</button>
+              </div>
+            </article>
+
+            <article class="answer" id="unsupported-answer" hidden>
+              <div class="answer-head">
+                <h3>No supported answer</h3>
+                <span class="tag tag-warn">Escalation needed</span>
+              </div>
+              <p class="answer-copy" id="unsupported-copy"></p>
+              <p class="exception-reason" id="exception-rationale"></p>
+              <div class="answer-citations" id="exception-citations" aria-label="Sample source scope"></div>
+              <div class="answer-actions">
+                <p class="helper">Nothing is sent. Prepare a handoff draft for a person to review.</p>
+                <button class="btn" type="button" id="prepare-handoff">Prepare Broker Relations handoff</button>
+              </div>
+            </article>
+
+            <section class="success-panel" id="note-saved" aria-live="polite" hidden>
+              <h3>Draft added to sample opportunity notes</h3>
+              <p id="saved-copy"></p>
+            </section>
+            <section class="handoff-panel" id="handoff-ready" aria-live="polite" hidden>
+              <h3>Handoff draft prepared · not sent</h3>
+              <p id="handoff-copy"></p>
+            </section>
+          </section>
+        </div>
+      </section>
+
+      <aside class="card source-panel" aria-labelledby="source-heading">
+        <div class="card-head">
+          <h2 id="source-heading">Source context</h2>
+          <span class="card-note">Synthetic folder · sample revisions</span>
+        </div>
+        <div class="card-body source-body">
+          <p class="source-intro" id="source-instructions">The source set is fictional. After a sample response, inspect a cited excerpt here before adding a draft note.</p>
+          <ul class="source-list" id="source-list" aria-label="Fictional sample sources"></ul>
+          <section class="inspector" id="source-inspector" aria-live="polite" hidden>
+            <h3 id="inspector-title"></h3>
+            <span class="inspector-meta" id="inspector-meta"></span>
+            <p class="inspector-excerpt" id="inspector-excerpt"></p>
+            <p class="inspector-state" id="inspector-state"></p>
+          </section>
+          <div class="guardrail">
+            <h3>Accuracy check</h3>
+            <p><strong>Catalog risk:</strong> pricing and eligibility accuracy. Governed product data and its update cadence need to be checked before a real response.</p>
+          </div>
+          <div class="guardrail">
+            <h3>Channel adoption</h3>
+            <p><strong>Catalog mitigation:</strong> embed the experience in an existing broker portal. This standalone screen only simulates that work context.</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="built" aria-label="Catalog workload references">
+      <span>Catalog workload names:</span>
+      <span class="svc-chip">Azure AI Bot Service</span>
+      <span class="svc-chip">Azure OpenAI in Azure AI Foundry Models</span>
+      <span class="svc-chip">Azure AI Search</span>
+      <span class="svc-chip">Microsoft Copilot Studio</span>
+    </div>
+    <p class="claim"><b>Catalog value:</b> broker response time down, quote turnaround faster, sales productivity up, new-group win rate up. No quantified outcome is asserted here.</p>
+  </footer>
+
+  <script>
+    "use strict";
+
+    const BROKER_DEMO_FIXTURES = {
+      broker: {
+        name: "Mara Chen",
+        role: "Broker distribution"
+      },
+      opportunity: {
+        id: "SYN-AG-2047",
+        employer: "Alder Grove Studio",
+        groupSize: "25 people · sample",
+        effectiveDate: "July 1, 2027 · fictional"
+      },
+      opening: "Welcome, Mara. Use one of the fixed questions for this fictional group. Answers are limited to the sample folder; a person remains responsible for every broker response.",
+      sources: {
+        comparison: {
+          title: "Mock group comparison sheet",
+          metadata: "Revision C · fictional sample · August 12, 2026",
+          excerpt: "For the fictional Alder Grove Studio sample group: Birch HMO — $412 PEPM; Cove PPO — $498 PEPM. The rows are illustrative rate inputs only. This sheet is not a final rating, issued quote, or approved offer.",
+          short: "Mock group comparison sheet · Revision C"
+        },
+        guardrails: {
+          title: "Broker response guardrails",
+          metadata: "Revision B · fictional sample · August 8, 2026",
+          excerpt: "Before sharing any sample rate, verify the census, product edition, requested date, and current rate with Sales Operations. A draft note is not an issued quote and must be checked by the broker.",
+          short: "Broker response guardrails · Revision B"
+        },
+        scope: {
+          title: "Sample folder coverage check",
+          metadata: "Synthetic index summary · August 12, 2026",
+          excerpt: "This fictional folder has comparison rows and broker response guardrails. It contains no rule that confirms this group's eligibility or validates a July 1 effective date. No eligibility conclusion can be drawn from this sample set.",
+          short: "Sample folder coverage check"
+        }
+      },
+      scenarios: {
+        comparison: {
+          prompt: "Which sample plan options are listed, and what should I verify before replying?",
+          answer: "The mock sheet lists Birch HMO at $412 PEPM and Cove PPO at $498 PEPM for this fictional sample group. These values are synthetic operational data only—not a customer quote or an outcome. The response guardrails say to verify the census, product edition, requested date, and current rate with Sales Operations before sharing anything.",
+          rationale: "Human review: compare the cited mock sheet with the current governed product and rate sources before replying. This demo does not rate a group, promise pricing, or issue a quote.",
+          sourceIds: ["comparison", "guardrails"],
+          badge: "Sample sources matched",
+          status: "A synthetic, source-linked draft is ready for review."
+        },
+        eligibility: {
+          prompt: "Can we confirm this group's eligibility for the requested July 1 effective date?",
+          answer: "I can't confirm eligibility or the effective date from the sample folder. No eligibility answer or quote has been created.",
+          rationale: "Why it stopped: the synthetic source set has no rule that supports this decision. Ask Broker Relations or Sales Operations to review the applicable governed guidance.",
+          sourceIds: ["scope"],
+          badge: "No source match",
+          status: "Unsupported request detected. No eligibility determination was made."
+        }
+      },
+      states: {
+        ready: "Ready for a sample question",
+        working: "Checking sample sources…",
+        comparison: "Sample answer ready for review",
+        eligibility: "Human follow-up needed",
+        saved: "Draft note added",
+        handoff: "Handoff draft prepared"
+      }
+    };
+
+    const elements = {
+      brokerName: document.getElementById("broker-name"),
+      opportunityId: document.getElementById("opportunity-id"),
+      employer: document.getElementById("employer-name"),
+      groupSize: document.getElementById("group-size"),
+      effectiveDate: document.getElementById("effective-date"),
+      opening: document.getElementById("assistant-opening"),
+      comparisonPrompt: document.getElementById("comparison-prompt"),
+      eligibilityPrompt: document.getElementById("eligibility-prompt"),
+      state: document.getElementById("workflow-state"),
+      badge: document.getElementById("answer-badge"),
+      liveStatus: document.getElementById("live-status"),
+      results: document.getElementById("conversation-result"),
+      groundedAnswer: document.getElementById("grounded-answer"),
+      unsupportedAnswer: document.getElementById("unsupported-answer"),
+      answerCopy: document.getElementById("answer-copy"),
+      answerRationale: document.getElementById("answer-rationale"),
+      answerCitations: document.getElementById("answer-citations"),
+      unsupportedCopy: document.getElementById("unsupported-copy"),
+      exceptionRationale: document.getElementById("exception-rationale"),
+      exceptionCitations: document.getElementById("exception-citations"),
+      approve: document.getElementById("approve-note"),
+      noteSaved: document.getElementById("note-saved"),
+      savedCopy: document.getElementById("saved-copy"),
+      prepareHandoff: document.getElementById("prepare-handoff"),
+      handoffReady: document.getElementById("handoff-ready"),
+      handoffCopy: document.getElementById("handoff-copy"),
+      sourceList: document.getElementById("source-list"),
+      sourceInstructions: document.getElementById("source-instructions"),
+      inspector: document.getElementById("source-inspector"),
+      inspectorTitle: document.getElementById("inspector-title"),
+      inspectorMeta: document.getElementById("inspector-meta"),
+      inspectorExcerpt: document.getElementById("inspector-excerpt"),
+      inspectorState: document.getElementById("inspector-state"),
+      prompts: Array.from(document.querySelectorAll("[data-prompt]"))
+    };
+
+    let currentState = "ready";
+    let currentScenario = null;
+    let inspectedSources = new Set();
+    let pendingTimer = 0;
+
+    function setText(node, value) {
+      node.textContent = value;
+    }
+
+    function setState(state, announcement) {
+      currentState = state;
+      setText(elements.state, BROKER_DEMO_FIXTURES.states[state]);
+      if (announcement) setText(elements.liveStatus, announcement);
+    }
+
+    function renderSourceIndex() {
+      const order = ["comparison", "guardrails", "scope"];
+      order.forEach((id) => {
+        const source = BROKER_DEMO_FIXTURES.sources[id];
+        const item = document.createElement("li");
+        item.className = "source-item";
+        const title = document.createElement("span");
+        title.className = "source-name";
+        setText(title, source.title);
+        const meta = document.createElement("span");
+        meta.className = "source-meta";
+        setText(meta, source.metadata);
+        item.append(title, meta);
+        elements.sourceList.append(item);
+      });
+    }
+
+    function clearResult() {
+      elements.results.hidden = true;
+      elements.groundedAnswer.hidden = true;
+      elements.unsupportedAnswer.hidden = true;
+      elements.noteSaved.hidden = true;
+      elements.handoffReady.hidden = true;
+      elements.answerCitations.replaceChildren();
+      elements.exceptionCitations.replaceChildren();
+      elements.inspector.hidden = true;
+      elements.sourceInstructions.hidden = false;
+      elements.approve.disabled = true;
+      elements.prepareHandoff.disabled = false;
+      inspectedSources = new Set();
+      currentScenario = null;
+      elements.prompts.forEach((button) => { button.disabled = false; });
+    }
+
+    function inspectSource(sourceId, citationButton) {
+      const source = BROKER_DEMO_FIXTURES.sources[sourceId];
+      if (!source) return;
+      elements.inspector.hidden = false;
+      elements.sourceInstructions.hidden = true;
+      setText(elements.inspectorTitle, source.title);
+      setText(elements.inspectorMeta, source.metadata);
+      setText(elements.inspectorExcerpt, source.excerpt);
+      inspectedSources.add(sourceId);
+      const sourceIsCited = currentScenario && BROKER_DEMO_FIXTURES.scenarios[currentScenario].sourceIds.includes(sourceId);
+      setText(elements.inspectorState, sourceIsCited
+        ? "Evidence opened · human review remains required."
+        : "Synthetic source scope only · not evidence for an eligibility decision.");
+      document.querySelectorAll(".citation-button").forEach((button) => {
+        button.setAttribute("aria-expanded", String(button === citationButton));
+      });
+      if (currentScenario === "comparison" && inspectedSources.size > 0) {
+        elements.approve.disabled = false;
+      }
+    }
+
+    function addCitations(scenarioId) {
+      const scenario = BROKER_DEMO_FIXTURES.scenarios[scenarioId];
+      const destination = scenarioId === "comparison" ? elements.answerCitations : elements.exceptionCitations;
+      scenario.sourceIds.forEach((sourceId) => {
+        const source = BROKER_DEMO_FIXTURES.sources[sourceId];
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "citation-button";
+        button.setAttribute("aria-controls", "source-inspector");
+        button.setAttribute("aria-expanded", "false");
+        setText(button, "Inspect · " + source.short);
+        button.addEventListener("click", () => inspectSource(sourceId, button));
+        destination.append(button);
+      });
+    }
+
+    function showScenario(scenarioId) {
+      const scenario = BROKER_DEMO_FIXTURES.scenarios[scenarioId];
+      currentScenario = scenarioId;
+      elements.results.hidden = false;
+      elements.sourceInstructions.hidden = false;
+      elements.inspector.hidden = true;
+      setText(elements.badge, scenario.badge);
+      if (scenarioId === "comparison") {
+        elements.groundedAnswer.hidden = false;
+        elements.unsupportedAnswer.hidden = true;
+        setText(elements.answerCopy, scenario.answer);
+        setText(elements.answerRationale, scenario.rationale);
+      } else {
+        elements.groundedAnswer.hidden = true;
+        elements.unsupportedAnswer.hidden = false;
+        setText(elements.unsupportedCopy, scenario.answer);
+        setText(elements.exceptionRationale, scenario.rationale);
+      }
+      addCitations(scenarioId);
+      setState(scenarioId, scenario.status);
+    }
+
+    function runScenario(scenarioId) {
+      if (currentState === "working") return;
+      window.clearTimeout(pendingTimer);
+      clearResult();
+      setState("working", "Checking the fictional source set. No external service is contacted.");
+      elements.badge.textContent = "Checking sample sources";
+      elements.prompts.forEach((button) => { button.disabled = true; });
+      pendingTimer = window.setTimeout(() => {
+        showScenario(scenarioId);
+        elements.prompts.forEach((button) => { button.disabled = false; });
+      }, 420);
+    }
+
+    function resetWalkthrough() {
+      window.clearTimeout(pendingTimer);
+      clearResult();
+      setText(elements.badge, "No answer yet");
+      setState("ready", "Walkthrough reset. Choose a fixed sample request to begin.");
+      elements.inspectorState.textContent = "";
+      elements.inspectorTitle.textContent = "";
+      elements.inspectorMeta.textContent = "";
+      elements.inspectorExcerpt.textContent = "";
+      elements.prepareHandoff.textContent = "Prepare Broker Relations handoff";
+      elements.approve.textContent = "I reviewed the source — add draft note";
+      elements.prompts[0].focus();
+    }
+
+    elements.brokerName.textContent = BROKER_DEMO_FIXTURES.broker.name;
+    elements.opportunityId.textContent = BROKER_DEMO_FIXTURES.opportunity.id;
+    elements.employer.textContent = BROKER_DEMO_FIXTURES.opportunity.employer;
+    elements.groupSize.textContent = BROKER_DEMO_FIXTURES.opportunity.groupSize;
+    elements.effectiveDate.textContent = BROKER_DEMO_FIXTURES.opportunity.effectiveDate;
+    elements.opening.textContent = BROKER_DEMO_FIXTURES.opening;
+    elements.comparisonPrompt.textContent = BROKER_DEMO_FIXTURES.scenarios.comparison.prompt;
+    elements.eligibilityPrompt.textContent = BROKER_DEMO_FIXTURES.scenarios.eligibility.prompt;
+    renderSourceIndex();
+
+    elements.prompts.forEach((button) => {
+      button.addEventListener("click", () => runScenario(button.dataset.prompt));
+    });
+    elements.approve.addEventListener("click", () => {
+      if (currentScenario !== "comparison" || inspectedSources.size === 0) return;
+      elements.groundedAnswer.hidden = true;
+      elements.noteSaved.hidden = false;
+      setText(elements.savedCopy, "Mara Chen reviewed the opened mock comparison source and added the draft to SYN-AG-2047 notes. The note is not sent to a broker; verify current governed rates before any real reply.");
+      setText(elements.badge, "Human review recorded");
+      elements.approve.disabled = true;
+      setState("saved", "Human-reviewed sample draft added to opportunity notes. Nothing was sent.");
+    });
+    elements.prepareHandoff.addEventListener("click", () => {
+      if (currentScenario !== "eligibility") return;
+      elements.unsupportedAnswer.hidden = true;
+      elements.handoffReady.hidden = false;
+      setText(elements.handoffCopy, "A fictional question about the requested effective date is prepared for Broker Relations review. The handoff is local to this demo, not transmitted, and no eligibility decision was made.");
+      setText(elements.badge, "Human handoff prepared");
+      elements.prepareHandoff.disabled = true;
+      setState("handoff", "Handoff draft prepared locally; no message was sent.");
+    });
+    document.getElementById("reset-demo").addEventListener("click", resetWalkthrough);
+  </script>
+</body>
+</html>

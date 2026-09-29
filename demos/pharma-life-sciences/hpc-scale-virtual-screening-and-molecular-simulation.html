@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Screening campaign burst review | HLS catalog demo</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* Campaign workspace */
+.workspace { max-width: 1560px; margin: auto; padding: 20px 24px 40px; }
+.heading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 8px 20px; margin-bottom: 16px; }
+.eyebrow { margin: 0 0 3px; color: var(--accent-strong); font-size: 13px; font-weight: 600; }
+h1 { margin: 0; font-size: clamp(21px, 2.3vw, 28px); line-height: 1.22; }
+.subhead { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+.heading .tag { margin-top: 5px; }
+.layout { display: grid; grid-template-columns: minmax(205px, 250px) minmax(0, 1fr) minmax(235px, 290px); gap: 14px; align-items: start; }
+.layout > * { min-width: 0; }
+.side-body { display: grid; gap: 12px; }
+.queue-item { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 9px 10px; font-size: 13px; }
+.queue-item strong, .queue-item span { display: block; }
+.queue-item span { color: var(--muted); margin-top: 3px; }
+.side-label { font-size: 12px; color: var(--muted); margin: 0 0 2px; }
+.side-fact { margin: 0; font-size: 13px; }
+.side-fact + .side-fact { border-top: 1px solid var(--line-soft); padding-top: 10px; }
+.main-column { display: grid; gap: 14px; min-width: 0; }
+.manifest { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.manifest div { border-left: 2px solid var(--line); padding-left: 10px; min-width: 0; }
+.manifest small, .manifest strong { display: block; }
+.manifest small { color: var(--muted); font-size: 12px; }
+.manifest strong { font-size: 13px; overflow-wrap: anywhere; }
+.profile-set { border: 0; padding: 0; margin: 14px 0 0; min-width: 0; }
+.profile-set legend { font-size: 13px; font-weight: 600; padding: 0; margin-bottom: 8px; }
+.profiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+.profile { display: flex; gap: 9px; align-items: start; padding: 10px; border: 1px solid var(--line); border-radius: var(--radius); cursor: pointer; min-width: 0; }
+.profile:has(input:checked) { border-color: var(--accent-strong); background: var(--accent-soft); }
+.profile:has(input:focus-visible) { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
+.profile input { accent-color: var(--accent-strong); margin: 3px 0 0; flex: none; }
+.profile strong, .profile small { display: block; }
+.profile strong { font-size: 13px; }
+.profile small { color: var(--muted); font-size: 12px; line-height: 1.35; margin-top: 3px; }
+.primary-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 14px; }
+.primary-row .status-line { flex: 1 1 170px; }
+.btn-primary { background: var(--accent-strong); border-color: var(--accent-strong); color: var(--on-accent, #fff); }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.readiness { display: grid; gap: 8px; }
+.gate { display: grid; grid-template-columns: minmax(100px, 1fr) auto; gap: 3px 10px; border-bottom: 1px solid var(--line-soft); padding: 0 0 8px; }
+.gate:last-child { border: 0; padding: 0; }
+.gate strong { font-size: 13px; }
+.gate p { grid-column: 1 / -1; margin: 0; color: var(--muted); font-size: 12.5px; }
+.gate .tag { align-self: start; }
+.review-panel { border-top: 1px solid var(--line-soft); margin-top: 14px; padding-top: 13px; display: grid; gap: 10px; }
+.review-panel h3 { margin: 0; font-size: 14px; }
+.field textarea { width: 100%; }
+.field textarea:focus-visible { outline-offset: 1px; }
+.field-error { margin: 0; font-size: 13px; color: var(--stop); }
+.evidence-list { margin: 0; padding-left: 18px; font-size: 12.5px; display: grid; gap: 9px; }
+.evidence-list li { padding-left: 2px; overflow-wrap: anywhere; }
+.evidence-list strong { display: block; }
+.evidence-list span { display: block; color: var(--muted); }
+.notice { display: block; }
+.audit li { grid-template-columns: 45px minmax(0, 1fr); }
+.audit li span { overflow-wrap: anywhere; }
+@media (max-width: 1100px) {
+  .layout { grid-template-columns: minmax(180px, 220px) minmax(0, 1fr); }
+  .evidence-column { grid-column: 2; }
+}
+@media (max-width: 700px) {
+  .workspace { padding: 14px 12px 30px; }
+  .layout { display: flex; flex-direction: column; }
+  .layout > * { width: 100%; }
+  .main-column { order: -1; }
+  .side-body { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .side-body .queue-item { grid-column: 1 / -1; }
+  .side-fact + .side-fact { border: 0; padding: 0; }
+  .manifest { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 480px) {
+  .profiles { grid-template-columns: 1fr; }
+  .side-body { grid-template-columns: 1fr; }
+}
+  </style>
+</head>
+<body data-subvertical="pharma-life-sciences">
+  <header class="appbar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">◆</span><div><span class="brand-name">Campaign operations</span><span class="brand-sub">Research computing · burst review</span></div></div>
+    <p class="disclosure">Illustrative demo - synthetic data</p>
+    <p class="who">Signed in as <b id="operator"></b></p>
+  </header>
+  <main class="workspace">
+    <div class="heading">
+      <div>
+        <p class="eyebrow"><span id="organization"></span> / Research &amp; Discovery · sample workspace</p>
+        <h1>Virtual screening campaign · burst plan</h1>
+        <p class="subhead">Campaign <span id="campaign-id"></span> · capacity review before any scientific compute is scheduled</p>
+      </div>
+      <span id="campaign-state" class="tag">Awaiting review</span>
+    </div>
+    <div class="layout">
+      <aside class="card" aria-labelledby="queue-title">
+        <div class="card-head"><h2 id="queue-title">Campaign queue</h2><span class="card-note">Sample data</span></div>
+        <div class="card-body side-body">
+          <div class="queue-item"><strong id="queue-campaign"></strong><span>Selected · on-prem capacity constrained</span></div>
+          <p class="side-fact"><span class="side-label">Purpose</span><br>Benchmark cloud burst against an on-prem baseline before expanding scope.</p>
+          <p class="side-fact"><span class="side-label">Decision owner</span><br><span id="decision-owner"></span></p>
+          <p class="side-fact"><span class="side-label">Next reviewer</span><br>R&amp;D IT / scientific computing</p>
+        </div>
+      </aside>
+      <div class="main-column">
+        <section class="card" aria-labelledby="manifest-title">
+          <div class="card-head"><h2 id="manifest-title">Run manifest</h2><span class="card-note">Draft · fictional operational values</span></div>
+          <div class="card-body">
+            <div class="manifest">
+              <div><small>Input set</small><strong id="input-set"></strong></div>
+              <div><small>Application</small><strong id="application"></strong></div>
+              <div><small>Baseline</small><strong>On-prem comparison required</strong></div>
+            </div>
+            <fieldset class="profile-set">
+              <legend>Select a PoV compute profile</legend>
+              <div class="profiles">
+                <label class="profile"><input type="radio" name="profile" value="cpu" checked><span><strong id="cpu-label"></strong><small id="cpu-description"></small></span></label>
+                <label class="profile"><input type="radio" name="profile" value="gpu"><span><strong id="gpu-label"></strong><small id="gpu-description"></small></span></label>
+              </div>
+            </fieldset>
+            <div class="primary-row">
+              <button class="btn btn-primary" id="inspect" type="button">Review burst readiness</button>
+              <p class="status-line" id="status" role="status" aria-live="polite">Choose a profile, then inspect the sample gates.</p>
+            </div>
+          </div>
+        </section>
+        <section class="card" aria-labelledby="gates-title">
+          <div class="card-head"><h2 id="gates-title">Burst readiness gates</h2><span id="gate-summary" class="card-note">Not evaluated</span></div>
+          <div class="card-body">
+            <div class="readiness" id="gates"></div>
+            <div class="review-panel" id="review-panel" hidden>
+              <h3>Human review · no job will be submitted</h3>
+              <p class="status-line" id="review-context"></p>
+              <div class="field">
+                <label for="rationale">Review rationale (sample; no sensitive data)</label>
+                <textarea id="rationale" maxlength="400" placeholder="Describe the benchmark or blocker to review"></textarea>
+              </div>
+              <p class="field-error" id="rationale-error" role="alert" hidden></p>
+              <div class="actions">
+                <button class="btn btn-primary" id="stage" type="button" hidden>Stage for R&amp;D IT review</button>
+                <button class="btn" id="escalate" type="button" hidden>Escalate license / benchmark</button>
+                <button class="btn" id="reset" type="button">Reset campaign demo</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+      <aside class="evidence-column" aria-label="Evidence and audit">
+        <section class="card" aria-labelledby="evidence-title">
+          <div class="card-head"><h2 id="evidence-title">Source packet</h2><span class="card-note" id="packet-date"></span></div>
+          <div class="card-body">
+            <ol class="evidence-list" id="sources"></ol>
+            <p class="rule">These are fictional planning notes, not verified performance results or vendor licensing advice. Scientific computing must benchmark the application and confirm licensing and egress before any deployment.</p>
+          </div>
+        </section>
+        <section class="card" aria-labelledby="audit-title" style="margin-top:14px">
+          <div class="card-head"><h2 id="audit-title">Decision trail</h2><span class="card-note">Local to this page</span></div>
+          <div class="card-body"><ol class="audit" id="audit"></ol></div>
+        </section>
+      </aside>
+    </div>
+  </main>
+  <footer class="footer">
+    <div class="built"><span>Catalog workload mapping:</span><span class="svc-chip">Azure High-Performance Computing</span><span class="svc-chip">Azure Managed Lustre</span><span class="svc-chip">GPU-accelerated VMs (AI infrastructure)</span><span class="svc-chip">Azure NetApp Files</span></div>
+    <span class="claim">PoV only · <b>no live capacity, prices, customer results, or scientific findings</b></span>
+  </footer>
+  <script>
+    const fixture = {
+      campaign: {
+        organization: "Meridian Lantern Research",
+        actor: "Mara Vale",
+        operator: "Mara Vale · Computational chemistry lead (fictional)",
+        decisionOwner: "Mara Vale · Head of Computational Chemistry",
+        id: "SCR-042",
+        queue: "SCR-042 · lead-series docking",
+        input: "LIB-042 · 24,000 synthetic ligands",
+        application: "Docking pilot · fictional build R2",
+        packetDate: "Sample · 29 Sep 2026"
+      },
+      profiles: {
+        cpu: {
+          label: "CPU docking pilot",
+          description: "Small benchmark slice · license attested in sample manifest",
+          gates: [
+            ["Compute", "Plan", "CPU burst proposed; quota and availability still require R&D IT confirmation.", "MAN-042"],
+            ["Storage", "Plan", "Compare Azure Managed Lustre and Azure NetApp Files against sample I/O requirements.", "IO-042"],
+            ["License", "Attested", "Sample pilot license note recorded; vendor terms still require validation.", "LIC-042"],
+            ["Benchmark", "Pending", "On-prem parity is unproven; pilot must be benchmarked before scale-out.", "BENCH-042"],
+            ["Egress", "Pending", "Review input transfer and return-of-results path before any real move.", "MOVE-042"]
+          ]
+        },
+        gpu: {
+          label: "GPU simulation follow-on",
+          description: "License and application benchmark still require review",
+          gates: [
+            ["Compute", "Plan", "GPU burst is a proposal, not allocated capacity.", "MAN-042"],
+            ["Storage", "Plan", "Scientific computing must validate I/O for the simulation profile.", "IO-042"],
+            ["License", "Blocked", "No sample cloud entitlement for the simulation application.", "LIC-042"],
+            ["Benchmark", "Blocked", "No comparable on-prem GPU benchmark in the sample packet.", "BENCH-042"],
+            ["Egress", "Pending", "Review data-transfer scope and return path.", "MOVE-042"]
+          ]
+        }
+      },
+      sources: [
+        ["MAN-042", "Sample campaign manifest · input set and candidate profiles"],
+        ["IO-042", "Sample storage working note · I/O requirements not verified"],
+        ["LIC-042", "Sample licensing register · vendor confirmation required"],
+        ["BENCH-042", "Sample benchmark plan · no measured results"],
+        ["MOVE-042", "Sample data movement checklist · costs not estimated"]
+      ]
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const ui = {
+      inspect: $("inspect"), status: $("status"), state: $("campaign-state"),
+      gates: $("gates"), summary: $("gate-summary"), panel: $("review-panel"),
+      context: $("review-context"), rationale: $("rationale"), error: $("rationale-error"),
+      stage: $("stage"), escalate: $("escalate"), reset: $("reset"), audit: $("audit")
+    };
+    let phase = "ready";
+    let timer;
+    let selected = "cpu";
+
+    function log(actor, message) {
+      const item = document.createElement("li");
+      const time = document.createElement("time");
+      time.textContent = String(ui.audit.children.length + 1).padStart(2, "0");
+      const text = document.createElement("span");
+      const name = document.createElement("span");
+      name.className = "actor " + (actor === fixture.campaign.actor ? "is-human" : "is-system");
+      name.textContent = actor + " · ";
+      text.append(name, document.createTextNode(message));
+      item.append(time, text);
+      ui.audit.append(item);
+    }
+
+    function status(message, state) {
+      ui.status.textContent = message;
+      ui.state.textContent = state;
+    }
+
+    function drawGates(profile) {
+      ui.gates.replaceChildren();
+      for (const [name, result, detail, source] of profile.gates) {
+        const row = document.createElement("div");
+        row.className = "gate";
+        const title = document.createElement("strong");
+        title.textContent = name;
+        const tag = document.createElement("span");
+        tag.className = "tag " + (result === "Blocked" ? "tag-stop" : result === "Attested" ? "tag-ok" : "tag-warn");
+        tag.textContent = result;
+        const explanation = document.createElement("p");
+        explanation.textContent = detail + " · " + source;
+        row.append(title, tag, explanation);
+        ui.gates.append(row);
+      }
+    }
+
+    function ready() {
+      clearTimeout(timer);
+      phase = "ready";
+      selected = "cpu";
+      document.querySelector('input[value="cpu"]').checked = true;
+      document.querySelectorAll('input[name="profile"]').forEach((input) => { input.disabled = false; });
+      ui.gates.replaceChildren();
+      ui.summary.textContent = "Not evaluated";
+      ui.panel.hidden = true;
+      ui.rationale.value = "";
+      ui.rationale.disabled = false;
+      ui.error.hidden = true;
+      ui.inspect.disabled = false;
+      ui.inspect.textContent = "Review burst readiness";
+      status("Choose a profile, then inspect the sample gates.", "Awaiting review");
+      ui.audit.replaceChildren();
+      log("Workspace", "Sample campaign loaded; no compute scheduled.");
+    }
+
+    function inspect() {
+      if (phase !== "ready") return;
+      phase = "working";
+      ui.inspect.disabled = true;
+      document.querySelectorAll('input[name="profile"]').forEach((input) => { input.disabled = true; });
+      selected = document.querySelector('input[name="profile"]:checked').value;
+      status("Checking sample manifest and review gates…", "Review in progress");
+      timer = setTimeout(() => {
+        const profile = fixture.profiles[selected];
+        const blocked = selected === "gpu";
+        phase = blocked ? "exception" : "result";
+        drawGates(profile);
+        ui.summary.textContent = blocked ? "Blocked · license and benchmark" : "Pilot reviewable · benchmark required";
+        ui.panel.hidden = false;
+        ui.context.textContent = blocked
+          ? "Do not stage this profile. Escalate the missing cloud license and benchmark to R&D IT."
+          : "This pilot can be staged for R&D IT review, not executed. Record why a benchmark is needed.";
+        ui.stage.hidden = blocked;
+        ui.escalate.hidden = !blocked;
+        status(blocked ? "GPU profile blocked; escalate for human resolution." : "CPU pilot ready to stage for human review.", blocked ? "Blocked" : "Reviewable");
+        log("Workspace", profile.label + (blocked ? " blocked: licensing and benchmark unresolved." : " assessed: pilot benchmark required."));
+      }, 450);
+    }
+
+    function recordDecision() {
+      if (phase !== "result" && phase !== "exception") return;
+      const rationale = ui.rationale.value.trim();
+      if (!rationale) {
+        ui.error.textContent = "Enter a review rationale before recording this decision.";
+        ui.error.hidden = false;
+        ui.rationale.focus();
+        return;
+      }
+      ui.error.hidden = true;
+      const escalated = phase === "exception";
+      phase = "recorded";
+      ui.stage.hidden = true;
+      ui.escalate.hidden = true;
+      ui.rationale.disabled = true;
+      status(escalated ? "Escalation recorded for R&D IT; no job submitted." : "Pilot staged for R&D IT review; no job submitted.", escalated ? "Escalated" : "Staged for review");
+      ui.context.textContent = escalated ? "R&D IT must resolve license and benchmark gaps before reconsideration." : "R&D IT must confirm quota, licensing, transfer scope and benchmark before any real burst.";
+      log(fixture.campaign.actor, (escalated ? "Escalated GPU profile: " : "Staged CPU pilot for review: ") + rationale);
+    }
+
+    const campaign = fixture.campaign;
+    for (const [id, value] of Object.entries({
+      operator: campaign.operator, organization: campaign.organization,
+      "campaign-id": campaign.id, "queue-campaign": campaign.queue,
+      "decision-owner": campaign.decisionOwner, "input-set": campaign.input,
+      application: campaign.application, "packet-date": campaign.packetDate,
+      "cpu-label": fixture.profiles.cpu.label, "cpu-description": fixture.profiles.cpu.description,
+      "gpu-label": fixture.profiles.gpu.label, "gpu-description": fixture.profiles.gpu.description
+    })) {
+      $(id).textContent = value;
+    }
+    for (const [id, description] of fixture.sources) {
+      const item = document.createElement("li");
+      const name = document.createElement("strong");
+      name.textContent = id;
+      const detail = document.createElement("span");
+      detail.textContent = description;
+      item.append(name, detail);
+      $("sources").append(item);
+    }
+    document.querySelectorAll('input[name="profile"]').forEach((input) => {
+      input.addEventListener("change", () => {
+        if (phase !== "ready") return;
+        ui.status.textContent = fixture.profiles[input.value].label + " selected. Review sample gates.";
+      });
+    });
+    ui.inspect.addEventListener("click", inspect);
+    ui.stage.addEventListener("click", recordDecision);
+    ui.escalate.addEventListener("click", recordDecision);
+    ui.reset.addEventListener("click", () => {
+      ready();
+      ui.inspect.focus();
+    });
+    ui.rationale.addEventListener("input", () => { ui.error.hidden = true; });
+    ready();
+  </script>
+</body>
+</html>

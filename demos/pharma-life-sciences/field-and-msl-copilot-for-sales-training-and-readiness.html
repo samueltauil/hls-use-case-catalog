@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Field readiness practice | Fictional Northstar Biologics</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* Field-readiness workstation */
+.workspace { max-width: 1660px; margin: 0 auto; padding: 18px 20px 30px; }
+.pagehead { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.eyebrow { margin: 0 0 3px; color: var(--accent-strong); font-weight: 700; font-size: 12px; }
+h1 { margin: 0; font-size: clamp(21px, 2.2vw, 28px); line-height: 1.2; }
+.pagehead p:last-child { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+.layout { display: grid; grid-template-columns: minmax(260px, 300px) minmax(0, 1.4fr) minmax(280px, .9fr); align-items: start; gap: 14px; }
+.layout > * { min-width: 0; }
+.panel { min-width: 0; }
+.card-body > :first-child { margin-top: 0; }
+.card-body > :last-child { margin-bottom: 0; }
+.prompt-list { display: grid; gap: 9px; margin: 0 0 16px; }
+.prompt {
+  display: block; width: 100%; text-align: left; font: inherit; color: var(--ink);
+  padding: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); cursor: pointer;
+}
+.prompt:hover:not(:disabled) { border-color: var(--accent-strong); }
+.prompt[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent-strong); box-shadow: inset 3px 0 var(--accent-strong); }
+.prompt strong, .prompt small { display: block; }
+.prompt small { color: var(--muted); margin-top: 3px; font-size: 12px; }
+.prompt:disabled { cursor: not-allowed; }
+.question-label { color: var(--muted); font-size: 12px; margin: 0 0 8px; }
+.question { font-weight: 600; font-size: 19px; line-height: 1.35; margin: 0 0 14px; overflow-wrap: anywhere; }
+.context { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px 16px; padding: 10px 0 14px; border-top: 1px solid var(--line-soft); font-size: 12.5px; }
+.context span { color: var(--muted); }
+.context b { display: block; color: var(--ink); font-weight: 600; }
+.primary-row { display: flex; align-items: center; flex-wrap: wrap; gap: 9px; }
+.primary-row .btn { min-height: 42px; }
+.response { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 14px; }
+.response h3 { margin: 0 0 8px; font-size: 16px; }
+.response p { margin: 0 0 12px; }
+.response .tag { white-space: normal; }
+.response[data-tone="stop"] { border-top-color: var(--stop); }
+.response[data-tone="ok"] { border-top-color: var(--ok); }
+.draft { border-left: 3px solid var(--accent); padding: 10px 12px; background: var(--accent-soft); font-size: 15px; }
+.support { font-size: 13px; color: var(--ink-soft); }
+.review { margin-top: 14px; border-top: 1px solid var(--line-soft); padding-top: 14px; }
+.review h3 { margin: 0 0 8px; font-size: 14px; }
+.review p { margin: 0 0 10px; font-size: 13px; }
+.attest { margin-bottom: 10px; cursor: pointer; }
+.attest input { accent-color: var(--accent-strong); }
+.source-summary { margin: 0 0 13px; font-size: 13px; color: var(--ink-soft); }
+.source-entry { border-top: 1px solid var(--line-soft); padding: 12px 0; }
+.source-entry h3 { margin: 0 0 3px; font-size: 14px; }
+.source-entry p { margin: 0 0 7px; font-size: 12.5px; color: var(--muted); }
+.source-entry .evidence { margin-top: 10px; }
+.source-entry .btn-link { min-height: 30px; text-align: left; }
+.audit-wrap { margin-top: 14px; }
+.audit-wrap .card-body { min-height: 85px; }
+.audit li { grid-template-columns: 55px minmax(0, 1fr); }
+.audit li span { overflow-wrap: anywhere; }
+.empty-note { color: var(--muted); font-size: 13px; }
+.footnote { font-size: 12.5px; color: var(--muted); margin: 0; }
+@media (max-width: 1050px) {
+  .layout { grid-template-columns: minmax(235px, .8fr) minmax(0, 1.5fr); }
+  .sources { grid-column: 1 / -1; }
+  .source-items { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 20px; }
+}
+@media (max-width: 700px) {
+  .workspace { padding: 14px 12px 22px; }
+  .layout { display: flex; flex-direction: column; }
+  .layout > * { width: 100%; }
+  .layout > :nth-child(2) { order: -1; }
+  .source-items { display: block; }
+  .appbar .brand { flex-basis: 100%; }
+  .who { font-size: 12px; }
+  .disclosure { font-size: 11px; }
+}
+  </style>
+</head>
+<body data-subvertical="pharma-life-sciences">
+  <header class="appbar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">◆</span><span class="brand-name">Northstar Biologics <span class="brand-sub">Field readiness workspace · fictional organization</span></span></div>
+    <p class="disclosure">Illustrative demo - synthetic data</p>
+    <p class="who">Signed in as <b>Jamie Vale · field rep (sample)</b></p>
+  </header>
+  <main class="workspace">
+    <div class="pagehead">
+      <div>
+        <p class="eyebrow">Commercial &amp; Market Access / Practice session</p>
+        <h1>Prepare an approved answer</h1>
+        <p>Sample training exercise for an introductory field conversation. No response is released for field use.</p>
+      </div>
+      <button type="button" class="btn" id="reset">Reset practice</button>
+    </div>
+    <div class="layout">
+      <section class="card panel" aria-labelledby="prompts-title">
+        <div class="card-head"><h2 id="prompts-title">Practice questions</h2><span class="card-note">Fictional session FR-085</span></div>
+        <div class="card-body">
+          <p class="source-summary">Choose an approved-content lookup or test an unsupported request.</p>
+          <div class="prompt-list" aria-label="Practice question">
+            <button type="button" class="prompt" data-case="approved" aria-pressed="true"><strong>Approved introduction</strong><small>Find current materials for a practice discussion</small></button>
+            <button type="button" class="prompt" data-case="unsupported" aria-pressed="false"><strong>Comparative claim</strong><small>Test a question that must be handed off</small></button>
+          </div>
+          <p class="footnote">Use only the displayed synthetic examples. Do not enter real inquiries or sensitive details.</p>
+        </div>
+      </section>
+      <section class="card panel" aria-labelledby="answer-title">
+        <div class="card-head"><h2 id="answer-title">Answer review</h2><span id="state-tag" class="tag">Ready</span></div>
+        <div class="card-body">
+          <p class="question-label">Selected sample question</p>
+          <p class="question" id="question"></p>
+          <div class="context"><div><span>Audience</span><b>Field rep · US training</b></div><div><span>Product</span><b>Project Lantern · fictional</b></div></div>
+          <div class="primary-row">
+            <button type="button" class="btn btn-primary" id="check">Check approved sources</button>
+            <span id="status" class="status-line" role="status" aria-live="polite">Ready to check sample sources.</span>
+          </div>
+          <div class="response" id="response" hidden>
+            <h3 id="response-title"></h3>
+            <p id="response-text"></p>
+            <p class="support" id="support"></p>
+            <div class="review" id="review" hidden>
+              <h3>Human practice review</h3>
+              <p>This is a draft for training, not authorization to share. Inspect the cited sample excerpt before recording a local practice review.</p>
+              <label class="attest"><input type="checkbox" id="attest" disabled><span>I inspected the source and checked the audience and version for this sample.</span></label>
+              <button type="button" class="btn btn-primary" id="record" disabled>Record practice review</button>
+            </div>
+            <div class="review" id="handoff" hidden>
+              <h3>Medical Affairs handoff</h3>
+              <p>No supported answer or comparison is provided. A medical reviewer must assess the question and current approved materials; this action records a local sample handoff only.</p>
+              <button type="button" class="btn btn-primary" id="escalate">Record handoff to Medical Affairs</button>
+            </div>
+          </div>
+        </div>
+      </section>
+      <aside class="panel sources" aria-label="Sources and local audit">
+        <section class="card" aria-labelledby="sources-title">
+          <div class="card-head"><h2 id="sources-title">Approved sample sources</h2><span class="card-note">Governed content · fictional</span></div>
+          <div class="card-body">
+            <p class="source-summary" id="source-summary">Run the check to reveal the cited sample material.</p>
+            <div class="source-items" id="source-items" hidden></div>
+          </div>
+        </section>
+        <section class="card audit-wrap" aria-labelledby="audit-title">
+          <div class="card-head"><h2 id="audit-title">Session trail</h2><span class="card-note">Local only · resets on replay</span></div>
+          <div class="card-body"><p class="empty-note" id="audit-empty">No actions recorded in this session.</p><ol class="audit" id="audit"></ol></div>
+        </section>
+      </aside>
+    </div>
+  </main>
+  <footer class="footer">
+    <div class="built"><span>Catalog workload mapping:</span><span class="svc-chip">Azure OpenAI in Azure AI Foundry Models</span><span class="svc-chip">Azure AI Search</span><span class="svc-chip">Azure AI Bot Service</span><span class="svc-chip">Microsoft Copilot Studio</span></div>
+    <span class="claim">Illustrative local simulation; <b>no Microsoft service is contacted.</b></span>
+  </footer>
+  <script>
+    const fixtures = {
+      approved: {
+        question: "Which approved materials can I use for a practice introduction to Project Lantern?",
+        draft: "For this US field-rep practice exercise, start with the current Project Lantern overview card and visual-aid index. Check the approved material and audience scope before any real discussion; route clinical or comparative questions to Medical Affairs.",
+        support: "Draft assembled from sample cards [1] and [2]. Match: current, approved for this fictional US field-rep training scenario. Human review required; not cleared for field use.",
+        sources: [
+          {
+            title: "[1] Project Lantern overview card",
+            meta: "Sample ID NB-TR-014 · v3 · approved for training 2026-09-03 · owner: Sales Training · US field reps",
+            excerpt: "Training excerpt: For an introductory practice conversation, begin with the current overview card. Confirm the audience and version before using a material. Route clinical questions to Medical Affairs."
+          },
+          {
+            title: "[2] Visual-aid index",
+            meta: "Sample ID NB-TR-021 · v2 · approved for training 2026-09-05 · owner: Content Governance · US field reps",
+            excerpt: "Training excerpt: The current visual-aid index lists approved introductory materials for field-rep training. It does not authorize comparative, clinical, or unapproved claims."
+          }
+        ]
+      },
+      unsupported: {
+        question: "Can I say Project Lantern outperforms another therapy?",
+        reason: "No approved sample source supports this comparative claim. Do not draft, repeat, or infer a response. Hold the request for a Medical Affairs reviewer.",
+        support: "Evidence gap: no matching approved comparative material for this fictional US field-rep practice scenario. No confidence score is assigned to an unsupported answer."
+      }
+    };
+
+    const elements = {
+      prompts: [...document.querySelectorAll("[data-case]")],
+      reset: document.getElementById("reset"),
+      question: document.getElementById("question"),
+      check: document.getElementById("check"),
+      status: document.getElementById("status"),
+      stateTag: document.getElementById("state-tag"),
+      response: document.getElementById("response"),
+      responseTitle: document.getElementById("response-title"),
+      responseText: document.getElementById("response-text"),
+      support: document.getElementById("support"),
+      review: document.getElementById("review"),
+      handoff: document.getElementById("handoff"),
+      attest: document.getElementById("attest"),
+      record: document.getElementById("record"),
+      escalate: document.getElementById("escalate"),
+      sourceSummary: document.getElementById("source-summary"),
+      sourceItems: document.getElementById("source-items"),
+      auditEmpty: document.getElementById("audit-empty"),
+      audit: document.getElementById("audit")
+    };
+    const state = { caseId: "approved", phase: "ready", inspected: false, timer: null, audit: [] };
+
+    function logAction(actor, detail) {
+      state.audit.push({ actor, detail });
+      elements.audit.replaceChildren();
+      state.audit.forEach((event, index) => {
+        const item = document.createElement("li");
+        const step = document.createElement("time");
+        const text = document.createElement("span");
+        const name = document.createElement("strong");
+        step.textContent = String(index + 1).padStart(2, "0");
+        name.className = `actor ${event.actor === "Jamie Vale" ? "is-human" : "is-system"}`;
+        name.textContent = event.actor + ": ";
+        text.append(name, document.createTextNode(event.detail));
+        item.append(step, text);
+        elements.audit.append(item);
+      });
+      elements.auditEmpty.hidden = state.audit.length > 0;
+    }
+
+    function renderSources() {
+      elements.sourceItems.replaceChildren();
+      const visible = ["result", "reviewed"].includes(state.phase);
+      elements.sourceItems.hidden = !visible;
+      elements.sourceSummary.textContent = visible
+        ? "Training approval is sample metadata, not authorization for a real field conversation. Open a citation to inspect the excerpt."
+        : state.phase === "exception" || state.phase === "escalated"
+          ? "No approved sample comparative source was found. This result must stay on hold."
+          : "Run the check to reveal the cited sample material.";
+      if (!visible) return;
+      fixtures.approved.sources.forEach((source, index) => {
+        const entry = document.createElement("div");
+        entry.className = "source-entry";
+        const heading = document.createElement("h3");
+        heading.textContent = source.title;
+        const meta = document.createElement("p");
+        meta.textContent = source.meta;
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "btn-link";
+        button.textContent = "Inspect source excerpt";
+        button.setAttribute("aria-expanded", "false");
+        const excerpt = document.createElement("div");
+        excerpt.className = "evidence";
+        excerpt.hidden = true;
+        excerpt.textContent = source.excerpt;
+        button.addEventListener("click", () => {
+          excerpt.hidden = !excerpt.hidden;
+          button.setAttribute("aria-expanded", String(!excerpt.hidden));
+          button.textContent = excerpt.hidden ? "Inspect source excerpt" : "Hide source excerpt";
+          if (!excerpt.hidden && !state.inspected) {
+            state.inspected = true;
+            elements.attest.disabled = false;
+            logAction("Jamie Vale", `inspected sample citation [${index + 1}] and its audience scope`);
+            elements.status.textContent = "Source inspected. Confirm the scope to record your practice review.";
+          }
+        });
+        entry.append(heading, meta, button, excerpt);
+        elements.sourceItems.append(entry);
+      });
+    }
+
+    function render() {
+      const phase = state.phase;
+      elements.question.textContent = fixtures[state.caseId].question;
+      elements.prompts.forEach((button) => {
+        button.setAttribute("aria-pressed", String(button.dataset.case === state.caseId));
+        button.disabled = phase === "working";
+      });
+      elements.check.disabled = phase === "working";
+      elements.check.textContent = phase === "working" ? "Checking sample sources…" : "Check approved sources";
+      elements.response.hidden = phase === "ready" || phase === "working";
+      elements.review.hidden = phase !== "result";
+      elements.handoff.hidden = phase !== "exception";
+      elements.attest.checked = false;
+      elements.attest.disabled = !state.inspected;
+      elements.record.disabled = true;
+      elements.stateTag.className = "tag";
+      elements.response.dataset.tone = "";
+
+      if (phase === "ready") {
+        elements.stateTag.textContent = "Ready";
+        elements.status.textContent = "Ready to check sample sources.";
+      } else if (phase === "working") {
+        elements.stateTag.textContent = "Checking";
+        elements.status.textContent = "Checking fictional approved-content index locally…";
+      } else if (phase === "result" || phase === "reviewed") {
+        elements.stateTag.classList.add("tag-ok");
+        elements.stateTag.textContent = phase === "reviewed" ? "Practice review recorded" : "Draft · needs human review";
+        elements.response.dataset.tone = "ok";
+        elements.responseTitle.textContent = phase === "reviewed" ? "Local practice review recorded" : "Grounded draft · not approved for field use";
+        elements.responseText.className = "draft";
+        elements.responseText.textContent = fixtures.approved.draft;
+        elements.support.textContent = fixtures.approved.support;
+        elements.status.textContent = phase === "reviewed"
+          ? "Practice review saved in this browser session only; no real approval granted."
+          : "Sample draft ready. Inspect a citation and record human review.";
+      } else {
+        elements.stateTag.classList.add("tag-stop");
+        elements.stateTag.textContent = phase === "escalated" ? "Handoff recorded · on hold" : "Unsupported · on hold";
+        elements.response.dataset.tone = "stop";
+        elements.responseTitle.textContent = phase === "escalated" ? "Local handoff recorded" : "No supported answer";
+        elements.responseText.className = "notice notice-stop";
+        elements.responseText.textContent = fixtures.unsupported.reason;
+        elements.support.textContent = fixtures.unsupported.support;
+        elements.status.textContent = phase === "escalated"
+          ? "Handoff noted locally. No message or ticket was sent; the request remains on hold."
+          : "Unsupported question. Record a local handoff to Medical Affairs.";
+      }
+      renderSources();
+    }
+
+    function reset(caseId = "approved") {
+      clearTimeout(state.timer);
+      state.timer = null;
+      state.caseId = caseId;
+      state.phase = "ready";
+      state.inspected = false;
+      state.audit = [];
+      elements.audit.replaceChildren();
+      elements.auditEmpty.hidden = false;
+      render();
+    }
+
+    elements.prompts.forEach((button) => button.addEventListener("click", () => reset(button.dataset.case)));
+    elements.reset.addEventListener("click", () => reset());
+    elements.check.addEventListener("click", () => {
+      clearTimeout(state.timer);
+      state.phase = "working";
+      state.inspected = false;
+      state.audit = [];
+      elements.audit.replaceChildren();
+      elements.auditEmpty.hidden = false;
+      render();
+      state.timer = setTimeout(() => {
+        state.timer = null;
+        state.phase = state.caseId === "approved" ? "result" : "exception";
+        logAction("Sample assistant", state.phase === "result"
+          ? "retrieved two sample training sources; draft awaits field-rep review"
+          : "found no approved comparative source; answer held");
+        render();
+      }, 400);
+    });
+    elements.attest.addEventListener("change", () => {
+      elements.record.disabled = !elements.attest.checked || !state.inspected || state.phase !== "result";
+    });
+    elements.record.addEventListener("click", () => {
+      if (state.phase !== "result" || !state.inspected || !elements.attest.checked) return;
+      state.phase = "reviewed";
+      logAction("Jamie Vale", "recorded source and audience check for practice only; no field-use approval");
+      render();
+    });
+    elements.escalate.addEventListener("click", () => {
+      if (state.phase !== "exception") return;
+      state.phase = "escalated";
+      logAction("Jamie Vale", "recorded local Medical Affairs handoff; question remains on hold");
+      render();
+    });
+    render();
+  </script>
+</body>
+</html>

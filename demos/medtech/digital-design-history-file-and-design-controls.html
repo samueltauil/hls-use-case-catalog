@@ -1,0 +1,728 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Design history file review | HLS demo</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* Demo-specific tokens are declared after the shared subvertical bindings. */
+body[data-subvertical="medtech"] {
+  --on-accent: #fff;
+  --workspace-max: 1480px;
+  --space-layout: clamp(12px, 2vw, 22px);
+  --candidate-fill: color-mix(in srgb, var(--accent-soft) 64%, var(--surface));
+}
+
+.btn-primary {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+  color: var(--on-accent);
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+  color: var(--on-accent);
+}
+.brand-mark {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--muted);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.reset-button { min-height: 34px; padding: 5px 10px; font-size: 12.5px; }
+.workspace { max-width: var(--workspace-max); margin: 0 auto; padding: 20px var(--space-layout) 30px; }
+.page-head { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: flex-end; justify-content: space-between; margin-bottom: 17px; }
+.crumb { margin: 0 0 5px; color: var(--muted); font-size: 12.5px; }
+.page-title { margin: 0; font-size: clamp(22px, 2.3vw, 29px); line-height: 1.2; letter-spacing: -.02em; }
+.page-summary { max-width: 70ch; margin: 6px 0 0; color: var(--muted); font-size: 13.5px; }
+.case-context { display: flex; flex-wrap: wrap; gap: 7px 18px; margin: 0; color: var(--ink-soft); font-size: 12.5px; }
+.case-context div { display: flex; gap: 5px; align-items: baseline; }
+.case-context dt { color: var(--muted); }
+.case-context dd { margin: 0; font-weight: 600; }
+.packet-state { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; }
+.workgrid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(350px, .9fr); grid-template-areas: "trace review"; gap: var(--space-layout); align-items: start; }
+.trace-panel { grid-area: trace; }
+.review-panel { grid-area: review; }
+.section-kicker { display: block; margin-bottom: 3px; color: var(--muted); font-size: 11.5px; font-weight: 600; letter-spacing: .02em; }
+.card-head { align-items: center; }
+.card-head h2 { line-height: 1.35; }
+.card-body { display: grid; gap: 13px; }
+.scope-note { margin: 0; color: var(--muted); font-size: 12.5px; }
+.trace-list { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.trace-row {
+  display: grid;
+  grid-template-columns: minmax(72px, .24fr) minmax(0, 1fr) minmax(95px, auto);
+  gap: 9px 12px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.trace-row:last-child { border-bottom: 0; }
+.trace-id { color: var(--muted); font: 11.5px/1.4 var(--mono); }
+.trace-chain { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 7px; align-items: center; min-width: 0; }
+.trace-end { min-width: 0; }
+.trace-type { display: block; color: var(--muted); font-size: 11px; line-height: 1.3; }
+.trace-record { display: block; overflow-wrap: anywhere; font: 12px/1.4 var(--mono); font-weight: 600; }
+.trace-arrow { color: var(--muted); font-size: 13px; }
+.trace-status { justify-self: end; }
+.trace-row.is-candidate { margin: 4px -8px 0; padding: 11px 8px; background: var(--candidate-fill); border: 1px solid var(--accent-line); border-radius: var(--radius); }
+.sample-label { display: flex; gap: 7px; align-items: flex-start; color: var(--muted); font-size: 12px; }
+.sample-label::before { content: ""; width: 7px; height: 7px; margin-top: 5px; border-radius: 50%; background: var(--accent-strong); flex: none; }
+.evidence-pair { display: grid; gap: 8px; }
+.evidence-line { margin: 0; padding: 9px 10px; border: 1px solid var(--line-soft); border-radius: 6px; background: var(--bg); }
+.evidence-line strong { display: block; margin-bottom: 3px; font-size: 12px; }
+.evidence-line p { margin: 0; color: var(--ink-soft); font-size: 12.5px; line-height: 1.45; overflow-wrap: anywhere; }
+.issue-note { padding: 9px 10px; border-left: 3px solid var(--warn); background: var(--warn-bg); color: #684507; font-size: 12.5px; }
+.decision-form { display: grid; gap: 11px; }
+.decision-form fieldset { display: grid; gap: 7px; margin: 0; padding: 0; border: 0; }
+.decision-form legend { margin-bottom: 6px; color: var(--ink); font-size: 13px; font-weight: 600; }
+.decision-choice {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 9px;
+  align-items: start;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  cursor: pointer;
+}
+.decision-choice:has(input:checked) { border-color: var(--accent-strong); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent-strong); }
+.decision-choice input { width: 17px; height: 17px; margin: 2px 0 0; accent-color: var(--accent-strong); }
+.decision-choice b { display: block; font-size: 13px; line-height: 1.35; }
+.decision-choice small { display: block; margin-top: 2px; color: var(--muted); font-size: 12px; line-height: 1.4; }
+.field { gap: 4px; }
+.field label { color: var(--ink-soft); }
+.field textarea { min-height: 62px; resize: vertical; }
+.decision-help { min-height: 18px; margin: -3px 0 0; color: var(--muted); font-size: 12px; }
+.form-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.local-only { color: var(--muted); font-size: 11.5px; }
+.working-mark { display: inline-block; width: 7px; height: 7px; margin-right: 5px; border-radius: 50%; background: var(--accent-strong); animation: pulse 900ms ease-in-out infinite alternate; }
+@keyframes pulse { to { opacity: .35; } }
+.result-panel { display: grid; gap: 11px; }
+.result-panel h3 { margin: 0; font-size: 16px; }
+.result-panel p { margin: 0; color: var(--ink-soft); font-size: 13px; }
+.result-detail { margin: 0; padding: 10px 11px; border: 1px solid var(--line-soft); background: var(--bg); border-radius: var(--radius); }
+.result-detail dt { color: var(--muted); font-size: 11.5px; font-weight: 600; }
+.result-detail dd { margin: 2px 0 9px; overflow-wrap: anywhere; font-size: 13px; }
+.result-detail dd:last-child { margin-bottom: 0; }
+.considerations { margin: 0; padding-left: 18px; color: var(--ink-soft); font-size: 12px; }
+.considerations li + li { margin-top: 4px; }
+.context-note { margin: 14px 1px 0; color: var(--muted); font-size: 12px; }
+.footer { margin-top: 4px; }
+.built { gap: 6px; }
+.built-label { margin-right: 3px; font-weight: 600; color: var(--ink-soft); }
+
+@media (max-width: 920px) {
+  .workgrid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "review" "trace"; }
+  .page-head { align-items: flex-start; }
+}
+@media (max-width: 560px) {
+  .workspace { padding-top: 15px; }
+  .page-head { gap: 9px; margin-bottom: 12px; }
+  .page-summary { margin-top: 4px; font-size: 13px; }
+  .case-context { gap: 4px 12px; }
+  .workgrid { gap: 12px; }
+  .card-head { padding: 10px 12px; }
+  .card-body { padding: 11px 12px; gap: 11px; }
+  .trace-row { grid-template-columns: minmax(0, 1fr) auto; gap: 5px 8px; }
+  .trace-id { grid-column: 1; }
+  .trace-chain { grid-column: 1 / -1; grid-row: 2; }
+  .trace-status { grid-column: 2; grid-row: 1; }
+  .trace-chain { grid-template-columns: minmax(0, 1fr) 16px minmax(0, 1fr); }
+  .appbar { align-items: center; }
+  .who { width: 100%; }
+  .reset-button { margin-left: auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .working-mark { animation: none; }
+}
+  </style>
+</head>
+<body data-subvertical="medtech">
+  <header class="appbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">D</span>
+      <div>
+        <span class="brand-name">Design control workspace</span>
+        <span class="brand-sub">Fictional quality operations</span>
+      </div>
+    </div>
+    <p class="disclosure">Illustrative demo - synthetic data</p>
+    <p class="who"><b data-user-name></b> · <span data-user-role></span> · <span data-organization></span></p>
+    <button class="btn reset-button" type="button" data-reset>Reset demo</button>
+  </header>
+
+  <main class="workspace">
+    <header class="page-head">
+      <div>
+        <p class="crumb">Quality workspace <span aria-hidden="true">/</span> Design history files</p>
+        <h1 class="page-title">Design history file review</h1>
+        <p class="page-summary">Resolve one traceability candidate before staging a draft review packet. A person owns the decision; this page does not create a controlled record.</p>
+        <span class="tag packet-state" data-packet-state>Draft not assembled</span>
+      </div>
+      <dl class="case-context" aria-label="Current review context">
+        <div><dt>Program</dt><dd data-program-name></dd></div>
+        <div><dt>Scope</dt><dd>Design traceability</dd></div>
+        <div><dt>Sample file</dt><dd class="mono" data-file-id></dd></div>
+      </dl>
+    </header>
+
+    <div class="workgrid">
+      <section class="card review-panel" aria-labelledby="review-heading">
+        <div class="card-head">
+          <div>
+            <span class="section-kicker">Human review · sample candidate</span>
+            <h2 id="review-heading">Decide whether this trace link is supportable</h2>
+          </div>
+          <span class="tag tag-warn" data-review-tag>Needs review</span>
+        </div>
+        <div class="card-body">
+          <p class="sample-label">An index suggestion is not an approved relationship. Inspect the source references and record a reason.</p>
+          <div class="evidence-pair" aria-label="Synthetic source evidence">
+            <article class="evidence-line">
+              <strong>Design control · <span class="mono" data-control-id></span></strong>
+              <p data-control-detail></p>
+            </article>
+            <article class="evidence-line">
+              <strong>Verification record · <span class="mono" data-verification-id></span></strong>
+              <p data-verification-detail></p>
+            </article>
+          </div>
+          <p class="issue-note" data-discrepancy></p>
+
+          <form class="decision-form" data-decision-form>
+            <fieldset data-decision-fields>
+              <legend>Choose a disposition</legend>
+              <label class="decision-choice">
+                <input type="radio" name="disposition" value="confirm">
+                <span><b>Confirm link for draft packet</b><small>Use only if the cited source supports this relationship. The packet remains a draft for accountable review.</small></span>
+              </label>
+              <label class="decision-choice">
+                <input type="radio" name="disposition" value="escalate">
+                <span><b>Hold and escalate mismatch</b><small>Route the unresolved source discrepancy to the Document Control Lead.</small></span>
+              </label>
+            </fieldset>
+            <div class="field">
+              <label for="review-rationale">Review rationale <span aria-hidden="true">(required)</span></label>
+              <textarea id="review-rationale" name="rationale" rows="2" maxlength="240" required aria-describedby="rationale-help"></textarea>
+            </div>
+            <p id="rationale-help" class="decision-help" data-decision-help>Choose a disposition and enter a concise rationale to continue.</p>
+            <div class="form-actions">
+              <button class="btn btn-primary" type="submit" data-submit-decision disabled>Record decision &amp; prepare draft</button>
+              <span class="local-only">Local demo state only · nothing is submitted.</span>
+            </div>
+          </form>
+
+          <section class="result-panel" data-result hidden aria-labelledby="result-heading">
+            <div class="notice" data-result-notice>
+              <div>
+                <h3 id="result-heading" data-result-title></h3>
+                <p data-result-message></p>
+              </div>
+            </div>
+            <dl class="result-detail">
+              <dt>Recorded by</dt><dd data-result-reviewer></dd>
+              <dt>Disposition</dt><dd data-result-disposition></dd>
+              <dt>Rationale</dt><dd data-result-rationale></dd>
+              <dt>Next step</dt><dd data-result-next></dd>
+            </dl>
+            <button class="btn" type="button" data-reset-result>Reset and replay</button>
+          </section>
+          <p class="status-line" data-status role="status" aria-live="polite">Review candidate and choose a disposition.</p>
+        </div>
+      </section>
+
+      <section class="card trace-panel" aria-labelledby="trace-heading">
+        <div class="card-head">
+          <div>
+            <span class="section-kicker">Primary object · sample trace set</span>
+            <h2 id="trace-heading">Design-control trace links</h2>
+          </div>
+          <span class="tag" data-scope-count></span>
+        </div>
+        <div class="card-body">
+          <p class="scope-note">Fictional operational sample · one candidate needs a person to review before packet staging.</p>
+          <ol class="trace-list" data-trace-list aria-label="Trace links in this sample review"></ol>
+          <p class="rule">Source records and relationships here are illustrative, not validated evidence or a regulatory determination.</p>
+        </div>
+      </section>
+    </div>
+
+    <p class="context-note">Catalog context: 21 CFR Part 820 and EU MDR. This mock illustrates a governed, searchable design history file with traceability and lineage; it does not demonstrate compliance or system validation.</p>
+  </main>
+
+  <footer class="footer">
+    <div class="built" aria-label="Catalog workload names">
+      <span class="built-label">Catalog workload names</span>
+      <span data-workloads></span>
+    </div>
+    <span class="claim"><b>Illustrative only.</b> These labels are not live integrations or a claim about specific product behavior.</span>
+  </footer>
+
+  <script>
+    "use strict";
+
+    const DEMO_FIXTURES = Object.freeze({
+      organization: "Northstar Devices Lab · fictional",
+      user: { name: "Mara Chen", role: "Design Assurance Lead · fictional" },
+      program: "Tern-4 flow controller · SIM-PROJ-041",
+      fileId: "SIM-DHF-018 · Rev 03",
+      control: {
+        id: "SIM-RC-014",
+        detail: "Rev 02 · approved 12 Sep (sample). Risk control for the sample flow-limit check."
+      },
+      verification: {
+        id: "SIM-VR-011",
+        detail: "Rev 01 · reviewed 08 Sep (sample). Verification note includes a reference to SIM-RC-014."
+      },
+      discrepancy: "Review flag: the extracted index lists SIM-RC-013, while the source note references SIM-RC-014. This candidate is not a confirmed relationship.",
+      rationaleHint: "Example: compared the cited verification note with the source control record and confirmed the reference.",
+      reviewerDate: "Sample review date · 16 Sep 2026",
+      workloads: [
+        "Microsoft Fabric",
+        "Microsoft Purview",
+        "Azure AI Search",
+        "Azure Storage"
+      ],
+      links: [
+        { id: "SIM-TR-001", fromType: "User need", fromId: "SIM-UN-004", toType: "Design input", toId: "SIM-DI-008", state: "Linked", kind: "ok" },
+        { id: "SIM-TR-002", fromType: "Design input", fromId: "SIM-DI-008", toType: "Design output", toId: "SIM-DO-021", state: "Linked", kind: "ok" },
+        { id: "SIM-TR-003", fromType: "Design output", fromId: "SIM-DO-021", toType: "Verification", toId: "SIM-VR-006", state: "Linked", kind: "ok" },
+        { id: "SIM-TR-004", fromType: "Hazard", fromId: "SIM-HZ-003", toType: "Risk control", toId: "SIM-RC-004", state: "Linked", kind: "ok" },
+        { id: "SIM-TR-005", fromType: "Risk control", fromId: "SIM-RC-014", toType: "Verification", toId: "SIM-VR-011", state: "Candidate", kind: "candidate" }
+      ],
+      considerations: [
+        "Validation of new systems: scope a GxP-aligned validation approach.",
+        "Legacy records: consider phased ingestion and lineage capture."
+      ]
+    });
+
+    const state = { phase: "ready", timer: null };
+    const form = document.querySelector("[data-decision-form]");
+    const fieldset = document.querySelector("[data-decision-fields]");
+    const rationale = document.querySelector("#review-rationale");
+    const submitButton = document.querySelector("[data-submit-decision]");
+    const decisionHelp = document.querySelector("[data-decision-help]");
+    const result = document.querySelector("[data-result]");
+    const status = document.querySelector("[data-status]");
+    const traceList = document.querySelector("[data-trace-list]");
+    const packetState = document.querySelector("[data-packet-state]");
+    const resetButtons = document.querySelectorAll("[data-reset], [data-reset-result]");
+
+    function appendText(parent, tagName, className, text) {
+      const element = document.createElement(tagName);
+      if (className) element.className = className;
+      element.textContent = text;
+      parent.append(element);
+      return element;
+    }
+
+    function renderFixtures() {
+      document.querySelector("[data-user-name]").textContent = DEMO_FIXTURES.user.name;
+      document.querySelector("[data-user-role]").textContent = DEMO_FIXTURES.user.role;
+      document.querySelector("[data-organization]").textContent = DEMO_FIXTURES.organization;
+      document.querySelector("[data-program-name]").textContent = DEMO_FIXTURES.program;
+      document.querySelector("[data-file-id]").textContent = DEMO_FIXTURES.fileId;
+      document.querySelector("[data-control-id]").textContent = DEMO_FIXTURES.control.id;
+      document.querySelector("[data-control-detail]").textContent = DEMO_FIXTURES.control.detail;
+      document.querySelector("[data-verification-id]").textContent = DEMO_FIXTURES.verification.id;
+      document.querySelector("[data-verification-detail]").textContent = DEMO_FIXTURES.verification.detail;
+      document.querySelector("[data-discrepancy]").textContent = DEMO_FIXTURES.discrepancy;
+      rationale.placeholder = DEMO_FIXTURES.rationaleHint;
+      document.querySelector("[data-scope-count]").textContent = `${DEMO_FIXTURES.links.length} links in sample scope`;
+
+      traceList.replaceChildren();
+      for (const link of DEMO_FIXTURES.links) {
+        const row = document.createElement("li");
+        row.className = `trace-row${link.kind === "candidate" ? " is-candidate" : ""}`;
+        const id = appendText(row, "span", "trace-id", link.id);
+        id.setAttribute("aria-label", `Trace link ${link.id}`);
+
+        const chain = appendText(row, "span", "trace-chain", "");
+        const from = appendText(chain, "span", "trace-end", "");
+        appendText(from, "span", "trace-type", link.fromType);
+        appendText(from, "span", "trace-record", link.fromId);
+        appendText(chain, "span", "trace-arrow", "→").setAttribute("aria-hidden", "true");
+        const to = appendText(chain, "span", "trace-end", "");
+        appendText(to, "span", "trace-type", link.toType);
+        appendText(to, "span", "trace-record", link.toId);
+
+        const tag = appendText(row, "span", `tag trace-status${link.kind === "candidate" ? " tag-warn" : " tag-ok"}`, link.state);
+        tag.dataset.traceStatus = link.id;
+        traceList.append(row);
+      }
+
+      const workloadHost = document.querySelector("[data-workloads]");
+      workloadHost.replaceChildren();
+      DEMO_FIXTURES.workloads.forEach((name) => {
+        appendText(workloadHost, "span", "svc-chip", name);
+      });
+    }
+
+    function selectedDisposition() {
+      return form.querySelector('input[name="disposition"]:checked')?.value || "";
+    }
+
+    function updateForm() {
+      if (state.phase !== "ready") return;
+      const hasDecision = Boolean(selectedDisposition());
+      const hasRationale = Boolean(rationale.value.trim());
+      submitButton.disabled = !(hasDecision && hasRationale);
+      if (!hasDecision && !hasRationale) {
+        decisionHelp.textContent = "Choose a disposition and enter a concise rationale to continue.";
+      } else if (!hasDecision) {
+        decisionHelp.textContent = "Choose who owns the next step.";
+      } else if (!hasRationale) {
+        decisionHelp.textContent = "A brief rationale is required before recording this decision.";
+      } else if (selectedDisposition() === "escalate") {
+        decisionHelp.textContent = "This choice holds packet staging and records an escalation route.";
+      } else {
+        decisionHelp.textContent = "This records your review and stages a draft only; it does not approve a controlled record.";
+      }
+    }
+
+    function setCandidateState(text, kind) {
+      const tag = traceList.querySelector('[data-trace-status="SIM-TR-005"]');
+      if (!tag) return;
+      tag.textContent = text;
+      tag.className = `tag trace-status ${kind === "ok" ? "tag-ok" : "tag-stop"}`;
+    }
+
+    function showResult(disposition, reason) {
+      const isConfirm = disposition === "confirm";
+      state.phase = isConfirm ? "assembled" : "held";
+      fieldset.disabled = true;
+      rationale.disabled = true;
+      form.hidden = true;
+      result.hidden = false;
+
+      const notice = document.querySelector("[data-result-notice]");
+      notice.className = `notice ${isConfirm ? "notice-ok" : "notice-warn"}`;
+      document.querySelector("[data-result-title]").textContent = isConfirm
+        ? "Draft packet staged for accountable review"
+        : "Trace gap held for escalation";
+      document.querySelector("[data-result-message]").textContent = isConfirm
+        ? "Your sample review decision is recorded in this page. A draft packet is staged; no controlled record or compliance approval was created."
+        : "The mismatch remains unresolved. Packet staging is held and a sample escalation route is shown; nothing was sent outside this page.";
+      document.querySelector("[data-result-reviewer]").textContent = `${DEMO_FIXTURES.user.name} · ${DEMO_FIXTURES.reviewerDate}`;
+      document.querySelector("[data-result-disposition]").textContent = isConfirm
+        ? "Confirm link for draft packet"
+        : "Hold and escalate mismatch";
+      document.querySelector("[data-result-rationale]").textContent = reason;
+      document.querySelector("[data-result-next]").textContent = isConfirm
+        ? "Quality / Regulatory reviewer checks the assembled sample packet."
+        : "Document Control Lead checks the source version and corrects the trace link.";
+
+      packetState.textContent = isConfirm ? "Draft staged · human review recorded" : "Held · source correction needed";
+      packetState.className = `tag packet-state ${isConfirm ? "tag-ok" : "tag-warn"}`;
+      document.querySelector("[data-review-tag]").textContent = isConfirm ? "Human reviewed" : "Escalation required";
+      document.querySelector("[data-review-tag]").className = `tag ${isConfirm ? "tag-ok" : "tag-warn"}`;
+      setCandidateState(isConfirm ? "Reviewed for draft" : "Held for correction", isConfirm ? "ok" : "stop");
+      status.textContent = isConfirm
+        ? "Decision recorded. Draft packet is staged for accountable review."
+        : "Decision recorded. The trace gap remains open and staging is held.";
+      document.querySelector("[data-reset-result]").focus();
+    }
+
+    function resetDemo() {
+      if (state.timer) window.clearTimeout(state.timer);
+      state.phase = "ready";
+      state.timer = null;
+      form.reset();
+      fieldset.disabled = false;
+      rationale.disabled = false;
+      form.hidden = false;
+      result.hidden = true;
+      packetState.textContent = "Draft not assembled";
+      packetState.className = "tag packet-state";
+      document.querySelector("[data-review-tag]").textContent = "Needs review";
+      document.querySelector("[data-review-tag]").className = "tag tag-warn";
+      setCandidateState("Candidate", "candidate");
+      status.textContent = "Demo reset. Review the sample candidate and choose a disposition.";
+      updateForm();
+    }
+
+    form.addEventListener("change", updateForm);
+    rationale.addEventListener("input", updateForm);
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      if (state.phase !== "ready" || !form.reportValidity()) return;
+      const disposition = selectedDisposition();
+      const reason = rationale.value.trim();
+      if (!disposition || !reason) {
+        updateForm();
+        return;
+      }
+
+      state.phase = "working";
+      submitButton.disabled = true;
+      fieldset.disabled = true;
+      rationale.disabled = true;
+      const progress = document.createElement("span");
+      progress.className = "working-mark";
+      progress.setAttribute("aria-hidden", "true");
+      status.replaceChildren(progress, document.createTextNode("Recording this sample review decision…"));
+      state.timer = window.setTimeout(() => showResult(disposition, reason), 500);
+    });
+
+    resetButtons.forEach((button) => button.addEventListener("click", resetDemo));
+    renderFixtures();
+    updateForm();
+  </script>
+</body>
+</html>

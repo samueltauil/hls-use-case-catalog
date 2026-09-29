@@ -1,0 +1,928 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Threat response review | HLS Security Operations</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* --------------------------------------------------------- workbench layout */
+body {
+  --on-accent: #fff;
+}
+
+.skip-link {
+  position: fixed; z-index: 50; top: 8px; left: 8px; transform: translateY(-150%);
+  padding: 8px 12px; border-radius: var(--radius); background: var(--surface); color: var(--ink);
+  border: 2px solid var(--accent-strong);
+}
+.skip-link:focus { transform: translateY(0); }
+
+.workspace { width: min(1480px, 100%); margin: 0 auto; padding: 22px 24px 30px; }
+.page-heading {
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 18px;
+  margin-bottom: 15px;
+}
+.page-heading h1 { margin: 1px 0 2px; font-size: clamp(24px, 2.7vw, 32px); line-height: 1.15; letter-spacing: -.025em; }
+.eyebrow { margin: 0; font-size: 12.5px; color: var(--muted); }
+.lede { margin: 5px 0 0; max-width: 66ch; color: var(--ink-soft); font-size: 14px; }
+.heading-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px; }
+
+.context-strip {
+  display: flex; flex-wrap: wrap; gap: 7px 22px; align-items: center;
+  padding: 9px 12px; margin-bottom: 14px; border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line); color: var(--ink-soft); font-size: 12.5px;
+}
+.context-strip b { color: var(--ink); font-weight: 600; }
+.context-item { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 5px; }
+
+.workbench {
+  display: grid; grid-template-columns: minmax(230px, .68fr) minmax(0, 2fr);
+  gap: 15px; align-items: start;
+}
+.queue { overflow: hidden; }
+.queue .card-head { align-items: center; }
+.queue-list { display: grid; }
+.queue-item {
+  width: 100%; min-height: 82px; display: grid; gap: 4px; text-align: left;
+  padding: 12px 14px; border: 0; border-top: 1px solid var(--line-soft);
+  background: var(--surface); color: var(--ink); cursor: pointer; font: inherit;
+}
+.queue-item:first-child { border-top: 0; }
+.queue-item:hover { background: var(--bg); }
+.queue-item[aria-pressed="true"] {
+  background: var(--accent-soft); box-shadow: inset 3px 0 var(--accent);
+}
+.queue-line { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 5px 8px; }
+.queue-title { font-weight: 600; font-size: 13.5px; }
+.queue-id { color: var(--muted); font-size: 11.5px; }
+.queue-meta { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.queue-observed { color: var(--muted); font-size: 11.5px; }
+.queue .card-note { margin: 0; padding: 0 15px 10px; }
+
+.case-file { min-width: 0; overflow: hidden; }
+.case-head {
+  display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 10px 18px;
+  padding: 15px 18px 13px; border-bottom: 1px solid var(--line-soft);
+}
+.case-head h2 { margin: 2px 0 3px; font-size: 19px; line-height: 1.25; }
+.case-head p { margin: 0; color: var(--ink-soft); font-size: 13px; }
+.case-label { color: var(--muted); font-size: 11.5px; }
+.case-number { font: 12px var(--mono); color: var(--muted); }
+.case-id-block { display: grid; justify-items: end; gap: 5px; }
+
+.case-facts {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 14px;
+  padding: 11px 18px; border-bottom: 1px solid var(--line-soft);
+}
+.case-facts div { min-width: 0; }
+.case-facts dt { font-size: 11.5px; color: var(--muted); }
+.case-facts dd { margin: 1px 0 0; font-size: 12.5px; font-weight: 600; overflow-wrap: anywhere; }
+
+.case-grid {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(275px, .88fr);
+  gap: 13px; padding: 14px;
+}
+.evidence-panel, .action-card { min-width: 0; }
+.section-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 7px; margin-bottom: 7px; }
+.section-heading h3 { margin: 0; font-size: 14px; font-weight: 600; }
+.evidence-intro { margin: 0 0 9px; color: var(--muted); font-size: 12.5px; }
+.evidence-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line-soft); }
+.evidence-item { padding: 9px 0; border-bottom: 1px solid var(--line-soft); }
+.evidence-source { display: block; font-size: 12.5px; font-weight: 600; }
+.evidence-detail { display: block; margin-top: 2px; color: var(--ink-soft); font-size: 12.5px; }
+.evidence-context { display: block; margin-top: 3px; color: var(--muted); font-size: 11.5px; }
+.evidence-caveat { margin: 9px 0 0; padding: 8px 9px; border-left: 3px solid var(--warn); background: var(--warn-bg); color: #68430a; font-size: 12px; }
+
+.action-card {
+  padding: 13px; border: 1px solid var(--accent-line); border-left: 3px solid var(--accent);
+  border-radius: var(--radius); background: var(--accent-soft);
+}
+.action-card h3 { margin: 0; font-size: 15px; }
+.action-kicker { margin: 0 0 5px; color: var(--accent-strong); font-size: 11.5px; font-weight: 700; }
+.action-summary { margin: 8px 0; font-size: 13px; font-weight: 600; line-height: 1.45; }
+.action-scope { display: grid; gap: 5px; margin: 9px 0; padding-top: 8px; border-top: 1px solid var(--accent-line); }
+.action-scope dt { color: var(--muted); font-size: 11px; }
+.action-scope dd { margin: 0; color: var(--ink); font-size: 12px; }
+.simulation-note { margin: 8px 0 10px; color: var(--ink-soft); font-size: 11.5px; }
+.action-card > .btn { width: 100%; justify-content: center; }
+.review-panel { margin-top: 12px; padding-top: 11px; border-top: 1px solid var(--accent-line); }
+.review-panel h4 { margin: 0 0 4px; font-size: 13px; }
+.review-panel > p { margin: 0 0 8px; color: var(--ink-soft); font-size: 12px; }
+.review-list { list-style: none; display: grid; gap: 6px; margin: 0 0 10px; padding: 0; }
+.review-list li { padding-left: 12px; position: relative; color: var(--ink-soft); font-size: 12px; }
+.review-list li::before { content: "•"; position: absolute; left: 0; color: var(--accent-strong); font-weight: 700; }
+.review-actions { display: grid; gap: 7px; }
+.review-actions .btn { width: 100%; justify-content: center; }
+.review-actions .btn-link { justify-self: start; }
+.outcome { margin-top: 10px; }
+.outcome strong { display: block; }
+
+.activity { padding: 0 18px 15px; }
+.activity-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 10px; align-items: baseline; margin: 0 0 8px; padding-top: 11px; border-top: 1px solid var(--line-soft); }
+.activity-head h3 { margin: 0; font-size: 13px; }
+.activity-head p { margin: 0; color: var(--muted); font-size: 11.5px; }
+.audit { gap: 7px; }
+.audit li { grid-template-columns: 58px minmax(0, 1fr); font-size: 12px; }
+.audit time { color: var(--muted); }
+
+.workload-context {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px;
+  margin-top: 13px; padding: 11px 0 0; border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 11.5px;
+}
+.workload-context strong { color: var(--ink-soft); font-weight: 600; }
+.workload-list { display: flex; flex-wrap: wrap; gap: 5px; margin: 0; padding: 0; list-style: none; }
+.workload-list li { padding: 2px 7px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); color: var(--ink-soft); }
+.catalog-note { margin: 7px 0 0; color: var(--muted); font-size: 11px; }
+
+@media (max-width: 980px) {
+  .workspace { padding: 18px 18px 26px; }
+  .workbench { grid-template-columns: minmax(0, 1fr); }
+  .queue-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .queue-item { border-top: 0; border-left: 1px solid var(--line-soft); }
+  .queue-item:first-child { border-left: 0; }
+  .queue-item[aria-pressed="true"] { box-shadow: inset 0 3px var(--accent); }
+}
+
+@media (max-width: 700px) {
+  .workspace { padding: 15px 12px 23px; }
+  .page-heading { align-items: flex-start; gap: 10px; }
+  .heading-actions { align-items: flex-start; }
+  .context-strip { gap: 4px 13px; }
+  .workbench { gap: 11px; }
+  .queue-list { grid-template-columns: minmax(0, 1fr); }
+  .queue-item, .queue-item:first-child {
+    min-height: 63px; border-left: 0; border-top: 1px solid var(--line-soft);
+  }
+  .queue-item:first-child { border-top: 0; }
+  .queue-item[aria-pressed="true"] { box-shadow: inset 3px 0 var(--accent); }
+  .case-head { padding: 12px 13px 10px; }
+  .case-head h2 { font-size: 17px; }
+  .case-id-block { justify-items: start; }
+  .case-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 11px; padding: 10px 13px; }
+  .case-grid { grid-template-columns: minmax(0, 1fr); gap: 13px; padding: 12px; }
+  .action-card { grid-row: 1; }
+  .activity { padding: 0 13px 13px; }
+  .heading-actions .tag { align-self: center; }
+}
+
+@media (max-width: 420px) {
+  .page-heading { display: block; }
+  .heading-actions { justify-content: space-between; margin-top: 10px; }
+  .brand { margin-right: 0; }
+  .disclosure { order: 3; }
+  .who { margin-left: auto; }
+  .case-facts { grid-template-columns: minmax(0, 1fr); }
+}
+  </style>
+</head>
+<body data-subvertical="health-providers">
+  <a class="skip-link" href="#main">Skip to response review</a>
+  <header class="appbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">◈</span>
+      <span>
+        <span class="brand-name">HLS Security Operations</span>
+        <span class="brand-sub">Health providers · response review</span>
+      </span>
+    </div>
+    <p class="disclosure">Illustrative demo - synthetic data</p>
+    <p class="who">Operator <b>Jordan Vale · CISO</b></p>
+  </header>
+
+  <main class="workspace" id="main">
+    <div class="page-heading">
+      <div>
+        <p class="eyebrow" id="orgContext"></p>
+        <h1>Threat response review</h1>
+        <p class="lede">Review a synthetic security signal before approving a reversible response.</p>
+      </div>
+      <div class="heading-actions">
+        <span class="tag tag-ok" id="phaseBadge">Ready</span>
+        <button class="btn" type="button" id="resetButton">Reset scenario</button>
+      </div>
+    </div>
+
+    <div class="context-strip" aria-label="Workflow context">
+      <span class="context-item"><b>Work mode</b> <span id="exerciseContext"></span></span>
+      <span class="context-item"><b>Starting motion</b> Assessment</span>
+      <span class="context-item"><b>Decision owner</b> Human CISO review</span>
+    </div>
+    <p class="status-line sr-only" id="statusLine" role="status" aria-live="polite" aria-atomic="true">
+      Synthetic response case ready. No action has been applied.
+    </p>
+
+    <div class="workbench">
+      <section class="queue card" aria-labelledby="queueHeading">
+        <div class="card-head">
+          <h2 id="queueHeading">Response queue</h2>
+          <span class="tag" id="queueCount"></span>
+        </div>
+        <p class="card-note">Select a fictional case to inspect its evidence.</p>
+        <div class="queue-list" id="caseQueue" role="group" aria-label="Available synthetic response cases"></div>
+      </section>
+
+      <section class="case-file card" aria-labelledby="caseTitle">
+        <div class="case-head">
+          <div>
+            <span class="case-label">Selected synthetic case</span>
+            <h2 id="caseTitle"></h2>
+            <p id="caseSummary"></p>
+          </div>
+          <div class="case-id-block">
+            <span class="tag" id="severityTag"></span>
+            <span class="case-number" id="caseNumber"></span>
+          </div>
+        </div>
+
+        <dl class="case-facts">
+          <div><dt>Observed</dt><dd id="observedAt"></dd></div>
+          <div><dt>Identity reference</dt><dd class="mono" id="identityRef"></dd></div>
+          <div><dt>Related asset</dt><dd class="mono" id="assetRef"></dd></div>
+        </dl>
+
+        <div class="case-grid">
+          <section class="evidence-panel" aria-labelledby="evidenceHeading">
+            <div class="section-heading">
+              <h3 id="evidenceHeading">Sample evidence</h3>
+              <span class="tag" id="evidenceTag"></span>
+            </div>
+            <p class="evidence-intro">Fictional source records for review; no patient-level details are present.</p>
+            <ul class="evidence-list" id="evidenceList"></ul>
+            <p class="evidence-caveat" id="evidenceCaveat" hidden></p>
+          </section>
+
+          <section class="action-card" aria-labelledby="actionHeading">
+            <p class="action-kicker">Human approval required · no automatic containment</p>
+            <h3 id="actionHeading">Response proposal</h3>
+            <p class="action-summary" id="actionSummary"></p>
+            <dl class="action-scope">
+              <div><dt>Proposed scope</dt><dd id="actionScope"></dd></div>
+              <div><dt>Why it is proposed</dt><dd id="actionRationale"></dd></div>
+            </dl>
+            <p class="simulation-note">Simulation only. Approving records a demo decision; it does not change a network, account, or clinical system.</p>
+            <button class="btn btn-primary" type="button" id="reviewButton">Review response plan</button>
+
+            <div class="review-panel" id="reviewPanel" hidden>
+              <h4 tabindex="-1" id="reviewHeading">Operator review</h4>
+              <p id="reviewExplanation"></p>
+              <ul class="review-list" id="reviewSources"></ul>
+              <div class="review-actions">
+                <button class="btn btn-primary" type="button" id="approveButton">Approve simulated containment</button>
+                <button class="btn-link" type="button" id="escalateButton">Hold response and escalate</button>
+              </div>
+            </div>
+
+            <div class="outcome" id="outcomePanel" hidden>
+              <div class="notice" id="outcomeNotice">
+                <div>
+                  <strong id="outcomeTitle" tabindex="-1"></strong>
+                  <span id="outcomeText"></span>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <section class="activity" aria-labelledby="activityHeading">
+          <div class="activity-head">
+            <h3 id="activityHeading">Review history</h3>
+            <p>Sample audit trail · actions remain simulated</p>
+          </div>
+          <ol class="audit" id="auditTrail"></ol>
+        </section>
+      </section>
+    </div>
+
+    <section class="workload-context" aria-label="Catalog workload context">
+      <strong>Catalog workloads</strong>
+      <ul class="workload-list" id="workloadList"></ul>
+    </section>
+    <p class="catalog-note">Workloads are named as catalog context only; this standalone exercise makes no claims about product behavior or live integrations.</p>
+  </main>
+
+  <script>
+    "use strict";
+
+    const DEMO_FIXTURES = {
+      organization: "Harborlight Community Health (fictional provider)",
+      operator: { name: "Jordan Vale", role: "Chief Information Security Officer" },
+      exercise: "Ransomware resilience · synthetic exercise",
+      workloads: [
+        "Microsoft Sentinel",
+        "Microsoft Defender for Cloud",
+        "Azure network security (Firewall, WAF, DDoS, Front Door, Bastion)",
+        "Microsoft Security Copilot",
+        "Microsoft Purview (catalog workload: Purview Data Security Investigations)"
+      ],
+      incidents: [
+        {
+          id: "IR-SYN-0472",
+          title: "File-change anomaly",
+          severity: "High",
+          severityClass: "tag-stop",
+          summary: "Unusual change activity in a non-clinical document staging zone.",
+          observed: "09:36 · sample timeline",
+          identity: "svc-docsync-syn-04",
+          asset: "DOC-STAGE-SYN-02",
+          evidenceState: "reviewable",
+          evidenceLabel: "Evidence ready",
+          evidence: [
+            {
+              source: "Synthetic alert queue",
+              detail: "A concentrated file-change pattern was added to the sample queue.",
+              context: "Illustrative signal · not a live detection"
+            },
+            {
+              source: "Synthetic asset register",
+              detail: "The referenced connector is assigned to a non-clinical staging zone.",
+              context: "Fictional asset record · scope still requires operator review"
+            },
+            {
+              source: "Synthetic ownership register",
+              detail: "A staging-zone owner is recorded for follow-up.",
+              context: "Fictional role record · no real employee identity"
+            }
+          ],
+          evidenceCaveat: "",
+          proposal: "Temporarily isolate the non-clinical staging connector while its owner checks the affected boundary.",
+          scope: "DOC-STAGE-SYN-02 only · reversible in this fictional plan",
+          rationale: "The synthetic alert and asset record point to a bounded, non-clinical staging zone. A human operator must confirm the scope before the simulated approval is recorded.",
+          reviewExplanation: "Review the sample signal and proposed scope. The system has not acted; the CISO remains responsible for the decision.",
+          reviewSources: [
+            "Synthetic alert queue — concentrated file-change pattern.",
+            "Synthetic asset register — non-clinical staging-zone association.",
+            "Synthetic ownership register — follow-up owner recorded."
+          ],
+          auditSeed: [
+            { time: "09:36", actor: "System · sample", text: "Fictional signal entered the response queue." },
+            { time: "09:37", actor: "System · sample", text: "Asset and ownership references attached for human review." }
+          ]
+        },
+        {
+          id: "IR-SYN-0479",
+          title: "Identity boundary unclear",
+          severity: "Review",
+          severityClass: "tag-warn",
+          summary: "The sample identity has an outdated owner mapping; containment scope is not verified.",
+          observed: "09:38 · sample timeline",
+          identity: "svc-integration-syn-07",
+          asset: "CLINICAL-INT-SYN-04",
+          evidenceState: "stale",
+          evidenceLabel: "Owner check needed",
+          evidence: [
+            {
+              source: "Synthetic alert queue",
+              detail: "A service-identity access pattern is awaiting review.",
+              context: "Illustrative signal · no live incident"
+            },
+            {
+              source: "Synthetic identity register",
+              detail: "The last owner association is marked out of date.",
+              context: "Deliberate exception fixture · current owner not confirmed"
+            },
+            {
+              source: "Synthetic asset register",
+              detail: "The related interface is labeled clinical; the affected boundary is unclear.",
+              context: "Fictional asset record · do not infer safe isolation"
+            }
+          ],
+          evidenceCaveat: "Evidence gap: the current owner and safe boundary are not confirmed. Hold containment and ask a security analyst to verify the mapping.",
+          proposal: "Hold containment until a current owner and affected boundary are confirmed.",
+          scope: "No action scope established · escalation required",
+          rationale: "The identity-to-owner association is deliberately stale in this sample. The evidence does not support a safe isolation scope.",
+          reviewExplanation: "The owner mapping is out of date and the related interface is labeled clinical. Do not approve containment from this evidence.",
+          reviewSources: [
+            "Synthetic identity register — owner association marked out of date.",
+            "Synthetic asset register — clinical interface; boundary unclear.",
+            "Synthetic alert queue — signal awaits human validation."
+          ],
+          auditSeed: [
+            { time: "09:38", actor: "System · sample", text: "Fictional identity signal entered the response queue." },
+            { time: "09:39", actor: "System · sample", text: "Owner mapping gap flagged for human verification." }
+          ]
+        }
+      ],
+      auditTimes: { approval: "09:42", escalation: "09:43" }
+    };
+
+    const state = {
+      phase: "ready",
+      selected: 0,
+      reviewOpen: false,
+      outcomes: Object.create(null),
+      history: Object.create(null),
+      timer: 0,
+      statusMessage: "Synthetic response case ready. No action has been applied."
+    };
+
+    const byId = (id) => document.getElementById(id);
+    const queue = byId("caseQueue");
+    const evidenceList = byId("evidenceList");
+    const reviewSources = byId("reviewSources");
+    const auditTrail = byId("auditTrail");
+
+    function activeCase() {
+      return DEMO_FIXTURES.incidents[state.selected];
+    }
+
+    function makeText(tagName, className, value) {
+      const element = document.createElement(tagName);
+      if (className) element.className = className;
+      element.textContent = value;
+      return element;
+    }
+
+    function phaseName() {
+      if (state.phase === "working") return "Working";
+      if (state.phase === "exception") return "Exception";
+      if (state.phase === "reset") return "Reset";
+      if (state.outcomes[activeCase().id] === "approved") return "Simulated";
+      if (state.outcomes[activeCase().id]) return "Escalated";
+      if (state.reviewOpen) return "Review ready";
+      return "Ready";
+    }
+
+    function renderQueue() {
+      queue.replaceChildren();
+      DEMO_FIXTURES.incidents.forEach((item, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "queue-item";
+        button.setAttribute("aria-pressed", String(state.selected === index));
+        button.disabled = state.phase === "working";
+        button.addEventListener("click", () => selectCase(index));
+
+        const line = document.createElement("span");
+        line.className = "queue-line";
+        line.append(
+          makeText("span", "queue-title", item.title),
+          makeText("span", `tag ${item.severityClass}`, item.severity)
+        );
+        const meta = document.createElement("span");
+        meta.className = "queue-meta";
+        meta.append(
+          makeText("span", "queue-id mono", item.id),
+          makeText("span", "queue-observed", item.observed)
+        );
+        button.append(line, meta);
+        queue.append(button);
+      });
+    }
+
+    function renderEvidence(item) {
+      evidenceList.replaceChildren();
+      item.evidence.forEach((record) => {
+        const row = document.createElement("li");
+        row.className = "evidence-item";
+        row.append(
+          makeText("span", "evidence-source", record.source),
+          makeText("span", "evidence-detail", record.detail),
+          makeText("span", "evidence-context", record.context)
+        );
+        evidenceList.append(row);
+      });
+      const caveat = byId("evidenceCaveat");
+      caveat.textContent = item.evidenceCaveat;
+      caveat.hidden = !item.evidenceCaveat;
+    }
+
+    function renderReview(item) {
+      const panel = byId("reviewPanel");
+      panel.hidden = !state.reviewOpen;
+      byId("reviewExplanation").textContent = item.reviewExplanation;
+      reviewSources.replaceChildren();
+      item.reviewSources.forEach((source) => {
+        reviewSources.append(makeText("li", "", source));
+      });
+      byId("approveButton").hidden = item.evidenceState !== "reviewable";
+      byId("escalateButton").hidden = item.evidenceState === "reviewable";
+      byId("approveButton").disabled = state.phase === "working";
+      byId("escalateButton").disabled = state.phase === "working";
+    }
+
+    function renderOutcome(item) {
+      const panel = byId("outcomePanel");
+      const outcome = state.outcomes[item.id];
+      panel.hidden = !outcome;
+      byId("reviewButton").hidden = Boolean(outcome) || state.reviewOpen;
+      if (!outcome) return;
+
+      const notice = byId("outcomeNotice");
+      notice.className = `notice ${outcome === "approved" ? "notice-ok" : "notice-warn"}`;
+      byId("outcomeTitle").textContent = outcome === "approved"
+        ? "Simulated approval recorded."
+        : outcome === "escalated" ? "Response held and escalated." : "Response held for review.";
+      byId("outcomeText").textContent = outcome === "approved"
+        ? " No network or clinical system was changed."
+        : " No containment was applied; a security analyst must verify the owner and boundary.";
+    }
+
+    function renderAudit(item) {
+      auditTrail.replaceChildren();
+      const entries = [...item.auditSeed, ...(state.history[item.id] || [])];
+      entries.forEach((entry) => {
+        const row = document.createElement("li");
+        const time = document.createElement("time");
+        time.textContent = entry.time;
+        const message = document.createElement("span");
+        const actor = makeText("span", `actor ${entry.human ? "is-human" : "is-system"}`, entry.actor);
+        message.append(actor, document.createTextNode(` — ${entry.text}`));
+        row.append(time, message);
+        auditTrail.append(row);
+      });
+    }
+
+    function render() {
+      const item = activeCase();
+      byId("orgContext").textContent = DEMO_FIXTURES.organization;
+      byId("exerciseContext").textContent = DEMO_FIXTURES.exercise;
+      byId("queueCount").textContent = `${DEMO_FIXTURES.incidents.length} sample cases`;
+      byId("caseTitle").textContent = item.title;
+      byId("caseSummary").textContent = item.summary;
+      byId("caseNumber").textContent = item.id;
+      const severityTag = byId("severityTag");
+      severityTag.className = `tag ${item.severityClass}`;
+      severityTag.textContent = item.severity;
+      byId("observedAt").textContent = item.observed;
+      byId("identityRef").textContent = item.identity;
+      byId("assetRef").textContent = item.asset;
+      const evidenceTag = byId("evidenceTag");
+      evidenceTag.className = `tag ${item.evidenceState === "reviewable" ? "tag-ok" : "tag-warn"}`;
+      evidenceTag.textContent = item.evidenceLabel;
+      byId("actionSummary").textContent = item.proposal;
+      byId("actionScope").textContent = item.scope;
+      byId("actionRationale").textContent = item.rationale;
+      byId("reviewButton").textContent = item.evidenceState === "reviewable"
+        ? "Review response plan" : "Review evidence gap";
+      byId("reviewButton").disabled = state.phase === "working";
+      byId("phaseBadge").textContent = phaseName();
+      byId("phaseBadge").className = `tag ${state.phase === "exception" ? "tag-warn" : state.phase === "working" ? "" : "tag-ok"}`;
+      byId("statusLine").textContent = state.statusMessage;
+      renderQueue();
+      renderEvidence(item);
+      renderReview(item);
+      renderOutcome(item);
+      renderAudit(item);
+    }
+
+    function selectCase(index) {
+      window.clearTimeout(state.timer);
+      state.selected = index;
+      state.phase = state.outcomes[activeCase().id]
+        ? (state.outcomes[activeCase().id] === "approved" ? "result" : "exception")
+        : "ready";
+      state.reviewOpen = false;
+      state.statusMessage = `Selected ${activeCase().id}. ${activeCase().evidenceState === "stale" ? "Owner verification is required before any response." : "Evidence is ready for human review."}`;
+      render();
+    }
+
+    function focusReview() {
+      byId("reviewHeading").focus();
+    }
+
+    function openReview() {
+      const item = activeCase();
+      state.phase = "working";
+      state.statusMessage = "Preparing the synthetic review packet. No response is being applied.";
+      render();
+      state.timer = window.setTimeout(() => {
+        state.reviewOpen = true;
+        state.phase = item.evidenceState === "stale" ? "exception" : "result";
+        state.statusMessage = item.evidenceState === "stale"
+          ? "Evidence gap confirmed. Hold the response and escalate for owner verification."
+          : "Review packet ready. Confirm the evidence and choose whether to record a simulated approval.";
+        render();
+        focusReview();
+      }, 420);
+    }
+
+    function appendHistory(item, entry) {
+      if (!state.history[item.id]) state.history[item.id] = [];
+      state.history[item.id].push(entry);
+    }
+
+    function approveSimulation() {
+      const item = activeCase();
+      if (!state.reviewOpen || item.evidenceState !== "reviewable") return;
+      state.phase = "working";
+      state.statusMessage = "Recording a simulated human approval. No system control is changing.";
+      render();
+      state.timer = window.setTimeout(() => {
+        state.outcomes[item.id] = "approved";
+        state.reviewOpen = false;
+        appendHistory(item, {
+          time: DEMO_FIXTURES.auditTimes.approval,
+          actor: `${DEMO_FIXTURES.operator.name} · CISO`,
+          text: "Reviewed the sample evidence and approved the simulated containment plan.",
+          human: true
+        });
+        state.phase = "result";
+        state.statusMessage = "Simulated approval recorded. No network or clinical system was changed.";
+        render();
+        byId("outcomeTitle").focus();
+      }, 520);
+    }
+
+    function escalateForReview() {
+      const item = activeCase();
+      if (!state.reviewOpen || item.evidenceState !== "stale") return;
+      state.phase = "working";
+      state.statusMessage = "Recording the hold and synthetic analyst escalation.";
+      render();
+      state.timer = window.setTimeout(() => {
+        state.outcomes[item.id] = "escalated";
+        state.reviewOpen = false;
+        appendHistory(item, {
+          time: DEMO_FIXTURES.auditTimes.escalation,
+          actor: `${DEMO_FIXTURES.operator.name} · CISO`,
+          text: "Held containment and escalated the stale owner mapping for analyst verification.",
+          human: true
+        });
+        state.phase = "exception";
+        state.statusMessage = "Response held and escalated. No containment was applied.";
+        render();
+      }, 520);
+    }
+
+    function resetScenario() {
+      window.clearTimeout(state.timer);
+      state.phase = "reset";
+      state.selected = 0;
+      state.reviewOpen = false;
+      state.outcomes = Object.create(null);
+      state.history = Object.create(null);
+      state.statusMessage = "Scenario reset. The synthetic response case is ready to replay.";
+      render();
+      state.timer = window.setTimeout(() => {
+        state.phase = "ready";
+        render();
+      }, 450);
+    }
+
+    function renderWorkloads() {
+      const list = byId("workloadList");
+      DEMO_FIXTURES.workloads.forEach((name) => {
+        list.append(makeText("li", "", name));
+      });
+    }
+
+    byId("reviewButton").addEventListener("click", openReview);
+    byId("approveButton").addEventListener("click", approveSimulation);
+    byId("escalateButton").addEventListener("click", escalateForReview);
+    byId("resetButton").addEventListener("click", resetScenario);
+
+    renderWorkloads();
+    render();
+  </script>
+</body>
+</html>

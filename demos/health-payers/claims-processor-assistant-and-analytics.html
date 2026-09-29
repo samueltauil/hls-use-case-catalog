@@ -1,0 +1,666 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claims adjudication | Illustrative demo</title>
+<style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* ----------------------------- Claims workspace token system & layout */
+body {
+  --work-gap: 16px;
+  --work-max: 1440px;
+  --label-size: 12px;
+}
+
+.workspace { width: min(var(--work-max), 100%); margin: 0 auto; padding: 20px 24px 26px; }
+.context {
+  display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 10px 20px;
+  margin-bottom: 15px;
+}
+.context h1 { margin: 0; font-size: clamp(22px, 2.5vw, 29px); line-height: 1.2; letter-spacing: -.025em; }
+.eyebrow { margin: 0 0 3px; color: var(--muted); font-size: 12px; }
+.context-note { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+.queue-picker { display: flex; align-items: center; gap: 9px; }
+.queue-picker label { color: var(--muted); font-size: 12px; font-weight: 600; }
+.queue-picker select {
+  min-height: 40px; max-width: 100%; padding: 7px 32px 7px 10px;
+  border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface);
+  color: var(--ink); font: inherit; font-size: 13px;
+}
+.work-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(310px, .78fr); gap: var(--work-gap); align-items: start; }
+.column { display: grid; gap: var(--work-gap); min-width: 0; }
+.card { min-width: 0; box-shadow: var(--shadow-1); }
+.claim-heading { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.claim-heading h2 { font-size: 15px; }
+.claim-heading .mono { font-size: 13px; }
+.claim-body { display: grid; gap: 13px; }
+.facts { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 14px; }
+.facts dt { font-size: var(--label-size); }
+.facts dd { overflow-wrap: anywhere; }
+.claim-lines { width: 100%; border-collapse: collapse; font-size: 13px; }
+.claim-lines th, .claim-lines td { padding: 8px 7px; border-bottom: 1px solid var(--line-soft); text-align: left; vertical-align: top; }
+.claim-lines th { font-size: 11.5px; color: var(--muted); font-weight: 600; }
+.claim-lines td:last-child, .claim-lines th:last-child { text-align: right; white-space: nowrap; }
+.claim-lines tfoot td { border: 0; font-weight: 700; }
+.claim-lines caption { text-align: left; color: var(--muted); font-size: 12px; padding-bottom: 3px; }
+.source-list { display: grid; gap: 8px; }
+.source-list details { border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--bg); }
+.source-list summary { cursor: pointer; padding: 9px 11px; color: var(--accent-strong); font-size: 13px; font-weight: 600; }
+.source-list p { margin: 0; padding: 0 11px 10px; color: var(--ink-soft); font-size: 12.5px; }
+.panel-body { display: grid; gap: 12px; }
+.copilot-intro { margin: 0; color: var(--muted); font-size: 13px; }
+.state-box { display: grid; gap: 11px; }
+.state-box h3 { margin: 0; font-size: 15px; }
+.state-box p { margin: 0; }
+.assistant-copy { font-size: 14px; line-height: 1.55; }
+.citation { padding-left: 10px; border-left: 3px solid var(--accent); color: var(--ink-soft); font-size: 12.5px; }
+.review-caption { padding: 9px 10px; border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--bg); color: var(--muted); font-size: 12.5px; }
+.review-actions { display: grid; gap: 8px; }
+.review-actions .btn { justify-content: center; }
+.signal-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; margin: 0; }
+.signal-list div { min-width: 0; padding: 9px 10px; border-left: 2px solid var(--accent-line); background: var(--bg); }
+.signal-list dt { color: var(--muted); font-size: 11px; line-height: 1.35; }
+.signal-list dd { margin: 3px 0 0; font-size: 15px; font-weight: 650; }
+.sample-note { color: var(--muted); font-size: 11.5px; margin: 0; }
+.audit-entry { padding: 10px 11px; border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: 0 var(--radius) var(--radius) 0; font-size: 13px; }
+.audit-entry strong { display: block; margin-bottom: 2px; color: var(--accent-strong); }
+.workloads { border-top: 1px solid var(--line); margin-top: 17px; padding-top: 12px; }
+.workloads h2 { margin: 0 0 5px; font-size: 12px; color: var(--muted); font-weight: 600; }
+.workload-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.workload-list li { border: 1px solid var(--line); border-radius: 4px; padding: 3px 7px; background: var(--surface); font-size: 11.5px; color: var(--ink-soft); }
+.footer { padding-inline: max(24px, calc((100% - var(--work-max)) / 2 + 24px)); }
+.footer .disclosure { background: var(--ink); }
+
+@media (max-width: 760px) {
+  .workspace { padding: 16px 14px 22px; }
+  .work-grid { grid-template-columns: minmax(0, 1fr); }
+  .work-grid > .column:nth-child(2) { order: -1; }
+  .context { align-items: stretch; }
+  .queue-picker { justify-content: space-between; }
+  .queue-picker select { flex: 1; width: 1px; }
+}
+@media (max-width: 420px) {
+  .workspace { padding-inline: 11px; }
+  .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .claim-lines { font-size: 12px; }
+  .claim-lines th, .claim-lines td { padding-inline: 4px; }
+  .signal-list { gap: 5px; }
+  .signal-list div { padding: 8px 6px; }
+  .signal-list dd { font-size: 13px; }
+  .footer { padding-inline: 12px; }
+}
+</style>
+</head>
+<body data-subvertical="health-payers">
+<header class="appbar">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true">◆</span>
+    <div><span class="brand-name">Claims operations</span><span class="brand-sub">Adjudication workbench</span></div>
+  </div>
+  <p class="disclosure">Illustrative demo - synthetic data</p>
+  <p class="who">Signed in as <b>Claims processor · sample role</b></p>
+</header>
+
+<main class="workspace">
+  <section class="context" aria-labelledby="page-title">
+    <div>
+      <p class="eyebrow">Claims, payment &amp; core administration</p>
+      <h1 id="page-title">Claims adjudication</h1>
+      <p class="context-note">Review the evidence, inspect grounded guidance, then record a human decision.</p>
+    </div>
+    <div class="queue-picker">
+      <label for="claim-picker">Work item</label>
+      <select id="claim-picker" aria-label="Choose a synthetic claim"></select>
+    </div>
+  </section>
+
+  <div class="work-grid">
+    <div class="column">
+      <section class="card" aria-labelledby="claim-title">
+        <div class="card-head">
+          <div class="claim-heading">
+            <h2 id="claim-title">Claim</h2>
+            <span id="claim-id" class="mono"></span>
+          </div>
+          <span id="claim-queue-state" class="tag"></span>
+        </div>
+        <div class="card-body claim-body">
+          <dl class="facts">
+            <div><dt>Organization</dt><dd id="claim-org"></dd></div>
+            <div><dt>Received</dt><dd id="claim-date"></dd></div>
+            <div><dt>Claim type</dt><dd id="claim-type"></dd></div>
+            <div><dt>Service</dt><dd id="claim-service"></dd></div>
+            <div><dt>Requested amount</dt><dd id="claim-total" class="mono"></dd></div>
+            <div><dt>Current status</dt><dd id="claim-status"></dd></div>
+          </dl>
+          <table class="claim-lines">
+            <caption>Submitted lines · synthetic claim details</caption>
+            <thead><tr><th scope="col">Line</th><th scope="col">Service detail</th><th scope="col">Amount</th></tr></thead>
+            <tbody id="claim-lines"></tbody>
+            <tfoot><tr><td colspan="2">Submitted total</td><td id="line-total" class="mono"></td></tr></tfoot>
+          </table>
+          <div>
+            <h3 class="eyebrow">Evidence available to the processor</h3>
+            <div class="source-list" id="source-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="signals-title">
+        <div class="card-head">
+          <h2 id="signals-title">Shift snapshot</h2>
+          <span class="card-note">Fictional operational sample</span>
+        </div>
+        <div class="card-body">
+          <dl class="signal-list" id="signal-list"></dl>
+          <p class="sample-note">Illustrative queue activity only; these values are not customer outcomes.</p>
+        </div>
+      </section>
+    </div>
+
+    <div class="column">
+      <section class="card" aria-labelledby="copilot-title">
+        <div class="card-head">
+          <h2 id="copilot-title">Processor assistant</h2>
+          <span class="tag">Human review required</span>
+        </div>
+        <div class="card-body panel-body">
+          <p class="copilot-intro">Guidance is limited to the fictional sample claim packet and sample review guide. It does not adjudicate or change a claim.</p>
+          <div id="assistant-idle" class="state-box">
+            <div class="notice">
+              <span aria-hidden="true">i</span>
+              <p class="assistant-copy">Start a grounded review. The assistant will either summarize cited evidence or ask for a human handoff when a source is missing.</p>
+            </div>
+            <button id="generate-button" class="btn btn-primary" type="button">Review claim evidence</button>
+          </div>
+          <p id="assistant-working" class="status-line" role="status" aria-live="polite" hidden>Checking the sample sources…</p>
+          <div id="assistant-result" class="state-box" hidden>
+            <span class="tag tag-warn">Review suggested · not a payment decision</span>
+            <h3>Evidence to reconcile</h3>
+            <p id="guidance-text" class="assistant-copy"></p>
+            <p id="guidance-rationale" class="citation"></p>
+            <p class="review-caption">Review rationale: keep the claim in a human work queue until the source discrepancy is resolved. Do not release, deny, or change payment from this demo.</p>
+            <div class="review-actions">
+              <button class="btn btn-primary" type="button" data-review="hold">Record review · hold for documentation</button>
+              <button class="btn" type="button" data-review="escalate">Escalate to senior adjudicator</button>
+            </div>
+          </div>
+          <div id="assistant-exception" class="state-box" hidden>
+            <div class="notice notice-warn"><span aria-hidden="true">!</span><p class="assistant-copy">No grounded recommendation available. A required sample attachment is missing, so the assistant will not infer a claim action.</p></div>
+            <p id="exception-rationale" class="citation"></p>
+            <button id="exception-escalate" class="btn btn-primary" type="button">Escalate for source review</button>
+          </div>
+          <div id="assistant-complete" class="state-box" hidden>
+            <div class="notice notice-ok"><span aria-hidden="true">✓</span><p id="completion-message" class="assistant-copy"></p></div>
+            <div id="audit-entry" class="audit-entry"></div>
+            <button id="reset-button" class="btn" type="button">Review this claim again</button>
+          </div>
+          <p id="live-status" class="status-line" role="status" aria-live="polite"></p>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <section class="workloads" aria-labelledby="workload-title">
+    <h2 id="workload-title">Catalog workload scope · reference only</h2>
+    <ul class="workload-list">
+      <li>AI: Foundry Models - OpenAI (Standard) · Azure OpenAI in Azure AI Foundry Models</li>
+      <li>AI: Search · Azure AI Search</li>
+      <li>Data: Fabric (Analytics Migration / New Analytics / Cosmos OLTP / P-to-F / Power BI / Real-Time Intelligence / Synapse-&gt;Fabric / SQL DB OLTP) · Microsoft Fabric</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="footer">
+  <span>Claims Processor Assistant and Analytics</span>
+  <span>Illustrative demo · no claim action is transmitted or persisted</span>
+</footer>
+
+<script>
+"use strict";
+
+// All values below are fictional UI fixtures, not payer records or outcome claims.
+const DEMO_FIXTURES = {
+  claims: [
+    {
+      id: "SYN-CLM-10428",
+      type: "Professional · sample",
+      organization: "Cedar Vale Therapy (fictional)",
+      received: "29 Sep 2026 · sample date",
+      service: "Outpatient therapy · sample",
+      total: "$486.00",
+      status: "Needs processor review",
+      lines: [
+        { line: "01", detail: "Therapy session · 18 Sep · sample code TX-21", amount: "$243.00" },
+        { line: "02", detail: "Therapy session · 18 Sep · sample code TX-21", amount: "$243.00" }
+      ],
+      sources: [
+        { title: "Sample claim packet · attachment index", text: "Two submitted service lines share the same sample date and service code. The packet does not identify whether these represent separate encounters." },
+        { title: "Fictional Claims Review Guide · section 4", text: "When the submitted packet does not distinguish repeated same-day lines, pause for documentation review. A processor resolves the discrepancy; this guide does not determine payment." }
+      ],
+      guidance: "The two sample lines share a service date and code, but the packet does not show whether they are separate encounters. Keep the claim in review until supporting documentation clarifies the line detail.",
+      rationale: "Grounded in the sample claim packet and Fictional Claims Review Guide, section 4. This is a documentation flag only—not a duplicate finding or payment recommendation."
+    },
+    {
+      id: "SYN-CLM-10429",
+      type: "Professional · sample",
+      organization: "Juniper Loop Clinic (fictional)",
+      received: "29 Sep 2026 · sample date",
+      service: "Diagnostic service · sample",
+      total: "$172.00",
+      status: "Attachment missing",
+      lines: [
+        { line: "01", detail: "Diagnostic service · 22 Sep · sample code DX-08", amount: "$172.00" }
+      ],
+      sources: [
+        { title: "Sample claim packet · attachment index", text: "A service line is present. The referenced supporting note is not included in this synthetic packet." }
+      ],
+      exception: "Required supporting note is absent from this sample packet. No policy-grounded recommendation can be made from the available evidence."
+    }
+  ],
+  shiftSignals: [
+    { label: "Reviewed in this sample shift", value: "18 claims" },
+    { label: "Waiting on source detail", value: "4 items" },
+    { label: "Median handling time", value: "6m 12s" }
+  ],
+  transitionDelay: 420
+};
+
+const el = (id) => document.getElementById(id);
+const picker = el("claim-picker");
+let activeClaimIndex = 0;
+let workflowState = "ready";
+let transitionTimer = 0;
+
+function renderOptions() {
+  DEMO_FIXTURES.claims.forEach((claim, index) => {
+    const option = document.createElement("option");
+    option.value = String(index);
+    option.textContent = `${claim.id} · ${claim.status}`;
+    picker.append(option);
+  });
+}
+
+function renderClaim() {
+  const claim = DEMO_FIXTURES.claims[activeClaimIndex];
+  el("claim-id").textContent = claim.id;
+  el("claim-org").textContent = claim.organization;
+  el("claim-date").textContent = claim.received;
+  el("claim-type").textContent = claim.type;
+  el("claim-service").textContent = claim.service;
+  el("claim-total").textContent = claim.total;
+  el("claim-status").textContent = claim.status;
+  el("claim-queue-state").textContent = activeClaimIndex === 0 ? "Documentation check" : "Source incomplete";
+  el("claim-queue-state").className = activeClaimIndex === 0 ? "tag tag-warn" : "tag tag-stop";
+
+  const rows = el("claim-lines");
+  rows.replaceChildren();
+  claim.lines.forEach((line) => {
+    const row = document.createElement("tr");
+    [line.line, line.detail, line.amount].forEach((value) => {
+      const cell = document.createElement("td");
+      cell.textContent = value;
+      row.append(cell);
+    });
+    rows.append(row);
+  });
+  el("line-total").textContent = claim.total;
+
+  const sourceList = el("source-list");
+  sourceList.replaceChildren();
+  claim.sources.forEach((source) => {
+    const details = document.createElement("details");
+    const summary = document.createElement("summary");
+    const excerpt = document.createElement("p");
+    summary.textContent = source.title;
+    excerpt.textContent = source.text;
+    details.append(summary, excerpt);
+    sourceList.append(details);
+  });
+  el("guidance-text").textContent = claim.guidance || "";
+  el("guidance-rationale").textContent = claim.rationale || "";
+  el("exception-rationale").textContent = claim.exception || "";
+}
+
+function renderSignals() {
+  const list = el("signal-list");
+  DEMO_FIXTURES.shiftSignals.forEach((signal) => {
+    const item = document.createElement("div");
+    const label = document.createElement("dt");
+    const value = document.createElement("dd");
+    label.textContent = signal.label;
+    value.textContent = signal.value;
+    item.append(label, value);
+    list.append(item);
+  });
+}
+
+function setWorkflowState(nextState) {
+  workflowState = nextState;
+  el("assistant-idle").hidden = nextState !== "ready";
+  el("assistant-working").hidden = nextState !== "working";
+  el("assistant-result").hidden = nextState !== "result";
+  el("assistant-exception").hidden = nextState !== "exception";
+  el("assistant-complete").hidden = nextState !== "complete";
+  el("live-status").textContent = "";
+  if (nextState === "working") el("assistant-working").textContent = "Checking the sample sources…";
+}
+
+function startReview() {
+  if (workflowState !== "ready") return;
+  setWorkflowState("working");
+  transitionTimer = window.setTimeout(() => {
+    transitionTimer = 0;
+    setWorkflowState(activeClaimIndex === 0 ? "result" : "exception");
+    el("live-status").textContent = activeClaimIndex === 0
+      ? "Grounded guidance is ready for your review."
+      : "Source gap found. No recommendation was generated.";
+  }, DEMO_FIXTURES.transitionDelay);
+}
+
+function recordHumanAction(action) {
+  if (workflowState !== "result" || !["hold", "escalate"].includes(action)) return;
+  const isEscalation = action === "escalate";
+  el("completion-message").textContent = isEscalation
+    ? "You escalated this sample claim. It remains in the human work queue; no payment decision was made."
+    : "You recorded a human review and held this sample claim for documentation. No payment decision was made.";
+  el("audit-entry").replaceChildren();
+  const heading = document.createElement("strong");
+  const detail = document.createElement("span");
+  heading.textContent = isEscalation ? "Escalated · sample event" : "Reviewed and held · sample event";
+  detail.textContent = `Claims processor · ${DEMO_FIXTURES.claims[activeClaimIndex].id} · rationale: source discrepancy needs human resolution.`;
+  el("audit-entry").append(heading, detail);
+  setWorkflowState("complete");
+  el("live-status").textContent = "Human review recorded in this local demo state.";
+}
+
+function recordExceptionEscalation() {
+  if (workflowState !== "exception") return;
+  el("completion-message").textContent = "You escalated because a required source was missing. The claim stays with a human reviewer; the assistant made no recommendation.";
+  el("audit-entry").replaceChildren();
+  const heading = document.createElement("strong");
+  const detail = document.createElement("span");
+  heading.textContent = "Escalated for source review · sample event";
+  detail.textContent = `Claims processor · ${DEMO_FIXTURES.claims[activeClaimIndex].id} · rationale: supporting note is not in the sample packet.`;
+  el("audit-entry").append(heading, detail);
+  setWorkflowState("complete");
+  el("live-status").textContent = "Source exception escalated to a human reviewer.";
+}
+
+function resetWorkflow(announce = true) {
+  if (transitionTimer) window.clearTimeout(transitionTimer);
+  transitionTimer = 0;
+  setWorkflowState("ready");
+  if (announce) el("live-status").textContent = "Review reset. The claim is ready to inspect again.";
+}
+
+picker.addEventListener("change", () => {
+  activeClaimIndex = Number(picker.value);
+  renderClaim();
+  resetWorkflow(false);
+  el("live-status").textContent = `Loaded synthetic claim ${DEMO_FIXTURES.claims[activeClaimIndex].id}.`;
+});
+el("generate-button").addEventListener("click", startReview);
+document.querySelectorAll("[data-review]").forEach((button) => {
+  button.addEventListener("click", () => recordHumanAction(button.dataset.review));
+});
+el("exception-escalate").addEventListener("click", recordExceptionEscalation);
+el("reset-button").addEventListener("click", () => {
+  resetWorkflow();
+  el("generate-button").focus();
+});
+
+renderOptions();
+renderClaim();
+renderSignals();
+setWorkflowState("ready");
+</script>
+</body>
+</html>

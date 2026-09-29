@@ -1,0 +1,1085 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>GxP cloud foundation review | HLS catalog demo</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* ---------------------------------------------------------- demo layout */
+body {
+  --panel-shadow: var(--shadow-1);
+}
+
+.page {
+  width: min(1480px, 100%);
+  margin: 0 auto;
+  padding: 18px 24px 24px;
+}
+
+.page-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 0 14px;
+}
+
+.eyebrow {
+  margin: 0 0 3px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(23px, 2.5vw, 30px);
+  line-height: 1.18;
+  letter-spacing: -.02em;
+}
+
+.page-summary {
+  max-width: 72ch;
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+
+.context-strip {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.2fr) minmax(150px, .8fr) minmax(155px, .85fr);
+  gap: 12px 20px;
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.context-strip div { min-width: 0; }
+.context-strip dt {
+  margin: 0 0 2px;
+  color: var(--muted);
+  font-size: 11.5px;
+}
+.context-strip dd { margin: 0; font-size: 13px; font-weight: 600; }
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.62fr) minmax(300px, .88fr);
+  align-items: start;
+  gap: 14px;
+}
+
+.panel { box-shadow: var(--panel-shadow); min-width: 0; }
+.panel .card-head { align-items: center; }
+.panel-body { display: grid; gap: 13px; padding: 14px 15px; }
+
+.packet-intro {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.packet-intro h3 { margin: 0; font-size: 16px; line-height: 1.3; }
+.packet-intro p { margin: 3px 0 0; color: var(--muted); font-size: 12.5px; }
+
+.packet-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--bg);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+}
+
+.packet-facts div { min-width: 0; }
+.packet-facts dt { margin: 0 0 2px; color: var(--muted); font-size: 11px; }
+.packet-facts dd { margin: 0; font-size: 12.5px; font-weight: 600; overflow-wrap: anywhere; }
+
+.case-picker {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 10px;
+}
+
+.case-picker .field { min-width: 0; }
+.field select {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 34px 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+}
+
+.field textarea {
+  width: 100%;
+  min-height: 78px;
+  resize: vertical;
+}
+
+.field-hint { margin: 0; color: var(--muted); font-size: 12px; }
+
+.evidence-list {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line-soft);
+}
+
+.evidence-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 8px 14px;
+  padding: 10px 1px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.evidence-copy { min-width: 0; }
+.evidence-copy h4 { margin: 0; font-size: 13.5px; font-weight: 600; }
+.evidence-copy p { margin: 1px 0 3px; color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+.evidence-copy details { color: var(--ink-soft); font-size: 12px; }
+.evidence-copy summary {
+  width: fit-content;
+  color: var(--accent-strong);
+  cursor: pointer;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--accent-line);
+  text-underline-offset: 2px;
+}
+.evidence-copy details p { margin: 5px 0 0; color: var(--ink-soft); }
+.evidence-result { margin-top: 2px; }
+.evidence-result.is-missing { color: var(--stop); }
+.evidence-result.is-found { color: var(--ok); }
+
+.run-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 14px;
+  padding-top: 2px;
+}
+
+.run-note { max-width: 48ch; margin: 0; color: var(--muted); font-size: 12px; }
+
+.decision-panel {
+  min-height: 120px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--muted-soft);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+
+.decision-panel[data-tone="ok"] { border-left-color: var(--ok); }
+.decision-panel[data-tone="warn"] { border-left-color: var(--warn); }
+.decision-panel[data-tone="stop"] { border-left-color: var(--stop); }
+.decision-panel h3 { margin: 0; font-size: 15px; line-height: 1.35; }
+.decision-panel p { margin: 5px 0 0; color: var(--ink-soft); font-size: 13px; }
+.decision-panel .state-label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.decision-form { display: grid; gap: 11px; }
+.decision-form h3 { margin: 0; font-size: 14px; }
+.decision-form .route-note {
+  margin: 0;
+  padding: 9px 10px;
+  border: 1px solid var(--warn);
+  border-radius: var(--radius);
+  background: var(--warn-bg);
+  color: #5b3b07;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.attest {
+  margin: 0;
+  align-items: flex-start;
+  font-size: 12.5px;
+}
+.attest label { cursor: pointer; }
+.attest input { accent-color: var(--accent-strong); }
+
+.decision-form .btn { justify-content: center; width: 100%; }
+.decision-form .btn-primary { color: #fff; }
+
+.review-boundary {
+  margin: 0;
+  padding: 9px 10px;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.log-section { padding-top: 2px; }
+.log-section h3 { margin: 0 0 7px; font-size: 13px; }
+.log-empty { margin: 0; color: var(--muted); font-size: 12.5px; }
+.log-entry {
+  display: grid;
+  gap: 2px;
+  padding: 8px 9px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow-wrap: anywhere;
+}
+.log-entry strong { color: var(--accent-strong); font-size: 12px; }
+.log-entry span { font-size: 12px; }
+
+.scope-card { margin-top: 14px; }
+.scope-card .card-body { display: grid; gap: 11px; }
+.scope-intro { margin: 0; color: var(--muted); font-size: 12.5px; }
+.workload-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.workload-list li {
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface-2);
+  color: var(--ink-soft);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.catalog-labels { margin: 0; color: var(--muted); font-size: 11.5px; }
+.catalog-intent {
+  margin: 0;
+  padding: 9px 11px;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  color: var(--ink-soft);
+  font-size: 12.5px;
+}
+
+.page-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-top: 13px;
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+@media (max-width: 900px) {
+  .page { padding-right: 18px; padding-left: 18px; }
+  .workspace { grid-template-columns: minmax(0, 1.25fr) minmax(275px, .9fr); }
+  .context-strip { gap: 10px 14px; }
+}
+
+@media (max-width: 700px) {
+  .page { padding: 14px 14px 20px; }
+  .page-heading { flex-direction: column; gap: 10px; }
+  .heading-actions { width: 100%; }
+  .heading-actions .btn { flex: 1; justify-content: center; }
+  .context-strip { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .context-strip > div:first-child { grid-column: 1 / -1; }
+  .workspace { grid-template-columns: minmax(0, 1fr); }
+  .packet-facts { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .packet-facts > div:first-child { grid-column: 1 / -1; }
+  .case-picker { grid-template-columns: minmax(0, 1fr); }
+  .case-picker .btn { width: 100%; justify-content: center; }
+  .run-row { align-items: stretch; }
+  .run-row .btn { width: 100%; justify-content: center; }
+}
+
+@media (max-width: 390px) {
+  .appbar { align-items: flex-start; }
+  .disclosure { max-width: 100%; white-space: normal; }
+  .packet-facts { grid-template-columns: minmax(0, 1fr); }
+  .packet-facts > div:first-child { grid-column: auto; }
+  .context-strip { grid-template-columns: minmax(0, 1fr); }
+  .context-strip > div:first-child { grid-column: auto; }
+  .evidence-row { grid-template-columns: minmax(0, 1fr); }
+  .evidence-result { justify-self: start; }
+}
+  </style>
+</head>
+<body data-subvertical="pharma-life-sciences">
+  <header class="appbar">
+    <div class="brand">
+      <svg class="brand-mark" width="27" height="27" viewBox="0 0 27 27" aria-hidden="true">
+        <path d="M13.5 2.5 23 6v6.2c0 6-3.8 10-9.5 12.3C7.8 22.2 4 18.2 4 12.2V6l9.5-3.5Z" fill="none" stroke="currentColor" stroke-width="1.7"/>
+        <path d="m9.4 13.5 2.6 2.6 5.8-6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div>
+        <span class="brand-name">GxP foundation review</span>
+        <span class="brand-sub">Architecture workshop · security and governance</span>
+      </div>
+    </div>
+    <p class="disclosure"><span aria-hidden="true">●</span> Illustrative demo - synthetic data</p>
+    <p class="who"><b>Mara Venn (fictional)</b><br>Head of Quality IT · Northstar BioLabs (fictional)</p>
+  </header>
+
+  <main class="page">
+    <div class="page-heading">
+      <div>
+        <p class="eyebrow">Pharma / Life Sciences <span aria-hidden="true">·</span> Data, AI &amp; Platform Foundation</p>
+        <h1>GxP cloud foundation review</h1>
+        <p class="page-summary">Review a workshop packet before a human records a disposition or routes an evidence gap to Quality.</p>
+      </div>
+      <div class="heading-actions">
+        <button class="btn" id="reset-review" type="button">Reset review</button>
+      </div>
+    </div>
+
+    <dl class="context-strip" aria-label="Workshop context">
+      <div>
+        <dt>Workshop</dt>
+        <dd>Cloud and AI governance foundation</dd>
+      </div>
+      <div>
+        <dt>Review reference</dt>
+        <dd class="mono" id="case-reference">Synthetic sample</dd>
+      </div>
+      <div>
+        <dt>Review state</dt>
+        <dd id="header-state">Not assessed · workshop only</dd>
+      </div>
+    </dl>
+
+    <div class="workspace">
+      <section class="card panel" aria-labelledby="packet-heading">
+        <div class="card-head">
+          <h2 id="packet-heading">Environment review packet</h2>
+          <span class="tag" id="packet-tag">Not assessed</span>
+        </div>
+        <div class="panel-body">
+          <div class="packet-intro">
+            <div>
+              <h3 id="packet-title">Loading synthetic review packet</h3>
+              <p id="packet-subtitle">Illustrative workshop case · not a regulated record</p>
+            </div>
+          </div>
+
+          <dl class="packet-facts" aria-label="Packet details">
+            <div><dt>Organization</dt><dd id="packet-organization">Fictional organization</dd></div>
+            <div><dt>Environment</dt><dd id="packet-environment">Synthetic environment</dd></div>
+            <div><dt>Workshop snapshot</dt><dd id="packet-date">Fictional sample</dd></div>
+          </dl>
+
+          <div class="case-picker">
+            <div class="field">
+              <label for="case-select">Illustrative review case</label>
+              <select id="case-select" name="review-case"></select>
+              <p class="field-hint">Select a deterministic sample case; changing it resets this local review.</p>
+            </div>
+          </div>
+
+          <div class="run-row">
+            <button class="btn btn-primary" id="run-check" type="button">Run evidence check</button>
+            <p class="run-note">Local presence check only. It does not validate a system, evidence, or compliance status.</p>
+          </div>
+
+          <ul class="evidence-list" id="evidence-list" aria-label="Evidence references">
+            <li class="evidence-row">Synthetic evidence references appear when the local demo loads.</li>
+          </ul>
+        </div>
+      </section>
+
+      <aside class="card panel" aria-labelledby="review-heading">
+        <div class="card-head">
+          <h2 id="review-heading">Human review gate</h2>
+          <span class="tag" id="reviewer-tag">Reviewer accountable</span>
+        </div>
+        <div class="panel-body">
+          <section class="decision-panel" id="decision-panel" data-tone="idle" aria-live="polite" aria-atomic="true">
+            <span class="state-label" id="result-label">Waiting for check</span>
+            <h3 id="result-title">No workshop disposition recorded</h3>
+            <p id="result-message">Run the local evidence check to reveal the sample packet state. A person must review the sources and choose the next step.</p>
+          </section>
+
+          <form class="decision-form" id="decision-form" hidden>
+            <h3 id="form-heading">Record a human disposition</h3>
+            <div class="field" id="disposition-field">
+              <label for="disposition">Workshop disposition</label>
+              <select id="disposition" name="disposition">
+                <option value="advance">Advance to Quality review</option>
+                <option value="hold">Hold and request additional evidence</option>
+              </select>
+            </div>
+            <p class="route-note" id="escalation-route" hidden>Required route: Head of GxP Compliance. The sample remains on hold until a person reviews the missing source ownership.</p>
+            <div class="field">
+              <label for="rationale">Reviewer rationale</label>
+              <textarea id="rationale" name="rationale" required minlength="12" maxlength="500" aria-describedby="rationale-hint" placeholder="Record what you reviewed and why you chose this next step."></textarea>
+              <p class="field-hint" id="rationale-hint">Required · 12–500 characters. This stays in local demo state only.</p>
+            </div>
+            <p class="attest">
+              <input id="review-attestation" name="review-attestation" type="checkbox" required>
+              <label for="review-attestation">I reviewed the synthetic source notes and own this workshop disposition.</label>
+            </p>
+            <button class="btn btn-primary" id="record-decision" type="submit" disabled>Record disposition</button>
+          </form>
+
+          <p class="review-boundary">A presence check is not a GxP validation or 21 CFR Part 11 compliance determination. Quality review and escalation remain human decisions.</p>
+
+          <section class="log-section" aria-labelledby="log-heading">
+            <h3 id="log-heading">Local workshop log</h3>
+            <p class="log-empty" id="log-empty">No disposition or escalation recorded.</p>
+            <ol class="audit" id="audit-list" aria-live="polite"></ol>
+          </section>
+        </div>
+      </aside>
+    </div>
+
+    <section class="card panel scope-card" aria-labelledby="scope-heading">
+      <div class="card-head">
+        <h2 id="scope-heading">Architecture workshop scope</h2>
+        <span class="card-note">Catalog workloads · name reference only</span>
+      </div>
+      <div class="card-body">
+        <p class="scope-intro">Canonical workload names from catalog enrichment. This mock does not simulate or assert product behavior.</p>
+        <ul class="workload-list" aria-label="Canonical workload names">
+          <li>Microsoft Purview</li>
+          <li>Microsoft Defender for Cloud</li>
+          <li>Microsoft Sentinel</li>
+        </ul>
+        <p class="catalog-labels"><strong>Catalog workload labels:</strong> Unified Data Governance (Purview) · Defender for Cloud · Defender for AI &amp; Apps (Containers/AI Services/API) · Sentinel · Purview Data Security Investigations</p>
+        <p class="catalog-intent"><strong>Catalog intent, not a measured result:</strong> Enable compliant cloud and AI adoption, reduce audit and breach risk, and shorten validation cycles (risk down, time down).</p>
+      </div>
+    </section>
+
+    <footer class="page-footer">
+      <span>All packet content, identities, references, and review events are fictional operational samples.</span>
+      <span>No network requests · no persistence · no regulated record created</span>
+    </footer>
+    <p class="sr-only" id="live-status" aria-live="polite" aria-atomic="true"></p>
+  </main>
+
+  <script>
+    "use strict";
+
+    const DEMO_FIXTURES = {
+      ready: {
+        reference: "NB-SYN-GXP-041",
+        option: "NB-SYN-GXP-041 · evidence supplied",
+        title: "Foundation baseline · evidence supplied",
+        organization: "Northstar BioLabs (fictional)",
+        environment: "Quality sandbox · synthetic",
+        snapshot: "29 Sep 2026 · demo fixture",
+        reviewer: "Mara Venn (fictional)",
+        items: [
+          {
+            id: "architecture",
+            title: "Cloud foundation architecture",
+            note: "Workshop baseline · draft R3",
+            sourceTitle: "Fictional workshop note · architecture scope",
+            sourceExcerpt: "Illustrative scope note: proposed cloud foundation boundaries and named review roles. This sample is not an approved architecture or validation artifact."
+          },
+          {
+            id: "lineage",
+            title: "Regulated-data lineage sample",
+            note: "Model map · SYN-MAP-14",
+            sourceTitle: "Fictional workshop note · lineage reference",
+            sourceExcerpt: "Illustrative lineage note: a sample source-to-consumer path is listed for discussion. No data source, integrity control, or lineage completeness has been independently verified."
+          },
+          {
+            id: "ai-boundary",
+            title: "AI use-case boundary",
+            note: "Workshop question log · SYN-AI-08",
+            sourceTitle: "Fictional workshop note · AI scope",
+            sourceExcerpt: "Illustrative discussion note: intended data boundary and open questions for a human workshop reviewer. It is not Responsible AI approval or a deployment decision."
+          },
+          {
+            id: "change-control",
+            title: "Change-control reference",
+            note: "Change note · SYN-CHG-018",
+            sourceTitle: "Fictional workshop note · change reference",
+            sourceExcerpt: "Illustrative change note: a fictional reference is present for discussion. It is not a controlled change record and makes no claim about audit readiness."
+          }
+        ]
+      },
+      gap: {
+        reference: "NB-SYN-GXP-042",
+        option: "NB-SYN-GXP-042 · lineage owner missing",
+        title: "Foundation baseline · lineage owner missing",
+        organization: "Northstar BioLabs (fictional)",
+        environment: "AI evaluation sandbox · synthetic",
+        snapshot: "29 Sep 2026 · demo fixture",
+        reviewer: "Mara Venn (fictional)",
+        items: [
+          {
+            id: "architecture",
+            title: "Cloud foundation architecture",
+            note: "Workshop baseline · draft R3",
+            sourceTitle: "Fictional workshop note · architecture scope",
+            sourceExcerpt: "Illustrative scope note: proposed cloud foundation boundaries and named review roles. This sample is not an approved architecture or validation artifact."
+          },
+          {
+            id: "lineage",
+            title: "Regulated-data lineage sample",
+            note: "Model map · source owner not recorded",
+            missing: true,
+            sourceTitle: "Fictional workshop note · unresolved source owner",
+            sourceExcerpt: "Exception fixture: the source owner is intentionally absent from this sample. Do not infer lineage integrity or proceed to a Quality handoff; escalate for human source confirmation."
+          },
+          {
+            id: "ai-boundary",
+            title: "AI use-case boundary",
+            note: "Workshop question log · SYN-AI-08",
+            sourceTitle: "Fictional workshop note · AI scope",
+            sourceExcerpt: "Illustrative discussion note: intended data boundary and open questions for a human workshop reviewer. It is not Responsible AI approval or a deployment decision."
+          },
+          {
+            id: "change-control",
+            title: "Change-control reference",
+            note: "Change note · SYN-CHG-018",
+            sourceTitle: "Fictional workshop note · change reference",
+            sourceExcerpt: "Illustrative change note: a fictional reference is present for discussion. It is not a controlled change record and makes no claim about audit readiness."
+          }
+        ]
+      }
+    };
+
+    const CASE_ORDER = ["ready", "gap"];
+    const state = {
+      caseId: "ready",
+      phase: "ready",
+      timer: null,
+      disposition: null
+    };
+
+    const elements = {
+      caseSelect: document.getElementById("case-select"),
+      reference: document.getElementById("case-reference"),
+      headerState: document.getElementById("header-state"),
+      packetTitle: document.getElementById("packet-title"),
+      packetOrganization: document.getElementById("packet-organization"),
+      packetEnvironment: document.getElementById("packet-environment"),
+      packetDate: document.getElementById("packet-date"),
+      packetTag: document.getElementById("packet-tag"),
+      evidenceList: document.getElementById("evidence-list"),
+      runCheck: document.getElementById("run-check"),
+      reset: document.getElementById("reset-review"),
+      decisionPanel: document.getElementById("decision-panel"),
+      resultLabel: document.getElementById("result-label"),
+      resultTitle: document.getElementById("result-title"),
+      resultMessage: document.getElementById("result-message"),
+      decisionForm: document.getElementById("decision-form"),
+      formHeading: document.getElementById("form-heading"),
+      dispositionField: document.getElementById("disposition-field"),
+      disposition: document.getElementById("disposition"),
+      escalationRoute: document.getElementById("escalation-route"),
+      rationale: document.getElementById("rationale"),
+      attestation: document.getElementById("review-attestation"),
+      recordDecision: document.getElementById("record-decision"),
+      logEmpty: document.getElementById("log-empty"),
+      auditList: document.getElementById("audit-list"),
+      liveStatus: document.getElementById("live-status")
+    };
+
+    function currentFixture() {
+      return DEMO_FIXTURES[state.caseId];
+    }
+
+    function clearLocalDecision() {
+      state.disposition = null;
+      elements.rationale.value = "";
+      elements.attestation.checked = false;
+      elements.disposition.value = "advance";
+      elements.auditList.replaceChildren();
+      elements.logEmpty.hidden = false;
+    }
+
+    function renderCaseOptions() {
+      elements.caseSelect.replaceChildren();
+      CASE_ORDER.forEach((caseId) => {
+        const option = document.createElement("option");
+        option.value = caseId;
+        option.textContent = DEMO_FIXTURES[caseId].option;
+        elements.caseSelect.append(option);
+      });
+      elements.caseSelect.value = state.caseId;
+    }
+
+    function renderEvidence() {
+      const fixture = currentFixture();
+      elements.evidenceList.replaceChildren();
+      fixture.items.forEach((item) => {
+        const row = document.createElement("li");
+        row.className = "evidence-row";
+
+        const copy = document.createElement("div");
+        copy.className = "evidence-copy";
+        const title = document.createElement("h4");
+        title.textContent = item.title;
+        const note = document.createElement("p");
+        note.textContent = item.note;
+
+        const details = document.createElement("details");
+        const summary = document.createElement("summary");
+        summary.textContent = "Inspect fictional source note";
+        const excerpt = document.createElement("p");
+        excerpt.textContent = item.sourceExcerpt;
+        details.append(summary, excerpt);
+        copy.append(title, note, details);
+
+        const status = document.createElement("span");
+        status.className = "tag evidence-result";
+        if (state.phase === "ready") {
+          status.textContent = "Not checked";
+        } else if (state.phase === "working") {
+          status.textContent = "Checking";
+        } else if (item.missing) {
+          status.classList.add("is-missing");
+          status.textContent = "Absent in sample";
+        } else {
+          status.classList.add("is-found");
+          status.textContent = "Present in sample";
+        }
+        row.append(copy, status);
+        elements.evidenceList.append(row);
+      });
+    }
+
+    function renderAudit() {
+      elements.auditList.replaceChildren();
+      const event = state.disposition;
+      elements.logEmpty.hidden = Boolean(event);
+      if (!event) return;
+
+      const item = document.createElement("li");
+      item.className = "log-entry";
+      const actor = document.createElement("strong");
+      actor.textContent = `${currentFixture().reviewer} · human reviewer`;
+      const detail = document.createElement("span");
+      detail.textContent = event.summary;
+      const rationale = document.createElement("span");
+      rationale.textContent = `Rationale: ${event.rationale}`;
+      const persistence = document.createElement("span");
+      persistence.textContent = "Local illustrative event only · not saved or routed to a real system.";
+      item.append(actor, detail, rationale, persistence);
+      elements.auditList.append(item);
+    }
+
+    function updateFormAvailability() {
+      const rationaleReady = elements.rationale.value.trim().length >= 12;
+      elements.recordDecision.disabled = !(rationaleReady && elements.attestation.checked);
+    }
+
+    function renderState() {
+      const fixture = currentFixture();
+      elements.reference.textContent = fixture.reference;
+      elements.packetTitle.textContent = fixture.title;
+      elements.packetOrganization.textContent = fixture.organization;
+      elements.packetEnvironment.textContent = fixture.environment;
+      elements.packetDate.textContent = fixture.snapshot;
+      elements.caseSelect.value = state.caseId;
+      elements.runCheck.disabled = state.phase === "working";
+      elements.runCheck.textContent = state.phase === "working"
+        ? "Checking packet…"
+        : state.phase === "ready" ? "Run evidence check" : "Run check again";
+      elements.packetTag.className = "tag";
+      elements.decisionPanel.dataset.tone = "idle";
+      elements.decisionForm.hidden = true;
+      elements.dispositionField.hidden = false;
+      elements.escalationRoute.hidden = true;
+
+      if (state.phase === "ready") {
+        elements.headerState.textContent = "Not assessed · workshop only";
+        elements.packetTag.textContent = "Not assessed";
+        elements.resultLabel.textContent = "Waiting for check";
+        elements.resultTitle.textContent = "No workshop disposition recorded";
+        elements.resultMessage.textContent = "Run the local evidence check to reveal the sample packet state. A person must review the sources and choose the next step.";
+      } else if (state.phase === "working") {
+        elements.headerState.textContent = "Checking · local simulation";
+        elements.packetTag.textContent = "Checking";
+        elements.resultLabel.textContent = "Local check in progress";
+        elements.resultTitle.textContent = "Checking sample references";
+        elements.resultMessage.textContent = "The deterministic demo check is running in this browser; no data is sent or persisted.";
+      } else if (state.phase === "result") {
+        elements.headerState.textContent = "Ready for human review · not validated";
+        elements.packetTag.className = "tag tag-ok";
+        elements.packetTag.textContent = "Review available";
+        elements.decisionPanel.dataset.tone = "ok";
+        elements.resultLabel.textContent = "Presence check complete";
+        elements.resultTitle.textContent = "Sample references are present";
+        elements.resultMessage.textContent = "Presence only. Source adequacy, lineage integrity, GxP validation, and compliance remain for a human reviewer to assess.";
+        elements.decisionForm.hidden = false;
+        elements.formHeading.textContent = "Record a human disposition";
+        elements.recordDecision.textContent = "Record disposition";
+      } else if (state.phase === "exception") {
+        elements.headerState.textContent = "Hold · source owner missing";
+        elements.packetTag.className = "tag tag-stop";
+        elements.packetTag.textContent = "Evidence gap";
+        elements.decisionPanel.dataset.tone = "stop";
+        elements.resultLabel.textContent = "Exception · human escalation required";
+        elements.resultTitle.textContent = "Lineage source owner is not recorded";
+        elements.resultMessage.textContent = "Do not advance this sample to Quality review. The missing source owner needs human confirmation.";
+        elements.decisionForm.hidden = false;
+        elements.formHeading.textContent = "Record an escalation";
+        elements.dispositionField.hidden = true;
+        elements.escalationRoute.hidden = false;
+        elements.recordDecision.textContent = "Record escalation";
+      } else if (state.phase === "recorded") {
+        const isEscalation = state.disposition.kind === "escalation";
+        elements.headerState.textContent = isEscalation ? "Escalation recorded · sample remains on hold" : "Disposition recorded · workshop only";
+        elements.packetTag.className = isEscalation ? "tag tag-stop" : "tag tag-ok";
+        elements.packetTag.textContent = isEscalation ? "Escalated" : "Disposition recorded";
+        elements.decisionPanel.dataset.tone = isEscalation ? "stop" : "ok";
+        elements.resultLabel.textContent = "Human action recorded locally";
+        elements.resultTitle.textContent = isEscalation ? "Escalation recorded · sample remains on hold" : "Workshop disposition recorded";
+        elements.resultMessage.textContent = isEscalation
+          ? "The sample is still blocked. This local event does not contact the Head of GxP Compliance or create a real ticket."
+          : `Local workshop choice: ${state.disposition.outcome}. No validation or compliance status is granted.`;
+      }
+
+      renderEvidence();
+      renderAudit();
+      updateFormAvailability();
+    }
+
+    function resetTo(caseId) {
+      window.clearTimeout(state.timer);
+      state.timer = null;
+      state.caseId = caseId;
+      state.phase = "ready";
+      clearLocalDecision();
+      renderState();
+      elements.liveStatus.textContent = `${currentFixture().reference} selected. Review reset; run the local evidence check when ready.`;
+    }
+
+    function runEvidenceCheck() {
+      if (state.phase === "working") return;
+      window.clearTimeout(state.timer);
+      clearLocalDecision();
+      state.phase = "working";
+      renderState();
+      elements.liveStatus.textContent = `Checking synthetic packet ${currentFixture().reference} locally.`;
+      state.timer = window.setTimeout(() => {
+        state.phase = state.caseId === "gap" ? "exception" : "result";
+        state.timer = null;
+        renderState();
+        elements.liveStatus.textContent = state.phase === "exception"
+          ? "Evidence gap found. Keep the sample on hold and escalate to the Head of GxP Compliance."
+          : "Presence check complete. Human review is required before a workshop disposition.";
+      }, 450);
+    }
+
+    function recordHumanAction(event) {
+      event.preventDefault();
+      if (!elements.decisionForm.reportValidity()) return;
+      if (elements.rationale.value.trim().length < 12 || !elements.attestation.checked) {
+        updateFormAvailability();
+        return;
+      }
+
+      if (state.phase === "exception") {
+        state.disposition = {
+          kind: "escalation",
+          summary: "Escalation requested · Head of GxP Compliance · packet remains on hold",
+          rationale: elements.rationale.value.trim()
+        };
+      } else if (state.phase === "result") {
+        const outcome = elements.disposition.value === "advance"
+          ? "Advance to Quality review"
+          : "Hold and request additional evidence";
+        state.disposition = {
+          kind: "disposition",
+          outcome,
+          summary: `Workshop disposition · ${outcome}`,
+          rationale: elements.rationale.value.trim()
+        };
+      } else {
+        return;
+      }
+
+      state.phase = "recorded";
+      renderState();
+      elements.liveStatus.textContent = state.disposition.kind === "escalation"
+        ? "Escalation recorded locally. The sample remains on hold; no real contact or ticket was created."
+        : "Human workshop disposition recorded locally. No validation or compliance status was granted.";
+    }
+
+    renderCaseOptions();
+    elements.caseSelect.addEventListener("change", () => resetTo(elements.caseSelect.value));
+    elements.runCheck.addEventListener("click", runEvidenceCheck);
+    elements.reset.addEventListener("click", () => resetTo("ready"));
+    elements.decisionForm.addEventListener("submit", recordHumanAction);
+    elements.rationale.addEventListener("input", updateFormAvailability);
+    elements.attestation.addEventListener("change", updateFormAvailability);
+    elements.disposition.addEventListener("change", updateFormAvailability);
+    renderState();
+  </script>
+</body>
+</html>

@@ -1,0 +1,897 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Utilization management review desk — illustrative demo</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* --------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* --------------------------------------------------------- review desk */
+body {
+  --on-accent: #ffffff;
+  --panel: var(--surface);
+}
+
+.top-context {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  margin: 0;
+  color: var(--line);
+  font-size: 12px;
+}
+.top-context strong { color: var(--surface); font-weight: 600; }
+.reset-button { white-space: nowrap; }
+
+.workbench {
+  display: grid;
+  grid-template-columns: minmax(220px, 260px) minmax(0, 1fr) minmax(280px, 330px);
+  gap: 14px;
+  align-items: start;
+  padding: 14px 18px 20px;
+  max-width: 1800px;
+  margin-inline: auto;
+}
+.queue-pane, .case-pane, .review-pane { min-width: 0; }
+.queue-pane { padding: 15px; }
+.pane-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -.01em;
+}
+.pane-caption { margin: 3px 0 12px; color: var(--muted); font-size: 12.5px; }
+.queue-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 7px; }
+.queue-button {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  padding: 10px 11px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.queue-button:hover { border-color: var(--accent-line); background: var(--accent-soft); }
+.queue-button[aria-current="true"] {
+  border-color: var(--accent);
+  box-shadow: inset 3px 0 0 var(--accent);
+  background: var(--accent-soft);
+}
+.queue-id { font-family: var(--mono); font-size: 12px; font-weight: 700; }
+.queue-type { font-size: 13px; font-weight: 600; }
+.queue-state { color: var(--muted); font-size: 12px; }
+.queue-state.is-done { color: var(--accent-strong); font-weight: 600; }
+.queue-note {
+  margin: 13px 0 0;
+  padding-top: 11px;
+  border-top: 1px solid var(--line-soft);
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.case-pane { display: grid; gap: 12px; }
+.case-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 15px 16px;
+}
+.eyebrow {
+  margin: 0 0 3px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.case-header h1 { margin: 0; font-size: clamp(19px, 2vw, 23px); line-height: 1.25; }
+.case-id {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font: 600 12px/1.5 var(--mono);
+}
+.facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.facts dt { font-size: 11.5px; }
+.facts dd { overflow-wrap: anywhere; }
+.object-copy { margin: 0; color: var(--ink-soft); }
+.object-copy + .object-copy { margin-top: 8px; }
+.next-action {
+  display: grid;
+  gap: 10px;
+  padding: 14px 15px;
+  border: 1px solid var(--accent-line);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.next-action h2 { margin: 0; font-size: 15px; }
+.next-action p { margin: 0; color: var(--muted); font-size: 13px; }
+.state-caption { color: var(--ink-soft) !important; }
+.summary-panel { padding: 0; overflow: clip; }
+.summary-panel .card-head { align-items: center; }
+.summary-copy { margin: 0 0 12px; }
+.evidence-list { display: grid; gap: 7px; list-style: none; margin: 0; padding: 0; }
+.evidence-row {
+  display: grid;
+  grid-template-columns: minmax(105px, .7fr) minmax(0, 1.3fr);
+  gap: 8px 12px;
+  padding: 8px 9px;
+  border: 1px solid var(--line-soft);
+  border-radius: 5px;
+  font-size: 13px;
+}
+.evidence-label { color: var(--muted); }
+.evidence-value { font-weight: 600; overflow-wrap: anywhere; }
+.source-list { display: grid; gap: 7px; margin-top: 12px; }
+.source-list details { border: 1px solid var(--line); border-radius: 5px; background: var(--surface); }
+.source-list summary {
+  padding: 8px 10px;
+  color: var(--accent-strong);
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.source-copy { margin: 0; padding: 0 10px 10px; color: var(--ink-soft); font-size: 12.5px; }
+.source-meta { display: block; margin-top: 5px; color: var(--muted); font-size: 11.5px; }
+
+.review-pane { padding: 15px; }
+.review-pane h2 { margin: 0; font-size: 16px; }
+.review-sub { margin: 3px 0 12px; color: var(--muted); font-size: 12.5px; }
+.accountability {
+  margin: 0 0 12px;
+  padding: 9px 10px;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-size: 12.5px;
+}
+.review-waiting { margin: 0; color: var(--muted); font-size: 13px; }
+.decision-form { display: grid; gap: 12px; }
+.decision-form fieldset { display: grid; gap: 7px; margin: 0; padding: 0; border: 0; }
+.decision-form legend { margin-bottom: 7px; font-size: 13px; font-weight: 650; }
+.choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  cursor: pointer;
+  font-size: 13px;
+}
+.choice:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.choice input { width: 17px; height: 17px; margin: 1px 0 0; flex: none; accent-color: var(--accent-strong); }
+.choice span { display: block; }
+.choice small { display: block; margin-top: 2px; color: var(--muted); font-size: 11.5px; }
+.field textarea { width: 100%; min-height: 78px; }
+.field-help { margin: 0; color: var(--muted); font-size: 11.5px; }
+.submit-button { width: 100%; justify-content: center; }
+.saved-result { display: grid; gap: 10px; }
+.saved-result h3 { margin: 0; font-size: 14px; }
+.saved-action {
+  margin: 0;
+  padding: 10px;
+  border: 1px solid var(--accent-line);
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-weight: 650;
+}
+.saved-rationale { margin: 0; overflow-wrap: anywhere; }
+.saved-by { margin: 0; color: var(--muted); font-size: 12px; }
+.source-note { margin: 13px 0 0; padding-top: 11px; border-top: 1px solid var(--line-soft); color: var(--muted); font-size: 12px; }
+.status-line { min-height: 0; }
+.status-region { margin-top: 9px; min-height: 20px; }
+
+.workload-details {
+  width: 100%;
+  margin-top: 2px;
+}
+.workload-details summary { color: var(--accent-strong); cursor: pointer; font-weight: 600; }
+.workload-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.claim { max-width: 68ch; }
+.footer-note { color: var(--muted); }
+
+@media (max-width: 1040px) {
+  .workbench { grid-template-columns: minmax(200px, 235px) minmax(0, 1fr); }
+  .review-pane { grid-column: 1 / -1; }
+  .decision-form { grid-template-columns: 1fr 1fr; align-items: start; }
+  .decision-form fieldset { grid-row: span 2; }
+  .decision-form .field { grid-column: 2; }
+  .decision-form .submit-button { grid-column: 2; }
+  .decision-form .field-help { grid-column: 2; }
+}
+@media (max-width: 700px) {
+  .workbench { grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 10px 12px 16px; }
+  .case-pane { order: 0; }
+  .queue-pane { order: 1; }
+  .review-pane { order: 2; }
+  .queue-pane { padding: 12px; }
+  .queue-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .queue-button { height: 100%; padding: 9px; }
+  .queue-type { font-size: 12px; }
+  .case-header { padding: 13px; }
+  .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .review-pane { grid-column: auto; padding: 13px; }
+  .decision-form { grid-template-columns: minmax(0, 1fr); }
+  .decision-form fieldset, .decision-form .field, .decision-form .submit-button, .decision-form .field-help { grid-column: auto; grid-row: auto; }
+  .evidence-row { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .appbar { align-items: center; }
+  .brand { margin-right: auto; }
+  .top-context { display: none; }
+  .reset-button { min-height: 36px; padding-inline: 9px; }
+  .footer { padding: 10px 12px; }
+}
+@media (max-width: 360px) {
+  .queue-list { grid-template-columns: minmax(0, 1fr); }
+  .facts { grid-template-columns: minmax(0, 1fr); }
+}
+  </style>
+</head>
+<body data-subvertical="health-payers">
+  <header class="appbar">
+    <div class="brand">
+      <svg class="brand-mark" width="25" height="25" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 2.8 20 6v5.7c0 4.5-3.3 7.7-8 9.5-4.7-1.8-8-5-8-9.5V6l8-3.2Z" fill="none" stroke="currentColor" stroke-width="1.7"/>
+        <path d="M7.7 12h8.6M12 7.7v8.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+      </svg>
+      <div class="brand-name">Utilization review desk<span class="brand-sub">Fable Harbor Health Cooperative · fictional plan</span></div>
+    </div>
+    <p class="disclosure">
+      <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 7v4M8 4.7h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Illustrative demo - synthetic data
+    </p>
+    <p class="who"><b>Arden Vale, RN</b><br>UM reviewer · fictional account</p>
+    <button class="btn reset-button" id="resetDemo" type="button">Reset demo</button>
+  </header>
+
+  <main class="workbench">
+    <aside class="queue-pane card" aria-labelledby="queueHeading">
+      <h2 class="pane-title" id="queueHeading">Assigned reviews</h2>
+      <p class="pane-caption">Sample worklist · two fictional cases</p>
+      <ul class="queue-list" id="queueList"></ul>
+      <p class="queue-note">Local simulation only. No member record or live policy system is connected.</p>
+    </aside>
+
+    <section class="case-pane" aria-labelledby="caseHeading">
+      <article class="card">
+        <header class="case-header">
+          <div>
+            <p class="eyebrow">Risk, quality &amp; medical management · documentation review</p>
+            <h1 id="caseHeading" tabindex="-1">Outpatient service request</h1>
+            <span class="case-id mono" id="caseId"></span>
+          </div>
+          <span class="tag" id="caseState">Needs review</span>
+        </header>
+        <div class="card-body">
+          <dl class="facts">
+            <div><dt>Member reference</dt><dd id="memberRef"></dd></div>
+            <div><dt>Received</dt><dd id="receivedAt"></dd></div>
+            <div><dt>Request type</dt><dd id="requestType"></dd></div>
+            <div><dt>Review window</dt><dd id="reviewWindow"></dd></div>
+          </dl>
+          <p class="object-copy" id="caseContext"></p>
+        </div>
+      </article>
+
+      <section class="next-action" aria-labelledby="nextActionHeading">
+        <h2 id="nextActionHeading">Next safe action</h2>
+        <p class="state-caption" id="nextActionText"></p>
+        <button class="btn btn-primary" id="prepareReview" type="button">Prepare evidence view</button>
+        <p class="status-line status-region" id="workflowStatus" role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="summary-panel card" id="summaryPanel" hidden aria-labelledby="summaryHeading">
+        <header class="card-head">
+          <h2 id="summaryHeading">Evidence view</h2>
+          <span class="tag" id="evidenceStatus"></span>
+        </header>
+        <div class="card-body">
+          <p class="summary-copy" id="summaryCopy"></p>
+          <ul class="evidence-list" id="evidenceList"></ul>
+          <div class="source-list" id="sourceList"></div>
+          <p class="source-note">Local deterministic simulation. No clinical criteria, medical necessity, benefits, or coverage are evaluated; no model confidence score is generated.</p>
+        </div>
+      </section>
+    </section>
+
+    <aside class="review-pane card" aria-labelledby="reviewHeading">
+      <h2 id="reviewHeading">Reviewer action</h2>
+      <p class="review-sub">A clinician remains accountable for clinical and coverage decisions.</p>
+      <p class="accountability">This screen records a human review-routing action only. It cannot approve or deny care.</p>
+      <p class="review-waiting" id="reviewWaiting">Prepare the evidence view, inspect its cited fictional sources, then choose the next routing action.</p>
+      <form class="decision-form" id="decisionForm" hidden>
+        <fieldset id="decisionChoices">
+          <legend>Choose a review-routing action</legend>
+        </fieldset>
+        <p class="field-help" id="rationaleHelp">Each action includes its fictional rationale, which is recorded with the human routing choice. No free text is collected.</p>
+        <button class="btn btn-primary submit-button" type="submit">Record reviewer action</button>
+      </form>
+      <section class="saved-result" id="savedResult" hidden aria-labelledby="savedHeading">
+        <h3 id="savedHeading">Human action recorded</h3>
+        <p class="saved-action" id="savedAction"></p>
+        <p class="saved-rationale" id="savedRationale"></p>
+        <p class="saved-by" id="savedBy"></p>
+        <button class="btn" id="reviewAnother" type="button">Review another case</button>
+      </section>
+      <p class="source-note">Uncertainty or missing documentation can be routed for more information or escalated to a physician reviewer. The reviewer owns the rationale.</p>
+    </aside>
+  </main>
+
+  <footer class="footer">
+    <span class="footer-note">Catalog value sought: review throughput up, decision consistency up, inappropriate utilization and medical cost down, nurse reviewer capacity freed.</span>
+    <details class="workload-details">
+      <summary>Catalog workload context</summary>
+      <div class="workload-list" aria-label="Catalog workload names">
+        <span class="svc-chip">Azure OpenAI in Azure AI Foundry Models</span>
+        <span class="svc-chip">Azure AI Search</span>
+        <span class="svc-chip">Azure Machine Learning</span>
+        <span class="svc-chip">Microsoft Fabric</span>
+      </div>
+    </details>
+  </footer>
+
+  <script>
+    "use strict";
+
+    // All case records and policy excerpts are invented operational fixtures.
+    // No clinical criteria or coverage rules are simulated.
+    const SYNTHETIC_CASES = {
+      "SYN-UM-0428": {
+        id: "SYN-UM-0428",
+        service: "Outpatient diagnostic service",
+        member: "SYN-MBR-0428 · fictional reference",
+        received: "28 Sep 2026 · sample operations date",
+        requestType: "New service request · sample",
+        reviewWindow: "Two business days · fictional queue value",
+        context: "The packet contains a service request, a referring note, and a supporting report. This mock checks whether the listed document types are present; it does not evaluate clinical criteria.",
+        statusLabel: "Needs review",
+        incomplete: false,
+        summary: "The fictional packet contains all document types listed in the mock completeness worksheet. No clinical criteria were assessed, and no authorization or coverage recommendation is produced.",
+        evidence: [
+          { label: "Service request", value: "Present · synthetic packet" },
+          { label: "Referring note", value: "Present · synthetic packet" },
+          { label: "Supporting report", value: "Present · synthetic packet" }
+        ],
+        sources: [
+          {
+            title: "Mock completeness worksheet · UM-SYN-POL-04",
+            meta: "Fictional source · revision 2 · effective 01 Aug 2026",
+            excerpt: "Demo-only checklist: verify that a service request, a referring note, and a supporting report are present in the fictional packet. This worksheet intentionally contains no medical-necessity criteria, covered-service terms, or authorization rules."
+          },
+          {
+            title: "Synthetic intake packet · SYN-UM-0428",
+            meta: "Fictional source · received 28 Sep 2026",
+            excerpt: "Sample packet index lists one service request, one referring note, and one supporting report. Document labels are invented for this interaction and do not represent a real member or clinical record."
+          }
+        ],
+        choices: [
+          { value: "route", label: "Packet present — route for clinician review", detail: "Moves the sample packet to a clinician; it is not an authorization decision.", rationale: "All listed document types are present; a clinician must make any subsequent clinical decision." },
+          { value: "request", label: "Request additional documentation", detail: "Keep the review open while a reviewer requests more records.", rationale: "The reviewer is requesting additional records rather than reaching a conclusion." },
+          { value: "escalate", label: "Escalate to physician reviewer", detail: "Hand off when clinical judgment or interpretation is needed.", rationale: "Physician review is needed when clinical interpretation is required." }
+        ]
+      },
+      "SYN-UM-0431": {
+        id: "SYN-UM-0431",
+        service: "Outpatient diagnostic service",
+        member: "SYN-MBR-0431 · fictional reference",
+        received: "29 Sep 2026 · sample operations date",
+        requestType: "New service request · sample",
+        reviewWindow: "Two business days · fictional queue value",
+        context: "The sample packet contains a request form only. The referring note and supporting report are absent, so this mock cannot complete its document-presence check.",
+        statusLabel: "Evidence incomplete",
+        incomplete: true,
+        summary: "The evidence view is incomplete: only the service request is listed. No clinical interpretation or conclusion is available. A human reviewer can request records or escalate for physician review.",
+        evidence: [
+          { label: "Service request", value: "Present · synthetic packet" },
+          { label: "Referring note", value: "Missing · not supplied in sample packet" },
+          { label: "Supporting report", value: "Missing · not supplied in sample packet" }
+        ],
+        sources: [
+          {
+            title: "Mock completeness worksheet · UM-SYN-POL-04",
+            meta: "Fictional source · revision 2 · effective 01 Aug 2026",
+            excerpt: "Demo-only checklist: verify that a service request, a referring note, and a supporting report are present in the fictional packet. This worksheet intentionally contains no medical-necessity criteria, covered-service terms, or authorization rules."
+          },
+          {
+            title: "Synthetic intake packet · SYN-UM-0431",
+            meta: "Fictional source · received 29 Sep 2026",
+            excerpt: "Sample packet index lists one service request. No referring note or supporting report is present in this fictional fixture. Missing content is not inferred or filled in."
+          }
+        ],
+        choices: [
+          { value: "request", label: "Request additional documentation", detail: "Keep the review open until the missing packet items are supplied.", rationale: "The missing referring note and supporting report prevent a completeness check." },
+          { value: "escalate", label: "Escalate to physician reviewer", detail: "Hand off for human review if the case cannot safely proceed.", rationale: "The packet is incomplete; a physician reviewer should decide whether further clinical review is appropriate." }
+        ]
+      }
+    };
+
+    const ACTION_LABELS = {
+      route: "Packet present — route for clinician review",
+      request: "Request additional documentation",
+      escalate: "Escalate to physician reviewer"
+    };
+    const INITIAL_CASE_ID = "SYN-UM-0428";
+    const state = {
+      activeCaseId: INITIAL_CASE_ID,
+      phase: "ready",
+      timer: null,
+      savedActions: Object.create(null)
+    };
+
+    const elements = {
+      queueList: document.getElementById("queueList"),
+      caseHeading: document.getElementById("caseHeading"),
+      caseId: document.getElementById("caseId"),
+      memberRef: document.getElementById("memberRef"),
+      receivedAt: document.getElementById("receivedAt"),
+      requestType: document.getElementById("requestType"),
+      reviewWindow: document.getElementById("reviewWindow"),
+      caseContext: document.getElementById("caseContext"),
+      caseState: document.getElementById("caseState"),
+      nextActionText: document.getElementById("nextActionText"),
+      prepareReview: document.getElementById("prepareReview"),
+      workflowStatus: document.getElementById("workflowStatus"),
+      summaryPanel: document.getElementById("summaryPanel"),
+      evidenceStatus: document.getElementById("evidenceStatus"),
+      summaryCopy: document.getElementById("summaryCopy"),
+      evidenceList: document.getElementById("evidenceList"),
+      sourceList: document.getElementById("sourceList"),
+      reviewWaiting: document.getElementById("reviewWaiting"),
+      decisionForm: document.getElementById("decisionForm"),
+      decisionChoices: document.getElementById("decisionChoices"),
+      savedResult: document.getElementById("savedResult"),
+      savedAction: document.getElementById("savedAction"),
+      savedRationale: document.getElementById("savedRationale"),
+      savedBy: document.getElementById("savedBy")
+    };
+
+    function makeText(tagName, className, text) {
+      const node = document.createElement(tagName);
+      if (className) node.className = className;
+      node.textContent = text;
+      return node;
+    }
+
+    function renderQueue() {
+      elements.queueList.replaceChildren();
+      Object.values(SYNTHETIC_CASES).forEach((record) => {
+        const item = document.createElement("li");
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "queue-button";
+        button.dataset.caseId = record.id;
+        button.setAttribute("aria-current", String(record.id === state.activeCaseId));
+        button.append(
+          makeText("span", "queue-id", record.id),
+          makeText("span", "queue-type", record.service)
+        );
+        const saved = state.savedActions[record.id];
+        const statusText = saved ? saved.label : record.statusLabel;
+        const status = makeText("span", `queue-state${saved ? " is-done" : ""}`, statusText);
+        button.append(status);
+        item.append(button);
+        elements.queueList.append(item);
+      });
+    }
+
+    function renderEvidence(record) {
+      elements.evidenceList.replaceChildren();
+      record.evidence.forEach((entry) => {
+        const row = document.createElement("li");
+        row.className = "evidence-row";
+        row.append(
+          makeText("span", "evidence-label", entry.label),
+          makeText("span", "evidence-value", entry.value)
+        );
+        elements.evidenceList.append(row);
+      });
+
+      elements.sourceList.replaceChildren();
+      record.sources.forEach((source) => {
+        const details = document.createElement("details");
+        const summary = makeText("summary", "", source.title);
+        const copy = makeText("p", "source-copy", source.excerpt);
+        const meta = makeText("span", "source-meta", source.meta);
+        copy.append(meta);
+        details.append(summary, copy);
+        elements.sourceList.append(details);
+      });
+    }
+
+    function renderChoices(record) {
+      const legend = makeText("legend", "", "Choose a review-routing action");
+      elements.decisionChoices.replaceChildren(legend);
+      record.choices.forEach((choice, index) => {
+        const label = document.createElement("label");
+        label.className = "choice";
+        const input = document.createElement("input");
+        input.type = "radio";
+        input.name = "action";
+        input.value = choice.value;
+        input.required = true;
+        input.id = `action-${record.id}-${index}`;
+        const copy = document.createElement("span");
+        copy.append(
+          makeText("span", "", choice.label),
+          makeText("small", "", choice.detail)
+        );
+        label.htmlFor = input.id;
+        label.append(input, copy);
+        elements.decisionChoices.append(label);
+      });
+    }
+
+    function render() {
+      const record = SYNTHETIC_CASES[state.activeCaseId];
+      const saved = state.savedActions[record.id];
+      if (state.phase === "saved" && !saved) state.phase = "ready";
+      renderQueue();
+
+      elements.caseHeading.textContent = record.service;
+      elements.caseId.textContent = record.id;
+      elements.memberRef.textContent = record.member;
+      elements.receivedAt.textContent = record.received;
+      elements.requestType.textContent = record.requestType;
+      elements.reviewWindow.textContent = record.reviewWindow;
+      elements.caseContext.textContent = record.context;
+
+      const hasEvidence = state.phase === "result" || state.phase === "exception" || state.phase === "saved";
+      const isWorking = state.phase === "working";
+      elements.caseState.textContent = saved ? saved.label : (record.incomplete && hasEvidence ? "Evidence incomplete" : record.statusLabel);
+      elements.caseState.className = `tag${record.incomplete && hasEvidence ? " tag-warn" : saved ? " tag-ok" : ""}`;
+      elements.prepareReview.disabled = isWorking || hasEvidence;
+      elements.prepareReview.textContent = isWorking ? "Checking sample packet…" : hasEvidence ? "Evidence view prepared" : "Prepare evidence view";
+      elements.nextActionText.textContent = isWorking
+        ? "Checking only whether the fictional document types are listed."
+        : hasEvidence
+          ? "Inspect the sample sources and record a human routing action; no coverage determination is made."
+          : "Compare the listed documents with the fictional completeness worksheet. This local check does not assess clinical criteria.";
+      elements.workflowStatus.textContent = state.phase === "working"
+        ? "Preparing a deterministic evidence view from local synthetic fixtures…"
+        : state.phase === "exception"
+          ? "Evidence incomplete. No conclusion is generated; request the missing records or escalate to a physician reviewer."
+          : state.phase === "result"
+            ? "Evidence view ready. Review the source excerpts before recording a routing action."
+            : saved
+              ? "Reviewer action recorded in this demo session. No external system was updated."
+              : "Ready. No network request or live policy lookup will be made.";
+
+      elements.summaryPanel.hidden = !hasEvidence;
+      elements.reviewWaiting.hidden = hasEvidence;
+      elements.decisionForm.hidden = !hasEvidence || Boolean(saved);
+      elements.savedResult.hidden = !saved;
+      if (hasEvidence) {
+        elements.evidenceStatus.textContent = record.incomplete ? "Evidence incomplete · no conclusion" : "Checklist items present · no clinical review";
+        elements.evidenceStatus.className = `tag ${record.incomplete ? "tag-warn" : "tag-ok"}`;
+        elements.summaryCopy.textContent = record.summary;
+        renderEvidence(record);
+        renderChoices(record);
+      }
+      if (saved) {
+        elements.savedAction.textContent = saved.label;
+        elements.savedRationale.textContent = `Reviewer rationale: ${saved.rationale}`;
+        elements.savedBy.textContent = `Recorded by Arden Vale, RN · local demo session · ${record.id}`;
+      }
+    }
+
+    function selectCase(caseId) {
+      if (!SYNTHETIC_CASES[caseId]) return;
+      if (state.timer) window.clearTimeout(state.timer);
+      state.timer = null;
+      state.activeCaseId = caseId;
+      state.phase = state.savedActions[caseId] ? "saved" : "ready";
+      render();
+    }
+
+    elements.queueList.addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-case-id]");
+      if (button) selectCase(button.dataset.caseId);
+    });
+
+    elements.prepareReview.addEventListener("click", () => {
+      if (state.phase !== "ready") return;
+      state.phase = "working";
+      render();
+      state.timer = window.setTimeout(() => {
+        const record = SYNTHETIC_CASES[state.activeCaseId];
+        state.phase = record.incomplete ? "exception" : "result";
+        state.timer = null;
+        render();
+      }, 450);
+    });
+
+    elements.decisionForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      if (!elements.decisionForm.reportValidity()) return;
+      const formData = new FormData(elements.decisionForm);
+      const action = String(formData.get("action") || "");
+      const selectedChoice = SYNTHETIC_CASES[state.activeCaseId].choices.find((choice) => choice.value === action);
+      if (!ACTION_LABELS[action] || !selectedChoice) return;
+      state.savedActions[state.activeCaseId] = {
+        action,
+        label: ACTION_LABELS[action],
+        rationale: selectedChoice.rationale
+      };
+      state.phase = "saved";
+      render();
+    });
+
+    document.getElementById("reviewAnother").addEventListener("click", () => {
+      const nextId = state.activeCaseId === "SYN-UM-0428" ? "SYN-UM-0431" : "SYN-UM-0428";
+      selectCase(nextId);
+      document.getElementById("caseHeading").focus?.();
+    });
+
+    document.getElementById("resetDemo").addEventListener("click", () => {
+      if (state.timer) window.clearTimeout(state.timer);
+      state.activeCaseId = INITIAL_CASE_ID;
+      state.phase = "ready";
+      state.timer = null;
+      state.savedActions = Object.create(null);
+      render();
+      elements.workflowStatus.textContent = "Demo reset. The first synthetic case is ready to review.";
+      elements.prepareReview.focus();
+    });
+
+    render();
+  </script>
+</body>
+</html>

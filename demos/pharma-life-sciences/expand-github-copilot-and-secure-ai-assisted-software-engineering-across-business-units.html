@@ -1,0 +1,879 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Copilot rollout review — Fictional BioWorks</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* ---------------------------------------------------------- demo layout */
+body[data-subvertical="pharma-life-sciences"] {
+  --on-accent: #ffffff;
+  --page-width: 1480px;
+  --page-gutter: clamp(14px, 2.5vw, 30px);
+  --panel-gap: 16px;
+}
+
+.appbar { padding-inline: var(--page-gutter); }
+.brand-mark {
+  display: grid; place-items: center; width: 31px; height: 31px;
+  border: 1px solid var(--accent); border-radius: 6px; color: var(--on-accent);
+  background: var(--accent); font-size: 13px; font-weight: 700;
+}
+.who { display: grid; gap: 0; }
+.who-label { color: var(--line); font-size: 11px; }
+.disclosure { white-space: normal; text-align: center; }
+.btn-primary { color: var(--on-accent); }
+
+.page {
+  width: min(100%, var(--page-width));
+  margin: 0 auto;
+  padding: 18px var(--page-gutter) 30px;
+}
+.crumbs {
+  display: flex; align-items: center; gap: 7px; margin: 0 0 9px;
+  color: var(--muted); font-size: 12.5px;
+}
+.crumb-sep { color: var(--muted-soft); }
+.page-heading {
+  display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between;
+  gap: 10px 20px; margin-bottom: 17px;
+}
+.page-heading h1 { margin: 0; font-size: clamp(22px, 3vw, 29px); line-height: 1.18; letter-spacing: -.02em; }
+.page-heading p { margin: 5px 0 0; color: var(--muted); font-size: 13.5px; }
+.heading-label { display: inline-block; margin-bottom: 5px; color: var(--accent-strong); font-size: 12px; font-weight: 700; }
+.heading-actions { display: flex; align-items: center; gap: 10px; }
+
+.case-strip {
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 5px 15px;
+  margin-bottom: 13px; padding: 8px 11px; border: 1px solid var(--line);
+  border-radius: var(--radius); background: var(--surface);
+  color: var(--muted); font-size: 12.5px;
+}
+.case-strip strong { color: var(--ink-soft); font-weight: 600; }
+.case-strip .tag { margin-left: auto; }
+
+.workspace {
+  display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(300px, .9fr);
+  gap: var(--panel-gap); align-items: start;
+}
+.request-card { min-width: 0; }
+.request-card .card-head { align-items: center; }
+.request-heading { display: grid; gap: 3px; }
+.request-heading h2 { font-size: 16px; }
+.request-heading .card-note { font-size: 12px; }
+.request-id { font: 12px var(--mono); color: var(--muted); }
+.request-content { display: grid; gap: 15px; }
+.request-summary { margin: 0; font-size: 14px; color: var(--ink-soft); }
+.request-meta {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 18px; margin: 0; padding: 0 0 13px; border-bottom: 1px solid var(--line-soft);
+}
+.request-meta div { min-width: 0; }
+.request-meta dt { margin-bottom: 2px; color: var(--muted); font-size: 11.5px; }
+.request-meta dd { margin: 0; font-size: 13.5px; font-weight: 600; overflow-wrap: anywhere; }
+.baseline-title, .workload-title { margin: 0 0 7px; font-size: 12.5px; font-weight: 700; }
+.baseline-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+.baseline {
+  padding: 9px 10px; border: 1px solid var(--line-soft);
+  border-radius: var(--radius); background: var(--bg);
+}
+.baseline-label { display: block; color: var(--muted); font-size: 11.5px; }
+.baseline-value { display: block; margin-top: 2px; font-size: 16px; font-weight: 650; }
+.baseline-note { display: block; color: var(--muted); font-size: 11px; }
+.data-note { margin: 7px 0 0; color: var(--muted); font-size: 11.5px; }
+.workload-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.workload-chips li { margin: 0; }
+.catalog-workloads { margin: 8px 0 0; color: var(--muted); font-size: 11.5px; overflow-wrap: anywhere; }
+.catalog-workloads b { color: var(--ink-soft); }
+
+.decision-card { min-width: 0; border-top: 3px solid var(--accent); }
+.decision-card .card-head { padding-top: 11px; }
+.decision-card .card-body { display: grid; gap: 13px; }
+.decision-intro { margin: 0; color: var(--ink-soft); font-size: 13.5px; }
+.field select {
+  width: 100%; min-height: 41px; padding: 8px 34px 8px 10px;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--surface); color: var(--ink); font: inherit; font-size: 13px;
+}
+.decision-actions { display: grid; gap: 8px; }
+.decision-actions .btn { justify-content: center; width: 100%; }
+.decision-explainer { margin: 0; color: var(--muted); font-size: 12px; }
+.review-check {
+  display: flex; gap: 9px; align-items: flex-start;
+  margin: 0; padding: 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); background: var(--bg); font-size: 12.5px;
+}
+.review-check input { flex: none; width: 18px; height: 18px; margin: 1px 0 0; }
+.decision-basis {
+  margin: 0; padding: 10px; border-left: 3px solid var(--accent);
+  background: var(--accent-soft); color: var(--ink-soft); font-size: 12.5px;
+}
+.decision-result {
+  padding: 10px; border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--surface-2); font-size: 13px;
+}
+.decision-result strong { display: block; margin-bottom: 3px; }
+.decision-result p { margin: 0; color: var(--ink-soft); }
+.decision-result.success { background: var(--ok-bg); border-color: #a7d9a7; }
+.decision-result.exception { background: var(--warn-bg); border-color: #e6d08a; }
+.decision-result.escalated { background: var(--accent-soft); border-color: var(--accent-line); }
+
+.review-card { margin-top: var(--panel-gap); }
+.review-card .card-body { display: grid; gap: 13px; }
+.review-intro { margin: 0; color: var(--muted); font-size: 12.5px; }
+.evidence-list { display: grid; gap: 9px; margin: 0; padding: 0; list-style: none; }
+.evidence-row {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start; gap: 4px 12px; padding: 10px 11px;
+  border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--surface);
+}
+.evidence-title { display: block; font-size: 13px; font-weight: 650; }
+.evidence-detail { grid-column: 1 / -1; margin: 0; color: var(--ink-soft); font-size: 12.5px; }
+.evidence-source { grid-column: 1 / -1; margin: 0; color: var(--muted); font-size: 11.5px; }
+.audit-preview { padding-top: 12px; border-top: 1px solid var(--line-soft); }
+.audit-preview h3 { margin: 0 0 8px; font-size: 12.5px; }
+.audit-entry { display: flex; flex-wrap: wrap; gap: 3px 9px; align-items: baseline; font-size: 12.5px; }
+.audit-entry time { color: var(--muted); font: 11.5px var(--mono); }
+.audit-entry strong { color: var(--accent-strong); }
+.audit-entry span { color: var(--ink-soft); }
+
+.page-footer {
+  display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 22px;
+  margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12px;
+}
+.page-footer p { margin: 0; max-width: 76ch; }
+.page-footer strong { color: var(--ink-soft); }
+.page-footer .business-value { flex-basis: 100%; }
+
+@media (max-width: 900px) {
+  .workspace { grid-template-columns: minmax(0, 1fr); }
+  .decision-card { order: -1; }
+}
+@media (max-width: 520px) {
+  .page { padding-top: 13px; }
+  .page-heading { align-items: flex-start; }
+  .page-heading h1 { font-size: 23px; }
+  .heading-actions { width: 100%; }
+  .heading-actions .btn { width: 100%; justify-content: center; }
+  .case-strip .tag { margin-left: 0; }
+  .request-card .card-body, .decision-card .card-body { padding: 12px; }
+  .request-meta { gap: 9px 11px; }
+  .baseline-grid { gap: 7px; }
+  .baseline-value { font-size: 15px; }
+}
+  </style>
+</head>
+<body data-subvertical="pharma-life-sciences">
+  <header class="appbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">F</span>
+      <div>
+        <span class="brand-name">Engineering governance</span>
+        <span class="brand-sub">Fictional BioWorks · rollout review</span>
+      </div>
+    </div>
+    <p class="who">
+      <span class="who-label">Signed in as</span>
+      <span><b id="signedInName">Ari Marlow</b> · <span id="signedInRole">VP Engineering</span></span>
+    </p>
+    <p class="disclosure"><span aria-hidden="true">●</span>Illustrative demo - synthetic data</p>
+  </header>
+
+  <main class="page">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <span>Engineering governance</span><span class="crumb-sep" aria-hidden="true">/</span>
+      <span>Approval queue</span><span class="crumb-sep" aria-hidden="true">/</span>
+      <span aria-current="page">Rollout review</span>
+    </nav>
+
+    <div class="page-heading">
+      <div>
+        <span class="heading-label">Data, AI &amp; Platform Foundation · Apps</span>
+        <h1>Copilot expansion review</h1>
+        <p>Review one cross-business-unit request before recording a human decision.</p>
+      </div>
+      <div class="heading-actions">
+        <button class="btn" id="resetButton" type="button">Reset this review</button>
+      </div>
+    </div>
+
+    <div class="case-strip" aria-label="Current review context">
+      <span><strong>Work queue</strong> · 1 synthetic request awaiting decision</span>
+      <span class="tag" id="stateTag">Ready for review</span>
+    </div>
+
+    <div class="workspace">
+      <section class="card request-card" aria-labelledby="requestCardTitle">
+        <div class="card-head">
+          <div class="request-heading">
+            <h2 id="requestCardTitle">Expansion request</h2>
+            <span class="card-note">Submitted by <span id="requesterName">Becca Lin</span>, Platform Engineering Lead</span>
+          </div>
+          <span class="request-id" id="requestId">COP-026</span>
+        </div>
+        <div class="card-body request-content">
+          <p class="request-summary"><strong id="organizationName">Fictional BioWorks</strong> asks to extend secure, AI-assisted development into <strong id="businessUnit">Discovery Engineering</strong>.</p>
+
+          <dl class="request-meta">
+            <div>
+              <dt>Existing pilot group</dt>
+              <dd id="pilotGroup">Atlas Methods</dd>
+            </div>
+            <div>
+              <dt>Requested group</dt>
+              <dd id="targetGroup">Discovery Engineering</dd>
+            </div>
+            <div>
+              <dt>Requested scope</dt>
+              <dd id="requestedScope">12 additional seats</dd>
+            </div>
+            <div>
+              <dt>Request date</dt>
+              <dd id="requestDate">24 Sep 2026 · synthetic</dd>
+            </div>
+          </dl>
+
+          <section aria-labelledby="baselineHeading">
+            <h3 class="baseline-title" id="baselineHeading">Pilot baseline</h3>
+            <div class="baseline-grid" id="baselineList"></div>
+            <p class="data-note">Illustrative operational sample only — not a productivity, quality, cost, or time outcome.</p>
+          </section>
+
+          <section aria-labelledby="workloadHeading">
+            <h3 class="workload-title" id="workloadHeading">Workloads in the catalog scope</h3>
+            <ul class="workload-chips" id="workloadList"></ul>
+            <p class="catalog-workloads" id="catalogWorkloadNames"></p>
+          </section>
+
+          <section class="card review-card" id="evidencePanel" aria-labelledby="evidenceTitle" hidden>
+            <div class="card-head">
+              <h3 id="evidenceTitle">Readiness evidence</h3>
+              <span class="tag" id="evidenceStateTag">Synthetic packet</span>
+            </div>
+            <div class="card-body">
+              <p class="review-intro" id="evidenceIntro"></p>
+              <ul class="evidence-list" id="evidenceList"></ul>
+              <p class="rule" id="guardrailNote"></p>
+              <div class="audit-preview" id="auditPreview" hidden>
+                <h3>Local decision record</h3>
+                <div class="audit-entry">
+                  <time id="auditTime">Demo time</time>
+                  <strong id="auditActor">Ari Marlow</strong>
+                  <span id="auditAction">Decision recorded</span>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="card decision-card" aria-labelledby="decisionTitle">
+        <div class="card-head">
+          <h2 id="decisionTitle">Decision control</h2>
+          <span class="card-note">Human review required</span>
+        </div>
+        <div class="card-body">
+          <p class="decision-intro">Check the sample packet, then decide whether this bounded pilot request is ready to proceed. Nothing is sent or changed outside this page.</p>
+
+          <div class="field">
+            <label for="scenarioSelect">Synthetic review packet</label>
+            <select id="scenarioSelect" aria-describedby="scenarioHelp">
+              <option value="standard">Standard packet · scope confirmed</option>
+              <option value="exception">Exception packet · scope boundary unconfirmed</option>
+            </select>
+          </div>
+          <p class="decision-explainer" id="scenarioHelp">Choose a fixed fixture to replay the normal review or the escalation path.</p>
+
+          <p class="status-line" id="workflowStatus" role="status" aria-live="polite">Ready for a local review. No product service is connected.</p>
+          <div class="decision-basis" id="decisionBasis" hidden></div>
+
+          <label class="review-check" id="reviewAcknowledgement" hidden>
+            <input type="checkbox" id="humanAcknowledgement">
+            <span>I reviewed the synthetic evidence and accept responsibility for the expansion decision.</span>
+          </label>
+
+          <div class="decision-result success" id="approvalResult" hidden>
+            <strong>Human approval recorded in this demo</strong>
+            <p id="approvalResultText"></p>
+          </div>
+          <div class="decision-result exception" id="exceptionResult" hidden>
+            <strong>Approval is held</strong>
+            <p>The supplied packet does not confirm the team boundary. Keep a human reviewer accountable and route it to Application Security.</p>
+          </div>
+          <div class="decision-result escalated" id="escalationResult" hidden>
+            <strong>Escalation recorded locally</strong>
+            <p id="escalationResultText"></p>
+          </div>
+
+          <div class="decision-actions">
+            <button class="btn btn-primary" id="runReviewButton" type="button">Run readiness review</button>
+            <button class="btn btn-primary" id="approveButton" type="button" hidden disabled>Approve pilot expansion</button>
+            <button class="btn" id="escalateButton" type="button" hidden>Escalate to Application Security</button>
+          </div>
+          <p class="decision-explainer">Review rationale stays visible with the sample evidence. Reset restores the selected packet for replay.</p>
+        </div>
+      </section>
+    </div>
+
+    <footer class="page-footer">
+      <p><strong>Catalog business value:</strong> <span id="catalogBusinessValue"></span></p>
+      <p class="business-value">The figures above are synthetic operational data, not customer outcomes. The review packet is fictional and does not perform a live scan, provisioning, or policy decision.</p>
+    </footer>
+  </main>
+
+  <script>
+    "use strict";
+
+    // Every person, organization, work item, date, measurement, and review note
+    // used by this mock lives here. Values are fixed so each replay is deterministic.
+    const DEMO_FIXTURES = Object.freeze({
+      organization: "Fictional BioWorks",
+      approver: { name: "Ari Marlow", role: "VP Engineering" },
+      request: {
+        id: "COP-026",
+        requester: "Becca Lin",
+        businessUnit: "Discovery Engineering",
+        pilotGroup: "Atlas Methods",
+        targetGroup: "Discovery Engineering",
+        requestedScope: "12 additional seats",
+        requestDate: "24 Sep 2026 · synthetic",
+      },
+      baseline: [
+        { label: "Pilot seats assigned", value: "18 / 24", note: "synthetic snapshot" },
+        { label: "Weekly active seats", value: "15 / 24", note: "synthetic snapshot" },
+      ],
+      workloads: [
+        { canonical: "GitHub Copilot", catalog: "GitHub Copilot (GHE / Non-GHE)" },
+        { canonical: "GitHub Enterprise", catalog: "GitHub Enterprise" },
+        { canonical: "GitHub Advanced Security", catalog: "GitHub Security (GHAS)" },
+        { canonical: "Azure DevOps", catalog: "DevOps (Azure DevOps)" },
+      ],
+      cases: {
+        standard: {
+          intro: "Illustrative review result for a fixed synthetic request packet. This is a mock review, not a live service check.",
+          basis: "Decision basis: the supplied sample packet defines the team boundary and lists no unresolved items. The approver remains accountable for the final decision.",
+          evidence: [
+            {
+              title: "Team scope",
+              status: "Defined in sample",
+              detail: "The fictional Discovery Engineering group is named in the request packet.",
+              source: "Fictional platform onboarding brief · 24 Sep 2026",
+            },
+            {
+              title: "Security review note",
+              status: "No unresolved items listed",
+              detail: "The synthetic review note is clear for this demonstration. It is not a scan result from GitHub.",
+              source: "Fictional security review note · 24 Sep 2026",
+            },
+            {
+              title: "Adoption baseline",
+              status: "Sample attached",
+              detail: "Pilot counts are provided as illustrative operational data for a human to consider.",
+              source: "Fictional adoption snapshot · 23 Sep 2026",
+            },
+          ],
+        },
+        exception: {
+          intro: "This fixed synthetic packet deliberately omits a confirmed team boundary. Do not approve it automatically.",
+          basis: "Decision basis: the supplied sample does not establish the repository boundary. Ask Application Security to review the scope before a human decision.",
+          evidence: [
+            {
+              title: "Team scope",
+              status: "Not confirmed",
+              detail: "The request names Discovery Engineering but does not confirm which fictional repositories are in scope.",
+              source: "Fictional platform onboarding brief · 24 Sep 2026",
+            },
+            {
+              title: "Security review note",
+              status: "Human follow-up needed",
+              detail: "The synthetic note asks for the boundary to be reviewed; this mock does not clear or dismiss any finding.",
+              source: "Fictional security review note · 24 Sep 2026",
+            },
+            {
+              title: "Adoption baseline",
+              status: "Sample attached",
+              detail: "Pilot counts remain illustrative context and do not resolve the missing scope evidence.",
+              source: "Fictional adoption snapshot · 23 Sep 2026",
+            },
+          ],
+        },
+      },
+      catalogValue: "Increase developer productivity and throughput while maintaining secure, compliant SDLC (time down, cost down, quality up).",
+      guardrail: "The catalog lists integrated code security scanning as a mitigation. This self-contained fixture does not run a scan or make an authoritative security or compliance decision.",
+    });
+
+    // State model: ready -> working -> review -> approved; exception -> escalated.
+    // Reset returns any state to ready; changing the fixture always resets the review.
+    const STATE_TRANSITIONS = Object.freeze({
+      ready: ["working"],
+      working: ["review", "exception"],
+      review: ["approved"],
+      exception: ["escalated"],
+      approved: [],
+      escalated: [],
+    });
+    let workflowState = "ready";
+    let activeCase = "standard";
+    let reviewTimer = null;
+
+    const byId = (id) => document.getElementById(id);
+    const setText = (id, value) => { byId(id).textContent = String(value); };
+
+    function moveTo(nextState) {
+      if (!STATE_TRANSITIONS[workflowState].includes(nextState)) return false;
+      workflowState = nextState;
+      render();
+      return true;
+    }
+
+    function appendBaseline() {
+      const list = byId("baselineList");
+      list.replaceChildren();
+      DEMO_FIXTURES.baseline.forEach((item) => {
+        const article = document.createElement("div");
+        article.className = "baseline";
+        const label = document.createElement("span");
+        label.className = "baseline-label";
+        label.textContent = item.label;
+        const value = document.createElement("strong");
+        value.className = "baseline-value";
+        value.textContent = item.value;
+        const note = document.createElement("span");
+        note.className = "baseline-note";
+        note.textContent = item.note;
+        article.append(label, value, note);
+        list.append(article);
+      });
+    }
+
+    function appendWorkloads() {
+      const list = byId("workloadList");
+      list.replaceChildren();
+      DEMO_FIXTURES.workloads.forEach((workload) => {
+        const item = document.createElement("li");
+        const chip = document.createElement("span");
+        chip.className = "svc-chip";
+        chip.textContent = workload.canonical;
+        item.append(chip);
+        list.append(item);
+      });
+      const catalogNames = DEMO_FIXTURES.workloads.map((workload) => workload.catalog).join(" · ");
+      const prefix = document.createElement("b");
+      prefix.textContent = "Catalog labels: ";
+      byId("catalogWorkloadNames").replaceChildren(prefix, document.createTextNode(catalogNames));
+    }
+
+    function appendEvidence() {
+      const packet = DEMO_FIXTURES.cases[activeCase];
+      const list = byId("evidenceList");
+      list.replaceChildren();
+      packet.evidence.forEach((item) => {
+        const row = document.createElement("li");
+        row.className = "evidence-row";
+        const title = document.createElement("strong");
+        title.className = "evidence-title";
+        title.textContent = item.title;
+        const status = document.createElement("span");
+        status.className = activeCase === "exception" && item.status !== "Sample attached" ? "tag tag-warn" : "tag";
+        status.textContent = item.status;
+        const detail = document.createElement("p");
+        detail.className = "evidence-detail";
+        detail.textContent = item.detail;
+        const source = document.createElement("p");
+        source.className = "evidence-source";
+        source.textContent = item.source;
+        row.append(title, status, detail, source);
+        list.append(row);
+      });
+    }
+
+    function updateAudit(action) {
+      const now = new Date();
+      const time = new Intl.DateTimeFormat("en", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }).format(now);
+      setText("auditTime", `${time} · local`);
+      setText("auditActor", DEMO_FIXTURES.approver.name);
+      setText("auditAction", action);
+      byId("auditPreview").hidden = false;
+    }
+
+    function render() {
+      const stateTag = byId("stateTag");
+      const runButton = byId("runReviewButton");
+      const acknowledgement = byId("reviewAcknowledgement");
+      const approveButton = byId("approveButton");
+      const escalateButton = byId("escalateButton");
+      const evidencePanel = byId("evidencePanel");
+      const check = byId("humanAcknowledgement");
+      const inReview = ["review", "exception", "approved", "escalated"].includes(workflowState);
+
+      stateTag.className = "tag";
+      runButton.hidden = workflowState !== "ready" && workflowState !== "working";
+      runButton.disabled = workflowState === "working";
+      runButton.textContent = workflowState === "working" ? "Review in progress…" : "Run readiness review";
+      acknowledgement.hidden = workflowState !== "review";
+      approveButton.hidden = workflowState !== "review";
+      approveButton.disabled = !check.checked;
+      escalateButton.hidden = workflowState !== "exception";
+      evidencePanel.hidden = !inReview;
+      byId("decisionBasis").hidden = !inReview;
+      byId("approvalResult").hidden = workflowState !== "approved";
+      byId("exceptionResult").hidden = workflowState !== "exception";
+      byId("escalationResult").hidden = workflowState !== "escalated";
+      byId("auditPreview").hidden = workflowState !== "approved" && workflowState !== "escalated";
+
+      if (inReview) {
+        const packet = DEMO_FIXTURES.cases[activeCase];
+        setText("evidenceIntro", packet.intro);
+        setText("decisionBasis", packet.basis);
+        setText("guardrailNote", DEMO_FIXTURES.guardrail);
+        appendEvidence();
+      }
+
+      switch (workflowState) {
+        case "ready":
+          stateTag.textContent = "Ready for review";
+          setText("workflowStatus", "Ready for a local review. No product service is connected.");
+          break;
+        case "working":
+          stateTag.textContent = "Reviewing sample";
+          setText("workflowStatus", "Reviewing the fixed synthetic packet…");
+          break;
+        case "review":
+          stateTag.classList.add("tag-ok");
+          stateTag.textContent = "Human decision required";
+          setText("workflowStatus", "Sample packet reviewed. Your acknowledgement is required before approval.");
+          setText("approvalResultText", `Recorded by ${DEMO_FIXTURES.approver.name}, ${DEMO_FIXTURES.approver.role}. This approval exists only in the current page session.`);
+          byId("evidenceStateTag").className = "tag tag-ok";
+          byId("evidenceStateTag").textContent = "Sample packet reviewed";
+          break;
+        case "exception":
+          stateTag.classList.add("tag-warn");
+          stateTag.textContent = "Scope evidence missing";
+          setText("workflowStatus", "A scope boundary is unconfirmed. Approval is unavailable; escalate for human review.");
+          byId("evidenceStateTag").className = "tag tag-warn";
+          byId("evidenceStateTag").textContent = "Exception · review needed";
+          break;
+        case "approved":
+          stateTag.classList.add("tag-ok");
+          stateTag.textContent = "Approved in demo";
+          setText("workflowStatus", "Human decision recorded locally. No external system was changed.");
+          byId("evidenceStateTag").className = "tag tag-ok";
+          byId("evidenceStateTag").textContent = "Human-reviewed sample";
+          break;
+        case "escalated":
+          stateTag.classList.add("tag-warn");
+          stateTag.textContent = "Escalated in demo";
+          setText("workflowStatus", "Escalation recorded locally for Application Security review.");
+          setText("escalationResultText", `Routed to the Application Security Lead by ${DEMO_FIXTURES.approver.name}. Resolve the boundary question outside this mock before a later human decision.`);
+          byId("evidenceStateTag").className = "tag tag-warn";
+          byId("evidenceStateTag").textContent = "Held for human review";
+          break;
+      }
+    }
+
+    function resetWorkflow(message) {
+      if (reviewTimer !== null) window.clearTimeout(reviewTimer);
+      reviewTimer = null;
+      workflowState = "ready";
+      byId("humanAcknowledgement").checked = false;
+      render();
+      if (message) setText("workflowStatus", message);
+    }
+
+    byId("scenarioSelect").addEventListener("change", (event) => {
+      activeCase = event.currentTarget.value;
+      resetWorkflow("Review packet changed. Run the local review to inspect this synthetic case.");
+    });
+    byId("runReviewButton").addEventListener("click", () => {
+      if (!moveTo("working")) return;
+      reviewTimer = window.setTimeout(() => {
+        reviewTimer = null;
+        moveTo(activeCase === "exception" ? "exception" : "review");
+      }, 420);
+    });
+    byId("humanAcknowledgement").addEventListener("change", () => {
+      byId("approveButton").disabled = !byId("humanAcknowledgement").checked;
+    });
+    byId("approveButton").addEventListener("click", () => {
+      if (!byId("humanAcknowledgement").checked || !moveTo("approved")) return;
+      updateAudit("Approved the bounded synthetic pilot request");
+    });
+    byId("escalateButton").addEventListener("click", () => {
+      if (!moveTo("escalated")) return;
+      updateAudit("Escalated the synthetic scope question to Application Security");
+    });
+    byId("resetButton").addEventListener("click", () => {
+      resetWorkflow("Review reset. The selected synthetic packet is ready to replay.");
+    });
+
+    setText("signedInName", DEMO_FIXTURES.approver.name);
+    setText("signedInRole", DEMO_FIXTURES.approver.role);
+    setText("organizationName", DEMO_FIXTURES.organization);
+    setText("requestId", DEMO_FIXTURES.request.id);
+    setText("requesterName", DEMO_FIXTURES.request.requester);
+    setText("businessUnit", DEMO_FIXTURES.request.businessUnit);
+    setText("pilotGroup", DEMO_FIXTURES.request.pilotGroup);
+    setText("targetGroup", DEMO_FIXTURES.request.targetGroup);
+    setText("requestedScope", DEMO_FIXTURES.request.requestedScope);
+    setText("requestDate", DEMO_FIXTURES.request.requestDate);
+    setText("catalogBusinessValue", DEMO_FIXTURES.catalogValue);
+    appendBaseline();
+    appendWorkloads();
+    render();
+  </script>
+</body>
+</html>

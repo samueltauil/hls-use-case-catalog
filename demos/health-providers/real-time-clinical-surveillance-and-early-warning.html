@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Harbor 4 West | Clinical surveillance pilot</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* Ready -> working -> routed result; stale input -> exception -> manual result.
+   Reset returns both alerts to ready/exception without retaining simulated events. */
+html, body { height: auto; min-height: 100%; }
+.page { max-width: 1500px; margin: auto; padding: 13px 20px 26px; }
+.intro { display: flex; align-items: end; justify-content: space-between; gap: 10px 20px; margin-bottom: 12px; }
+.intro h1 { margin: 0; font-size: clamp(21px, 2vw, 26px); line-height: 1.2; }
+.intro p { margin: 4px 0 0; color: var(--muted); font-size: 12.5px; }
+.scope { padding: 6px 10px; border-left: 3px solid var(--accent); background: var(--accent-soft); font-size: 12px; max-width: 42ch; }
+.scope b { display: block; }
+.workbench { display: grid; grid-template-columns: 247px minmax(0, 1fr); gap: 12px; align-items: start; }
+.queue, .detail { min-width: 0; }
+.queue .card-head { padding: 10px 12px; }
+.queue-list { list-style: none; margin: 0; padding: 0; }
+.queue-list li + li { border-top: 1px solid var(--line); }
+.queue-choice {
+  width: 100%; border: 0; background: var(--surface); color: var(--ink);
+  text-align: left; padding: 12px; cursor: pointer; font: inherit; font-size: 12.5px;
+  display: grid; gap: 3px; border-left: 3px solid transparent; min-height: 85px;
+}
+.queue-choice:hover { background: var(--surface-2); }
+.queue-choice[aria-current="true"] { border-left-color: var(--accent); background: var(--accent-soft); }
+.queue-choice strong { display: flex; flex-wrap: wrap; gap: 3px 7px; justify-content: space-between; font-size: 13px; }
+.queue-choice span { display: block; }
+.queue-choice small { color: var(--muted); font-size: 11.5px; }
+.queue-foot { border-top: 1px solid var(--line-soft); padding: 10px 12px; color: var(--muted); font-size: 12px; margin: 0; }
+.detail-head { padding: 10px 14px; align-items: center; }
+.detail-head h2 { font-size: 17px; line-height: 1.25; }
+.detail-head p { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
+.heading-status { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.detail-body { padding: 11px 14px 13px; display: grid; gap: 10px; }
+.context-strip { display: flex; flex-wrap: wrap; gap: 4px 17px; border-bottom: 1px solid var(--line-soft); padding-bottom: 8px; font-size: 12px; }
+.context-strip b { font-weight: 600; }
+.context-strip span { color: var(--ink-soft); }
+.evidence-grid { display: grid; grid-template-columns: minmax(0, 1.23fr) minmax(270px, .77fr); gap: 13px; align-items: start; }
+.section-heading { font-size: 13px; font-weight: 650; margin: 0 0 6px; }
+.subheading { margin: 9px 0 5px; font-size: 12px; font-weight: 600; }
+.signal-rail { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; margin-bottom: 6px; }
+.signal { min-width: 0; padding: 6px 7px; background: var(--accent-soft); border-top: 3px solid var(--accent-strong); font-size: 11.5px; }
+.signal.is-stale { background: var(--warn-bg); border-top-color: var(--warn); }
+.signal b, .signal span { display: block; overflow-wrap: anywhere; }
+.signal span { color: var(--ink-soft); }
+.rail-note { margin: 0; color: var(--muted); font-size: 11.5px; }
+.observations { width: 100%; border-collapse: collapse; font-size: 12px; }
+.observations th { color: var(--muted); font-size: 11.5px; text-align: left; font-weight: 600; }
+.observations th, .observations td { padding: 5px 6px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+.observations th:first-child, .observations td:first-child { padding-left: 0; }
+.observations td:last-child { color: var(--ink-soft); }
+.observations .missing { color: var(--warn); font-weight: 600; }
+.timeline { list-style: none; padding: 0 0 0 12px; margin: 0; border-left: 2px solid var(--accent-line); display: grid; gap: 5px; font-size: 11.5px; }
+.timeline li { position: relative; }
+.timeline li::before { content: ""; position: absolute; left: -17px; top: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent-strong); }
+.timeline time { color: var(--muted); font-family: var(--mono); }
+.model { border: 1px solid var(--line); border-radius: var(--radius); padding: 9px 10px; background: var(--bg); }
+.model .section-heading { margin-bottom: 2px; }
+.model strong { display: block; font-size: 13px; }
+.model p { font-size: 12px; margin: 4px 0 0; color: var(--ink-soft); }
+.model .model-warning { color: var(--warn); font-weight: 600; }
+.guidance { border-left: 3px solid var(--accent); padding: 8px 10px; margin-top: 9px; background: var(--accent-soft); font-size: 12px; }
+.guidance p { margin: 3px 0 0; }
+.guidance small { display: block; color: var(--ink-soft); font-size: 11.5px; margin-top: 6px; }
+.review { border-top: 1px solid var(--line); padding-top: 9px; display: grid; gap: 7px; }
+.review .section-heading { margin: 0; }
+.review-check { display: flex; gap: 8px; align-items: flex-start; font-size: 12.5px; cursor: pointer; }
+.review-check input { flex: none; width: 18px; height: 18px; margin: 1px 0 0; accent-color: var(--accent-strong); }
+.review .actions { align-items: center; }
+.review .btn { min-height: 38px; }
+.explain { margin: 0; font-size: 12px; color: var(--ink-soft); }
+.result { border: 1px solid var(--accent-line); border-left: 3px solid var(--accent-strong); background: var(--accent-soft); border-radius: var(--radius); padding: 8px 11px; font-size: 12.5px; }
+.result:focus { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
+.result strong { display: block; }
+.result p { margin: 2px 0 0; }
+.audit-panel { padding: 10px 14px; margin-top: 10px; }
+.audit-panel .section-heading { margin-bottom: 6px; }
+.audit { gap: 5px; font-size: 12px; }
+.audit li { grid-template-columns: 42px minmax(0, 1fr); gap: 8px; }
+.audit time { font-size: 11px; }
+.audit li span { overflow-wrap: anywhere; }
+.foot-note { margin: 5px 0 0; font-size: 11.5px; color: var(--muted); }
+.footer { padding-inline: 20px; }
+.footer .built { max-width: 100%; }
+.footer .svc-chip { white-space: normal; }
+.footer .claim { flex-basis: 100%; max-width: none; margin: 0; }
+@media (max-width: 900px) {
+  .workbench { grid-template-columns: 1fr; }
+  .queue-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .queue-list li + li { border-top: 0; border-left: 1px solid var(--line); }
+}
+@media (max-width: 650px) {
+  .page { padding: 12px 12px 22px; }
+  .intro { display: block; }
+  .scope { margin-top: 8px; }
+  .evidence-grid { grid-template-columns: 1fr; }
+  .detail-head { align-items: flex-start; }
+  .heading-status { width: 100%; }
+  .detail-body { display: flex; flex-direction: column; }
+  .review { order: -1; }
+  .footer { padding-inline: 12px; }
+}
+@media (max-width: 430px) {
+  .appbar .who { flex-basis: 100%; }
+  .queue-foot { display: none; }
+  .queue-list { grid-template-columns: 1fr; }
+  .queue-list li + li { border-left: 0; border-top: 1px solid var(--line); }
+  .queue-choice { min-height: 65px; padding: 8px 11px; }
+  .observations th, .observations td { padding-inline: 3px; font-size: 11px; overflow-wrap: anywhere; }
+  .review .actions .btn { width: 100%; justify-content: center; }
+}
+  </style>
+</head>
+<body data-subvertical="health-providers">
+  <header class="appbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">◆</span>
+      <div><span id="hospital-name" class="brand-name"></span><span id="brand-context" class="brand-sub"></span></div>
+    </div>
+    <p class="disclosure">Illustrative demo - synthetic data</p>
+    <p class="who">Signed in as <b id="signed-in"></b> · charge nurse</p>
+  </header>
+  <main class="page">
+    <div class="intro">
+      <div>
+        <h1>Clinical surveillance worklist</h1>
+        <p id="pilot-context"></p>
+      </div>
+      <div class="scope"><b>Human review required</b>Prompts are not diagnoses or automated care decisions. Check source freshness before routing.</div>
+    </div>
+    <div class="workbench">
+      <aside class="card queue" aria-labelledby="queue-title">
+        <div class="card-head"><h2 id="queue-title">Pilot alerts</h2><span class="card-note">2 synthetic prompts</span></div>
+        <ul id="queue" class="queue-list"></ul>
+        <p class="queue-foot">One unit · no live feed · select an alert to compare signal quality.</p>
+      </aside>
+      <div class="detail">
+        <article class="card" aria-labelledby="detail-title">
+          <div class="card-head detail-head">
+            <div><h2 id="detail-title"></h2><p id="detail-subtitle"></p></div>
+            <div class="heading-status"><span id="status-tag" class="tag"></span><span id="model-tag" class="tag"></span></div>
+          </div>
+          <div class="detail-body">
+            <div class="context-strip"><span>Reviewer: <b id="reviewer-name"></b></span><span>Human route: <b id="route-owner"></b></span><span>Prompt raised: <b id="raised-at"></b></span></div>
+            <div class="evidence-grid">
+              <section aria-labelledby="evidence-title">
+                <h3 id="evidence-title" class="section-heading">Signal evidence · sample observations</h3>
+                <div id="freshness" class="signal-rail" aria-label="Signal freshness"></div>
+                <p id="freshness-note" class="rail-note"></p>
+                <h4 class="subheading">Contributing observations</h4>
+                <table class="observations">
+                  <thead><tr><th scope="col">Signal</th><th scope="col">Sample value</th><th scope="col">Observed / source</th></tr></thead>
+                  <tbody id="observations"></tbody>
+                </table>
+                <h4 class="subheading">Signal timeline · sample snapshot</h4>
+                <ol id="timeline" class="timeline"></ol>
+              </section>
+              <section aria-labelledby="interpretation-title">
+                <div class="model">
+                  <h3 id="interpretation-title" class="section-heading">Illustrative model output</h3>
+                  <strong id="model-status"></strong>
+                  <p id="model-rationale"></p>
+                  <p id="model-limit"></p>
+                </div>
+                <div class="guidance">
+                  <h3 class="section-heading">Local escalation guide · illustrative excerpt</h3>
+                  <p id="guide-text"></p>
+                  <small id="guide-source"></small>
+                </div>
+              </section>
+            </div>
+            <section class="review" aria-labelledby="review-title">
+              <h3 id="review-title" class="section-heading">Next safe action · human review</h3>
+              <label class="review-check"><input id="ack" type="checkbox"><span id="ack-text"></span></label>
+              <div class="actions">
+                <button id="route" class="btn btn-primary" type="button"></button>
+                <button id="manual" class="btn" type="button" hidden></button>
+                <button id="reset" class="btn" type="button">Reset pilot / replay</button>
+              </div>
+              <p id="action-explain" class="explain"></p>
+              <p id="live-status" class="status-line" role="status" aria-live="polite" aria-atomic="true"></p>
+              <div id="result" class="result" tabindex="-1" hidden><strong id="result-title"></strong><p id="result-copy"></p></div>
+            </section>
+          </div>
+        </article>
+        <section class="card audit-panel" aria-labelledby="audit-title">
+          <h2 id="audit-title" class="section-heading">Alert audit · simulated, local only</h2>
+          <ol id="audit" class="audit"></ol>
+          <p class="foot-note">Reset reverses all simulated review and routing events. No notification or patient record is created.</p>
+        </section>
+      </div>
+    </div>
+  </main>
+  <footer class="footer">
+    <div class="built"><b>Catalog-mapped components, not a deployed clinical solution:</b>
+      <span class="svc-chip">Microsoft Fabric (Real-Time Intelligence)</span>
+      <span class="svc-chip">Azure Machine Learning</span>
+      <span class="svc-chip">Azure AI Search</span>
+      <span class="svc-chip">Azure Storage</span>
+    </div>
+    <p class="claim"><b>Catalog value hypothesis, not a measured demo result:</b> Real-time surveillance and early-warning alerts enable earlier intervention, reducing mortality, ICU transfers, and length of stay; improves quality scores and lowers cost per case.</p>
+  </footer>
+  <script>
+    "use strict";
+    const fixture = {
+      hospital: "Northstar Harbor Medical Center",
+      unit: "Harbor 4 West",
+      snapshot: "29 Sep 2026 at 10:18",
+      snapshotTime: "10:18",
+      reviewer: "Alex Morgan, RN",
+      guideSource: "Source: fictional Harbor 4 West pilot guide, sample version 29 Sep 2026. Not authoritative clinical policy; confirm with local care team.",
+      alerts: [
+        {
+          id: "SIM-EW-004", patient: "SYN-014", bed: "Bed H4-12", raised: "10:17",
+          owner: "Jordan Lee, RN", state: "Review suggested",
+          rationale: "Multiple sample observations changed during this pilot snapshot. Confirm the bedside context before any care-team decision.",
+          limit: "Illustrative model run EW-pilot-01 at 10:17. No validated probability, clinical threshold, or diagnosis is represented.",
+          guide: "After reviewing current source observations, acknowledge the prompt and hand it to the named human care-team reviewer. That reviewer determines whether and how to follow local escalation practice.",
+          signals: [
+            { name: "Heart rate", freshness: "Observed 10:16 · current", stale: false, value: "112 bpm", source: "Synthetic bedside stream · 10:16" },
+            { name: "Temperature", freshness: "Observed 10:14 · current", stale: false, value: "38.1 °C", source: "Synthetic bedside stream · 10:14" },
+            { name: "Resp. rate", freshness: "Observed 10:15 · current", stale: false, value: "24 /min", source: "Synthetic bedside stream · 10:15" }
+          ],
+          timeline: [
+            { time: "10:14", text: "Temperature observation received · synthetic bedside stream" },
+            { time: "10:15", text: "Respiratory-rate observation received · synthetic bedside stream" },
+            { time: "10:17", text: "Illustrative model prompt queued for human review · EW-pilot-01" }
+          ]
+        },
+        {
+          id: "SIM-EW-005", patient: "SYN-027", bed: "Bed H4-08", raised: "10:16",
+          owner: "Dr. Casey Rowan, hospitalist", state: "Indeterminate · review suggested",
+          rationale: "Respiratory-rate input is stale. The prompt cannot be interpreted from a complete current sample signal set; request a human check.",
+          limit: "Illustrative model run EW-pilot-01 at 10:16. No validated probability, clinical threshold, or diagnosis is represented.",
+          guide: "Do not use the incomplete prompt for direct routing. Request manual review of the missing respiratory-rate input and contact the human escalation reviewer through existing local practice.",
+          signals: [
+            { name: "Heart rate", freshness: "Observed 10:15 · current", stale: false, value: "106 bpm", source: "Synthetic bedside stream · 10:15" },
+            { name: "Temperature", freshness: "Observed 10:13 · current", stale: false, value: "37.8 °C", source: "Synthetic bedside stream · 10:13" },
+            { name: "Resp. rate", freshness: "Last seen 09:40 · stale", stale: true, value: "Missing current input", source: "Synthetic bedside stream · last seen 09:40" }
+          ],
+          timeline: [
+            { time: "09:40", text: "Last respiratory-rate observation · synthetic bedside stream" },
+            { time: "10:15", text: "Heart-rate observation received · synthetic bedside stream" },
+            { time: "10:16", text: "Incomplete-input prompt queued for manual review · EW-pilot-01" }
+          ]
+        }
+      ]
+    };
+    const byId = (id) => document.getElementById(id);
+    byId("hospital-name").textContent = fixture.hospital;
+    byId("brand-context").textContent = `Clinical operations · ${fixture.unit} pilot`;
+    byId("signed-in").textContent = fixture.reviewer;
+    byId("reviewer-name").textContent = fixture.reviewer;
+    byId("pilot-context").textContent = `${fixture.unit} · single-unit, single-condition pilot · fixed sample snapshot, ${fixture.snapshot}`;
+    byId("freshness-note").textContent = `Freshness is relative to the fixed ${fixture.snapshotTime} sample snapshot; not a clinical threshold.`;
+    byId("guide-source").textContent = fixture.guideSource;
+    const ui = {
+      queue: byId("queue"), title: byId("detail-title"), subtitle: byId("detail-subtitle"),
+      statusTag: byId("status-tag"), modelTag: byId("model-tag"), owner: byId("route-owner"),
+      raised: byId("raised-at"), freshness: byId("freshness"), observations: byId("observations"),
+      timeline: byId("timeline"), modelStatus: byId("model-status"), rationale: byId("model-rationale"),
+      limit: byId("model-limit"), guide: byId("guide-text"), ack: byId("ack"),
+      ackText: byId("ack-text"), route: byId("route"), manual: byId("manual"),
+      reset: byId("reset"), explain: byId("action-explain"), live: byId("live-status"),
+      result: byId("result"), resultTitle: byId("result-title"), resultCopy: byId("result-copy"),
+      audit: byId("audit")
+    };
+    const initialState = () => Object.fromEntries(fixture.alerts.map((alert) => [alert.id, { reviewed: false, outcome: null }]));
+    let records = initialState();
+    let selected = fixture.alerts[0].id;
+    let working = false;
+    let timer = null;
+
+    function node(tag, text, className) {
+      const element = document.createElement(tag);
+      element.textContent = text;
+      if (className) element.className = className;
+      return element;
+    }
+    function renderQueue() {
+      ui.queue.replaceChildren();
+      for (const alert of fixture.alerts) {
+        const li = document.createElement("li");
+        const button = node("button", "", "queue-choice");
+        button.type = "button";
+        button.setAttribute("aria-current", String(alert.id === selected));
+        button.disabled = working;
+        const strong = document.createElement("strong");
+        strong.append(node("span", alert.id, "mono"), node("span", records[alert.id].outcome ? "Simulated route" : alert.signals.some((s) => s.stale) ? "Input gap" : "Review"));
+        button.append(strong, node("span", `${alert.patient} · ${alert.bed}`), node("small", `${alert.raised} · ${alert.signals.some((s) => s.stale) ? "Respiratory rate stale" : "Current sample signals"}`));
+        button.addEventListener("click", () => {
+          selected = alert.id;
+          ui.live.textContent = `${alert.id} selected. ${alert.state}.`;
+          render();
+          ui.queue.querySelector('[aria-current="true"]').focus({ preventScroll: true });
+        });
+        li.append(button);
+        ui.queue.append(li);
+      }
+    }
+    function renderEvidence(alert) {
+      ui.freshness.replaceChildren();
+      ui.observations.replaceChildren();
+      ui.timeline.replaceChildren();
+      for (const signal of alert.signals) {
+        const rail = document.createElement("div");
+        rail.className = `signal${signal.stale ? " is-stale" : ""}`;
+        rail.append(node("b", signal.name), node("span", signal.freshness));
+        ui.freshness.append(rail);
+        const row = document.createElement("tr");
+        const name = node("th", signal.name);
+        name.scope = "row";
+        row.append(name, node("td", signal.value, signal.stale ? "missing" : ""), node("td", signal.source));
+        ui.observations.append(row);
+      }
+      for (const event of alert.timeline) {
+        const item = document.createElement("li");
+        const time = node("time", event.time);
+        item.append(time, document.createTextNode(` · ${event.text}`));
+        ui.timeline.append(item);
+      }
+    }
+    function renderAudit(alert, record) {
+      ui.audit.replaceChildren();
+      const events = [{ time: alert.raised, actor: "Pilot fixture", text: `${alert.id} queued from synthetic bedside stream; ${alert.signals.some((s) => s.stale) ? "respiratory-rate input stale" : "sample signals available"}.` }];
+      if (record.reviewed) events.push({ time: fixture.snapshotTime, actor: fixture.reviewer, text: `Reviewed sample evidence and ${alert.signals.some((s) => s.stale) ? "acknowledged missing input" : "acknowledged prompt"}; no clinical determination.` });
+      if (record.outcome) events.push({ time: fixture.snapshotTime, actor: fixture.reviewer, text: `${record.outcome === "manual" ? "Manual review request" : "Alert"} simulated to ${alert.owner}; no notification sent. Rationale: ${alert.rationale}` });
+      for (const event of events) {
+        const li = document.createElement("li");
+        const entry = document.createElement("span");
+        entry.append(node("b", `${event.actor}: `, `actor ${event.actor === fixture.reviewer ? "is-human" : "is-system"}`), document.createTextNode(event.text));
+        li.append(node("time", event.time), entry);
+        ui.audit.append(li);
+      }
+    }
+    function render() {
+      const alert = fixture.alerts.find((item) => item.id === selected);
+      const record = records[selected];
+      const stale = alert.signals.some((signal) => signal.stale);
+      renderQueue();
+      ui.title.textContent = `${alert.id} · ${alert.patient}`;
+      ui.subtitle.textContent = `${alert.bed} · ${fixture.unit} · synthetic surveillance prompt, not a diagnosis`;
+      ui.statusTag.textContent = record.outcome ? "Simulated route" : working ? "Working" : stale ? "Input gap" : "Awaiting review";
+      ui.statusTag.className = `tag ${stale && !record.outcome ? "tag-warn" : ""}`;
+      ui.modelTag.textContent = alert.state;
+      ui.modelTag.className = `tag ${stale ? "tag-warn" : ""}`;
+      ui.owner.textContent = alert.owner;
+      ui.raised.textContent = `29 Sep 2026 · ${alert.raised}`;
+      renderEvidence(alert);
+      ui.modelStatus.textContent = alert.state;
+      ui.rationale.textContent = alert.rationale;
+      ui.limit.textContent = alert.limit;
+      ui.limit.className = stale ? "model-warning" : "";
+      ui.guide.textContent = alert.guide;
+      ui.ack.checked = record.reviewed;
+      ui.ack.disabled = working || Boolean(record.outcome);
+      ui.ackText.textContent = stale ? "I reviewed the evidence and acknowledge the stale respiratory-rate input; a human must verify it." : "I reviewed source timestamps and acknowledge this prompt for human handoff; I am not making a clinical determination.";
+      ui.route.textContent = `Simulate route to ${fixture.alerts[0].owner}`;
+      ui.manual.textContent = `Simulate manual review with ${fixture.alerts[1].owner}`;
+      ui.route.disabled = working || stale || !record.reviewed || Boolean(record.outcome);
+      ui.route.title = stale ? "Unavailable: current respiratory-rate input is missing. Use manual review." : "";
+      ui.manual.hidden = !stale;
+      ui.manual.disabled = working || !record.reviewed || Boolean(record.outcome);
+      ui.reset.disabled = working;
+      ui.explain.textContent = record.outcome ? "Simulated only · reset reverses the route and audit entry." : stale ? "Direct escalation unavailable: respiratory-rate input is stale. Acknowledge the gap, then request manual review." : "Acknowledge the evidence to enable a simulated route; Jordan Lee, RN remains responsible for any follow-up.";
+      ui.result.hidden = !record.outcome;
+      if (record.outcome) {
+        ui.resultTitle.textContent = record.outcome === "manual" ? "Manual review requested · simulation only" : "Alert routed · simulation only";
+        ui.resultCopy.textContent = `${alert.id} assigned to ${alert.owner} for human review. No message sent, clinical decision made, or record changed. Reset to replay.`;
+      }
+      renderAudit(alert, record);
+    }
+    ui.ack.addEventListener("change", () => {
+      records[selected].reviewed = ui.ack.checked;
+      ui.live.textContent = ui.ack.checked ? `${selected}: evidence acknowledged by ${fixture.reviewer}.` : `${selected}: acknowledgement withdrawn.`;
+      render();
+    });
+    function simulate(outcome) {
+      const alert = fixture.alerts.find((item) => item.id === selected);
+      const stale = alert.signals.some((signal) => signal.stale);
+      if (working || !records[selected].reviewed || records[selected].outcome || (outcome === "route" && stale) || (outcome === "manual" && !stale)) return;
+      working = true;
+      ui.live.textContent = `Working · preparing simulated ${outcome === "manual" ? "manual review request" : "alert route"} for ${alert.owner}.`;
+      render();
+      timer = window.setTimeout(() => {
+        records[alert.id].outcome = outcome;
+        working = false;
+        timer = null;
+        render();
+        ui.result.focus();
+        ui.live.textContent = `${alert.id}: ${outcome === "manual" ? "manual review requested" : "alert routed"} to ${alert.owner} in this demo only. Audit updated.`;
+      }, 420);
+    }
+    ui.route.addEventListener("click", () => simulate("route"));
+    ui.manual.addEventListener("click", () => simulate("manual"));
+    ui.reset.addEventListener("click", () => {
+      if (timer !== null) window.clearTimeout(timer);
+      timer = null;
+      working = false;
+      records = initialState();
+      selected = fixture.alerts[0].id;
+      render();
+      ui.live.textContent = "Pilot reset. Both synthetic alerts are ready to replay; all simulated routes and audit entries cleared.";
+    });
+    render();
+  </script>
+</body>
+</html>

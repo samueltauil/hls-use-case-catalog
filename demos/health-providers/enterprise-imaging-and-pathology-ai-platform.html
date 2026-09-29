@@ -1,0 +1,963 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Enterprise imaging worklist | Asterfield Health demo</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* -------------------------------------------------------- demo layout */
+body {
+  --panel-gap: 12px;
+  height: auto;
+  min-height: 100%;
+}
+.appbar .reset-btn { color: var(--surface-2); border-color: var(--muted); background: transparent; min-height: 34px; }
+.appbar .reset-btn:hover:not(:disabled) { color: var(--surface); background: var(--ink-soft); border-color: var(--line); }
+.demo-main { width: 100%; max-width: 1920px; margin: 0 auto; padding: 12px 18px 18px; }
+.context-strip {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 8px 12px; margin-bottom: 12px; border: 1px solid var(--line);
+  background: var(--surface); border-radius: var(--radius);
+}
+.context-strip h1 { margin: 0; font-size: 17px; line-height: 1.25; }
+.context-strip p { margin: 2px 0 0; color: var(--muted); font-size: 12.5px; }
+.context-strip .state { flex: none; }
+.workgrid {
+  display: grid; grid-template-columns: minmax(205px, 0.72fr) minmax(420px, 1.75fr) minmax(292px, 1fr);
+  gap: var(--panel-gap); align-items: start;
+}
+.queue, .viewer, .side { min-width: 0; display: grid; gap: var(--panel-gap); }
+.queue { align-content: start; }
+.queue-head { padding: 11px 13px; }
+.queue-head h2 { margin: 0; font-size: 14px; }
+.queue-head p { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
+.case-list { display: grid; gap: 0; }
+.case-item {
+  display: block; width: 100%; text-align: left; border: 0; border-bottom: 1px solid var(--line-soft);
+  border-left: 3px solid transparent; padding: 11px 12px; background: var(--surface); color: var(--ink);
+  cursor: pointer; font: inherit;
+}
+.case-item:last-child { border-bottom: 0; }
+.case-item:hover { background: var(--surface-2); }
+.case-item.is-selected { background: var(--accent-soft); border-left-color: var(--accent); }
+.case-item strong { display: block; font-size: 13px; line-height: 1.35; }
+.case-item .case-meta { display: flex; flex-wrap: wrap; gap: 5px 8px; margin-top: 6px; color: var(--muted); font-size: 11.5px; }
+.case-item .case-meta span { display: block; }
+.context-body { display: grid; gap: 12px; }
+.context-body h3, .side h2 { font-size: 13.5px; margin: 0 0 6px; }
+.context-body p { margin: 0; font-size: 12.5px; color: var(--ink-soft); }
+.catalog-note { border-top: 1px solid var(--line-soft); padding-top: 10px; }
+.stage-chip { color: var(--accent-strong); border-color: var(--accent-line); background: var(--accent-soft); }
+.viewer.card { overflow: hidden; }
+.viewer-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 11px 14px; border-bottom: 1px solid var(--line-soft); }
+.viewer-head h2 { margin: 0; font-size: 15px; }
+.viewer-head p { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
+.viewer-tools { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 7px; }
+.viewer-tools .chip { min-height: 30px; padding-inline: 9px; }
+.slide-wrap { position: relative; padding: 12px; background: var(--surface-2); }
+.slide-canvas { display: block; width: 100%; height: auto; aspect-ratio: 800 / 470; border: 1px solid var(--line); background: var(--surface-2); }
+.slide-canvas .roi { opacity: .9; transition: opacity .18s ease, stroke-width .18s ease; }
+.slide-canvas.is-reviewed .roi { opacity: 1; stroke-width: 4; }
+.slide-canvas.overlay-off .roi { opacity: 0; }
+.slide-canvas .roi-label { font: 600 15px var(--font); fill: var(--ink); }
+.slide-legend { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 14px; padding-top: 8px; font-size: 12px; color: var(--muted); }
+.legend-item { display: inline-flex; align-items: center; gap: 6px; }
+.legend-swatch { width: 14px; height: 10px; border: 2px dashed var(--accent-strong); background: var(--accent-soft); }
+.viewer-foot { display: grid; grid-template-columns: 1fr auto; gap: 14px; padding: 12px 14px; border-top: 1px solid var(--line-soft); }
+.viewer-foot h3 { margin: 0 0 4px; font-size: 13px; }
+.viewer-foot p { margin: 0; color: var(--muted); font-size: 12.5px; }
+.primary-action { align-self: center; min-width: 170px; justify-content: center; }
+.action-area { display: grid; gap: 7px; }
+.action-area .status-line { color: var(--muted); }
+.side .card-body { padding: 12px 13px; }
+.evidence-stack { display: grid; gap: 11px; }
+.evidence-block { border-bottom: 1px solid var(--line-soft); padding-bottom: 10px; }
+.evidence-block:last-child { border-bottom: 0; padding-bottom: 0; }
+.evidence-block h3 { margin: 0 0 4px; font-size: 12px; color: var(--muted); font-weight: 600; }
+.evidence-block p { margin: 0; font-size: 13px; }
+.evidence-block small { color: var(--muted); font-size: 11.5px; }
+.confidence-line { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.confidence-value { font-family: var(--mono); font-weight: 600; color: var(--accent-strong); }
+.confidence-meter { height: 6px; margin-top: 6px; background: var(--line-soft); border-radius: 99px; overflow: hidden; }
+.confidence-meter span { display: block; height: 100%; width: 82%; background: var(--accent); }
+.confidence-meter.low span { width: 38%; background: var(--warn); }
+.side .facts { grid-template-columns: 1fr 1fr; gap: 9px 12px; }
+.side .facts dt { font-size: 11px; }
+.side .facts dd { font-size: 12.5px; overflow-wrap: anywhere; }
+.service-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.service-list .svc-chip { font-size: 11.5px; }
+.audit-card .card-head { padding-block: 10px; }
+.audit-card .card-body { padding-block: 11px; }
+.audit .event-detail { color: var(--ink-soft); }
+.audit .event-detail small { display: block; color: var(--muted); font-size: 11.5px; }
+.exception-copy { margin: 0; font-size: 13px; }
+.exception-copy strong { color: var(--stop); }
+.exception-actions { margin-top: 10px; display: grid; gap: 8px; }
+.exception-actions .btn { justify-content: center; }
+.inline-state { display: inline-flex; align-items: center; gap: 7px; }
+.busy-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pulse 1s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .35; } }
+.dialog-fallback { position: fixed; inset: 50% auto auto 50%; transform: translate(-50%, -50%); z-index: 50; }
+
+@media (max-width: 1100px) {
+  .workgrid { grid-template-columns: minmax(190px, .72fr) minmax(360px, 1.55fr); }
+  .side { grid-column: 1 / -1; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+  .audit-card { grid-column: span 1; }
+}
+@media (max-width: 700px) {
+  .demo-main { padding: 10px 10px 15px; }
+  .context-strip { align-items: flex-start; flex-direction: column; }
+  .workgrid { display: flex; flex-direction: column; }
+  .queue, .viewer, .side { width: 100%; }
+  .viewer { order: -1; }
+  .side { display: grid; grid-template-columns: 1fr; }
+  .viewer-foot { grid-template-columns: 1fr; }
+  .primary-action { width: 100%; }
+  .slide-wrap { padding: 8px; }
+  .viewer-tools { justify-content: flex-start; }
+  .side .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 390px) {
+  .appbar { padding-inline: 10px; }
+  .disclosure { width: 100%; justify-content: center; }
+  .who { width: 100%; }
+  .context-strip h1 { font-size: 16px; }
+  .side .facts { grid-template-columns: 1fr; }
+}
+  </style>
+</head>
+<body data-subvertical="health-providers">
+  <header class="appbar">
+    <div class="brand">
+      <svg class="brand-mark" width="27" height="27" viewBox="0 0 27 27" aria-hidden="true">
+        <path d="M13.5 2.5 23 6v6.3c0 5.8-3.8 10.3-9.5 12.2C7.8 22.6 4 18.1 4 12.3V6z" fill="none" stroke="currentColor" stroke-width="2"/>
+        <path d="M8.5 13.5h3.1l1.6-4 2.1 7 1.5-3h2.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div>
+        <span class="brand-name">Asterfield Health DEMO ONLY</span>
+        <span class="brand-sub">Enterprise imaging worklist</span>
+      </div>
+    </div>
+    <p class="disclosure"><span aria-hidden="true">i</span> Illustrative demo - synthetic data</p>
+    <p class="who"><b>Reviewer:</b> Radiologist / pathologist <span aria-hidden="true">·</span> <b>Role:</b> specialist review</p>
+    <button class="btn reset-btn" type="button" id="resetBtn">Reset / replay</button>
+  </header>
+
+  <main class="demo-main" id="app">
+    <div class="context-strip">
+      <div>
+        <h1>Enterprise imaging worklist</h1>
+        <p>Inspect a synthetic AI region-of-interest flag and route it for specialist review.</p>
+      </div>
+      <div class="state" aria-live="polite"><span class="tag tag-ok" id="topState">Ready for review</span></div>
+    </div>
+
+    <div class="workgrid">
+      <aside class="queue" aria-label="Imaging worklist and use case context">
+        <section class="card">
+          <div class="queue-head">
+            <h2>Review queue</h2>
+            <p>2 synthetic cases <span aria-hidden="true">·</span> source site: Asterfield</p>
+          </div>
+          <div class="case-list" id="caseList"></div>
+        </section>
+        <section class="card">
+          <div class="card-head"><h2>Selected object</h2><span class="tag stage-chip">Pathology</span></div>
+          <div class="card-body context-body">
+            <div>
+              <h3 id="contextTitle">Synthetic whole-slide image</h3>
+              <p id="contextId" class="mono">PATH-DEMO-260929-004</p>
+            </div>
+            <dl class="facts">
+              <div><dt>Source site</dt><dd id="contextSite">Asterfield Pathology Lab - SYNTH</dd></div>
+              <div><dt>Input set</dt><dd id="contextInput">Complete tile set</dd></div>
+              <div><dt>Review owner</dt><dd>Specialist review queue</dd></div>
+              <div><dt>Artifact</dt><dd>Whole-slide tile, synthetic</dd></div>
+            </dl>
+            <div class="catalog-note">
+              <h3>Catalog context</h3>
+              <p>Aging on-premises PACS and siloed imaging limit AI-assisted reads, slow turnaround, and constrain access to images across the enterprise.</p>
+              <p style="margin-top:7px">Cloud imaging and whole-slide pathology AI speed turnaround, enable AI-assisted reads, and provide always-available image access; improves diagnostic throughput and reduces infrastructure cost.</p>
+            </div>
+          </div>
+        </section>
+      </aside>
+
+      <section class="viewer card" aria-labelledby="viewerTitle">
+        <div class="viewer-head">
+          <div>
+            <h2 id="viewerTitle">Synthetic slide review</h2>
+            <p id="viewerSubtitle">PATH-DEMO-260929-004 <span aria-hidden="true">·</span> ROI flag available</p>
+          </div>
+          <div class="viewer-tools" aria-label="Slide controls">
+            <button class="chip" type="button" id="overlayBtn" aria-pressed="true">ROI overlay on</button>
+            <span class="tag" id="zoomTag">20x illustrative view</span>
+          </div>
+        </div>
+        <div class="slide-wrap">
+          <svg class="slide-canvas" id="slideSvg" viewBox="0 0 800 470" role="img" aria-labelledby="slideTitle slideDesc">
+            <title id="slideTitle">Synthetic whole-slide image with a restrained region-of-interest overlay</title>
+            <desc id="slideDesc">A fictional tissue-like field with a dashed teal rectangle marking the AI flag. It is not a real specimen or clinical image.</desc>
+            <rect width="800" height="470" fill="var(--surface-2)"/>
+            <path d="M0 75 C90 30 155 82 224 61S360 30 426 75s113 31 164 7 121-9 210 27v361H0Z" fill="var(--accent-soft)"/>
+            <path d="M0 182c76-43 126 10 191-22 77-38 112 29 179-4 74-36 140 12 205-15 92-39 152 7 225-20v243H0Z" fill="var(--accent-line)" fill-opacity=".72"/>
+            <path d="M0 315c82-38 130 5 213-25 67-24 120 29 186-1 73-34 129 14 203-13 79-29 130 6 198-14v208H0Z" fill="var(--surface)"/>
+            <g fill="none" stroke="var(--line)" stroke-width="2" opacity=".7">
+              <path d="M35 105c83-32 102 29 190-9s127 19 205-14 146 18 248-21"/>
+              <path d="M20 244c78-39 144 20 225-11s134 27 214-8 145 19 307-18"/>
+              <path d="M78 385c69-27 131 18 205-11s130 19 212-9 137 15 257-12"/>
+            </g>
+            <g fill="var(--accent-strong)" opacity=".52">
+              <circle cx="106" cy="116" r="12"/><circle cx="153" cy="135" r="8"/><circle cx="261" cy="91" r="10"/>
+              <circle cx="332" cy="155" r="11"/><circle cx="460" cy="111" r="8"/><circle cx="591" cy="150" r="12"/>
+              <circle cx="710" cy="96" r="9"/><circle cx="89" cy="280" r="9"/><circle cx="176" cy="332" r="12"/>
+              <circle cx="302" cy="263" r="8"/><circle cx="420" cy="334" r="11"/><circle cx="535" cy="268" r="9"/>
+              <circle cx="676" cy="317" r="12"/><circle cx="748" cy="258" r="8"/><circle cx="250" cy="409" r="9"/>
+              <circle cx="594" cy="414" r="10"/>
+            </g>
+            <g fill="none" stroke="var(--accent-strong)" stroke-width="3" opacity=".55">
+              <ellipse cx="146" cy="198" rx="43" ry="22"/><ellipse cx="373" cy="218" rx="58" ry="28"/>
+              <ellipse cx="622" cy="219" rx="48" ry="25"/><ellipse cx="459" cy="397" rx="52" ry="23"/>
+            </g>
+            <g class="roi" id="roiOverlay">
+              <rect x="394" y="176" width="180" height="120" rx="3" fill="var(--accent-soft)" fill-opacity=".42" stroke="var(--accent-strong)" stroke-width="3" stroke-dasharray="10 7"/>
+              <rect x="394" y="148" width="146" height="27" rx="4" fill="var(--surface)" stroke="var(--accent-strong)" stroke-width="1"/>
+              <text x="405" y="166" class="roi-label">AI region flag - SYNTH</text>
+            </g>
+            <g fill="none" stroke="var(--muted)" stroke-width="1" opacity=".4">
+              <path d="M0 50h800M0 140h800M0 230h800M0 320h800M0 410h800"/>
+              <path d="M80 0v470M200 0v470M320 0v470M440 0v470M560 0v470M680 0v470"/>
+            </g>
+          </svg>
+          <div class="slide-legend">
+            <span class="legend-item"><span class="legend-swatch" aria-hidden="true"></span><span id="overlayLegend">AI flag overlay - inspect before routing</span></span>
+            <span class="mono" id="tileLegend">TILE-SYNTH-004-A</span>
+          </div>
+        </div>
+        <div class="viewer-foot">
+          <div>
+            <h3>AI role</h3>
+            <p id="aiRole">AI only flags and segments a region for specialist review. AI assists; specialist decides.</p>
+          </div>
+          <div class="action-area">
+            <button class="btn btn-primary primary-action" type="button" id="reviewBtn">Review AI flag</button>
+            <button class="btn btn-primary primary-action" type="button" id="routeBtn" hidden>Route to specialist review</button>
+            <p class="status-line" id="actionStatus">Review the overlay and evidence before routing.</p>
+          </div>
+        </div>
+      </section>
+
+      <aside class="side" aria-label="Evidence, routing action, and audit">
+        <section class="card evidence-card">
+          <div class="card-head"><h2>Evidence and provenance</h2><span class="tag" id="evidenceTag">AI flag</span></div>
+          <div class="card-body evidence-stack">
+            <div class="evidence-block">
+              <h3>Illustrative confidence</h3>
+              <div class="confidence-line"><span class="confidence-value" id="confidenceValue">82% illustrative</span><span class="tag tag-warn">not clinical probability</span></div>
+              <div class="confidence-meter" id="confidenceMeter" aria-hidden="true"><span></span></div>
+            </div>
+            <div class="evidence-block">
+              <h3>Model and inference</h3>
+              <p id="modelText">Vision ROI segmenter / SYNTH-0.9</p>
+              <small id="timestampText">Inference: 2026-09-29 12:34 ET</small>
+            </div>
+            <div class="evidence-block">
+              <h3>Artifact description</h3>
+              <p id="artifactText">Synthetic whole-slide image tile with a segmented region-of-interest overlay.</p>
+            </div>
+            <div class="evidence-block">
+              <h3>Input and source</h3>
+              <p id="sourceText">Asterfield Pathology Lab - SYNTH</p>
+              <small id="inputText">Tile set complete; provenance chain intact.</small>
+            </div>
+            <div class="notice notice-note">Human review is required. This simulated worklist does not produce a clinical conclusion.</div>
+          </div>
+        </section>
+
+        <section class="card" id="exceptionPanel" hidden>
+          <div class="card-head"><h2>Input exception</h2><span class="tag tag-stop">Manual review required</span></div>
+          <div class="card-body">
+            <p class="exception-copy"><strong>AI-assisted routing recommendation suppressed.</strong> One tile is incomplete and the illustrative confidence is low. Review the source input with imaging QA or a specialist.</p>
+            <div class="exception-actions">
+              <button class="btn btn-primary" type="button" id="escalateBtn">Escalate to imaging QA / specialist</button>
+              <button class="btn" type="button" id="withdrawBtn" hidden>Withdraw simulated escalation</button>
+            </div>
+            <p class="status-line" id="exceptionStatus">No escalation has been simulated.</p>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="controlsTitle">
+          <div class="card-head"><h2 id="controlsTitle">Validation and controls</h2><span class="tag tag-ok">Human gate</span></div>
+          <div class="card-body">
+            <dl class="facts">
+              <div><dt>Review owner</dt><dd>Specialist review queue</dd></div>
+              <div><dt>Redundancy</dt><dd>Source checksum + tile completeness</dd></div>
+              <div><dt>Validation</dt><dd>Input checks shown before routing</dd></div>
+              <div><dt>Decision</dt><dd>Human rationale and attestation</dd></div>
+            </dl>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="workloadsTitle">
+          <div class="card-head"><h2 id="workloadsTitle">Catalog workload references</h2></div>
+          <div class="card-body">
+            <div class="service-list" aria-label="Azure workload references">
+              <span class="svc-chip">Storage &amp; File Systems (Files/Blob/ADLS/Disk)</span>
+              <span class="svc-chip">AI: Tools - Vision</span>
+              <span class="svc-chip">AI: AI Infra (GPUs)</span>
+              <span class="svc-chip">Azure Storage</span>
+              <span class="svc-chip">Azure AI Vision</span>
+              <span class="svc-chip">GPU-accelerated VMs (AI infrastructure)</span>
+              <span class="svc-chip">Azure Kubernetes Service (AKS)</span>
+            </div>
+            <p class="card-note" style="margin:10px 0 0">Reference notes checked against Microsoft Learn: DICOM service stores, manages, and exchanges DICOM data; Azure Vision processes images and returns visual-feature information; AKS is managed Kubernetes and supports GPU-enabled workloads. Responsible AI guidance calls for meaningful human control and accountability.</p>
+          </div>
+        </section>
+
+        <section class="card audit-card" aria-labelledby="auditTitle">
+          <div class="card-head"><h2 id="auditTitle">Audit history</h2><span class="card-note">synthetic event log</span></div>
+          <div class="card-body">
+            <ol class="audit" id="auditList"></ol>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="built"><span>Use case</span><span class="svc-chip mono">enterprise-imaging-and-pathology-ai-platform</span><span class="svc-chip">Care Delivery &amp; Clinical Operations</span><span class="svc-chip">AI</span></div>
+    <p class="claim"><b>Scope:</b> simulated enterprise worklist only. No patient data, clinical validation, production PACS integration, or autonomous decision.</p>
+  </footer>
+
+  <dialog id="routeDialog" aria-labelledby="routeDialogTitle">
+    <form id="routeForm">
+      <div class="dlg-head">
+        <div><h2 id="routeDialogTitle">Route for specialist review</h2><span class="dlg-sub">A human reviewer stays accountable for the next step.</span></div>
+        <button class="btn" type="button" id="closeRouteBtn" aria-label="Close routing dialog">Close</button>
+      </div>
+      <div class="dlg-body">
+        <dl class="meta-grid">
+          <div><dt>Object</dt><dd class="mono" id="routeObject">PATH-DEMO-260929-004</dd></div>
+          <div><dt>Destination</dt><dd>Specialist review queue</dd></div>
+          <div><dt>AI output</dt><dd>Region flag only</dd></div>
+        </dl>
+        <div class="field">
+          <label for="routeRationale">Human rationale</label>
+          <textarea id="routeRationale" required>Reviewed the synthetic ROI overlay and provenance; routing the flagged region for specialist review.</textarea>
+        </div>
+        <label class="attest" for="routeAttest"><input id="routeAttest" type="checkbox" checked><span>I attest that I reviewed the evidence and am routing this synthetic case for specialist review. <small>AI assists; specialist decides. This action is simulated.</small></span></label>
+        <p class="dlg-error" id="routeError" aria-live="polite"></p>
+      </div>
+      <div class="dlg-foot"><button class="btn" type="button" id="cancelRouteBtn">Cancel</button><button class="btn btn-primary" type="submit">Submit human attestation</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="exceptionDialog" aria-labelledby="exceptionDialogTitle">
+    <form id="exceptionForm">
+      <div class="dlg-head">
+        <div><h2 id="exceptionDialogTitle">Escalate input exception</h2><span class="dlg-sub">No AI-assisted route will be created for this incomplete input.</span></div>
+        <button class="btn" type="button" id="closeExceptionBtn" aria-label="Close escalation dialog">Close</button>
+      </div>
+      <div class="dlg-body">
+        <div class="notice notice-warn">Manual review required: incomplete tile/input and low illustrative confidence.</div>
+        <div class="field">
+          <label for="exceptionRationale">Escalation rationale</label>
+          <textarea id="exceptionRationale" required>Input completeness is insufficient for AI-assisted routing; imaging QA or a specialist should inspect the source tile.</textarea>
+        </div>
+        <p class="dlg-error" id="exceptionError" aria-live="polite"></p>
+      </div>
+      <div class="dlg-foot"><button class="btn" type="button" id="cancelExceptionBtn">Cancel</button><button class="btn btn-primary" type="submit">Submit simulated escalation</button></div>
+    </form>
+  </dialog>
+
+  <script>
+    "use strict";
+
+    const FIXTURE_DATA = {
+      cases: [
+        {
+          id: "PATH-DEMO-260929-004",
+          title: "Whole-slide ROI flag",
+          kind: "Pathology",
+          site: "Asterfield Pathology Lab - SYNTH",
+          input: "Complete tile set",
+          inputDetail: "Tile set complete; provenance chain intact.",
+          confidence: "82%",
+          model: "Vision ROI segmenter / SYNTH-0.9",
+          timestamp: "Inference: 2026-09-29 12:34 ET",
+          artifact: "Synthetic whole-slide image tile with a segmented region-of-interest overlay.",
+          tile: "TILE-SYNTH-004-A",
+          exception: false
+        },
+        {
+          id: "PATH-DEMO-260929-005",
+          title: "Incomplete tile input",
+          kind: "Pathology",
+          site: "Asterfield Pathology Lab - SYNTH",
+          input: "1 tile incomplete",
+          inputDetail: "Missing tile fragment; checksum review needed before specialist inspection.",
+          confidence: "38%",
+          model: "Vision ROI segmenter / SYNTH-0.9",
+          timestamp: "Inference: 2026-09-29 12:36 ET",
+          artifact: "Synthetic whole-slide tile with incomplete input; overlay is withheld.",
+          tile: "TILE-SYNTH-005-B",
+          exception: true
+        }
+      ],
+      baseAudit: [
+        { time: "12:34", actor: "SYSTEM", actorClass: "is-system", detail: "AI flag created", note: "Synthetic ROI segment queued for human review" },
+        { time: "12:35", actor: "SYSTEM", actorClass: "is-system", detail: "Input checks passed", note: "Completeness and provenance checks shown" }
+      ]
+    };
+
+    const state = { selectedId: FIXTURE_DATA.cases[0].id, flow: "ready", overlay: true, timer: null };
+    const $ = (id) => document.getElementById(id);
+    const caseList = $("caseList");
+    const auditList = $("auditList");
+
+    function currentCase() {
+      return FIXTURE_DATA.cases.find((item) => item.id === state.selectedId) || FIXTURE_DATA.cases[0];
+    }
+
+    function setText(id, value) {
+      const node = $(id);
+      if (node) node.textContent = value;
+    }
+
+    function makeNode(tag, className, text) {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text !== undefined) node.textContent = text;
+      return node;
+    }
+
+    function renderQueue() {
+      while (caseList.firstChild) caseList.removeChild(caseList.firstChild);
+      FIXTURE_DATA.cases.forEach((item) => {
+        const button = makeNode("button", "case-item" + (item.id === state.selectedId ? " is-selected" : ""));
+        button.type = "button";
+        button.dataset.caseId = item.id;
+        button.setAttribute("aria-pressed", item.id === state.selectedId ? "true" : "false");
+        const title = makeNode("strong", "", item.title);
+        const id = makeNode("span", "mono", item.id);
+        const meta = makeNode("span", "case-meta");
+        const kind = makeNode("span", "", item.kind);
+        const status = makeNode("span", "", item.exception ? "Manual review required" : "AI flag ready");
+        meta.append(kind, status);
+        button.append(title, id, meta);
+        button.addEventListener("click", () => selectCase(item.id));
+        caseList.append(button);
+      });
+    }
+
+    function renderAudit(entries) {
+      while (auditList.firstChild) auditList.removeChild(auditList.firstChild);
+      entries.forEach((entry) => {
+        const li = makeNode("li");
+        const time = makeNode("time", "", entry.time);
+        const body = makeNode("div", "event-detail");
+        const actor = makeNode("span", "actor " + entry.actorClass, entry.actor);
+        const detail = makeNode("span", "", " - " + entry.detail);
+        actor.append(detail);
+        const note = makeNode("small", "", entry.note);
+        body.append(actor, note);
+        li.append(time, body);
+        auditList.append(li);
+      });
+    }
+
+    function addAudit(detail, note, actor, actorClass) {
+      const li = makeNode("li");
+      const time = makeNode("time", "", "12:37");
+      const body = makeNode("div", "event-detail");
+      const who = makeNode("span", "actor " + (actorClass || "is-human"), actor || "REVIEWER");
+      const action = makeNode("span", "", " - " + detail);
+      who.append(action);
+      body.append(who, makeNode("small", "", note));
+      li.append(time, body);
+      auditList.append(li);
+    }
+
+    function clearTimer() {
+      if (state.timer) {
+        window.clearTimeout(state.timer);
+        state.timer = null;
+      }
+    }
+
+    function setBusy(message) {
+      setText("actionStatus", message);
+      $("actionStatus").prepend(makeNode("span", "busy-dot"));
+      $("reviewBtn").disabled = true;
+      $("routeBtn").disabled = true;
+      $("escalateBtn").disabled = true;
+      $("topState").className = "tag tag-warn";
+      setText("topState", "Working");
+    }
+
+    function setReadyControls() {
+      $("reviewBtn").disabled = false;
+      $("routeBtn").disabled = false;
+      $("escalateBtn").disabled = false;
+    }
+
+    function updateCaseDetails() {
+      const item = currentCase();
+      setText("contextTitle", item.title);
+      setText("contextId", item.id);
+      setText("contextSite", item.site);
+      setText("contextInput", item.input);
+      setText("viewerSubtitle", item.id + " · " + (item.exception ? "input exception" : "ROI flag available"));
+      setText("confidenceValue", item.confidence + " illustrative");
+      setText("modelText", item.model);
+      setText("timestampText", item.timestamp);
+      setText("artifactText", item.artifact);
+      setText("sourceText", item.site);
+      setText("inputText", item.inputDetail);
+      setText("tileLegend", item.tile);
+      setText("slideTitle", item.exception
+        ? "Synthetic whole-slide image with AI overlay withheld pending input validation"
+        : "Synthetic whole-slide image with a restrained region-of-interest overlay");
+      setText("slideDesc", item.exception
+        ? "A fictional tissue-like field without an AI overlay because one tile is incomplete. It is not a real specimen or clinical image."
+        : "A fictional tissue-like field with a dashed teal rectangle marking the AI flag. It is not a real specimen or clinical image.");
+      setText("routeObject", item.id);
+      $("confidenceMeter").classList.toggle("low", item.exception);
+      $("exceptionPanel").hidden = !item.exception;
+      $("routeBtn").hidden = true;
+      $("reviewBtn").hidden = item.exception;
+      $("withdrawBtn").hidden = true;
+      $("escalateBtn").hidden = false;
+      setText("exceptionStatus", "No escalation has been simulated.");
+      $("slideSvg").classList.toggle("overlay-off", item.exception || !state.overlay);
+      $("slideSvg").classList.remove("is-reviewed");
+      setText("overlayLegend", item.exception ? "Overlay withheld until input is complete" : (state.overlay ? "AI flag overlay - inspect before routing" : "AI flag overlay hidden"));
+      $("overlayBtn").disabled = item.exception;
+      $("overlayBtn").setAttribute("aria-pressed", state.overlay ? "true" : "false");
+      $("overlayBtn").textContent = item.exception ? "ROI overlay withheld" : (state.overlay ? "ROI overlay on" : "ROI overlay off");
+      setText("actionStatus", item.exception ? "Manual review is required for this input exception." : "Review the overlay and evidence before routing.");
+      $("topState").className = item.exception ? "tag tag-stop" : "tag tag-ok";
+      setText("topState", item.exception ? "Manual review required" : "Ready for review");
+      setReadyControls();
+    }
+
+    function selectCase(id) {
+      const hadCaseFocus = document.activeElement && document.activeElement.classList.contains("case-item");
+      clearTimer();
+      state.selectedId = id;
+      state.flow = "ready";
+      state.overlay = true;
+      renderQueue();
+      if (hadCaseFocus) {
+        const selectedButton = caseList.querySelector(`[data-case-id="${id}"]`);
+        if (selectedButton) selectedButton.focus();
+      }
+      renderAudit(FIXTURE_DATA.baseAudit);
+      updateCaseDetails();
+      setText("routeError", "");
+      setText("exceptionError", "");
+    }
+
+    function reviewFlag() {
+      if (currentCase().exception || state.flow !== "ready") return;
+      state.flow = "working";
+      setBusy("Reviewing AI flag and provenance...");
+      $("slideSvg").classList.add("is-reviewed");
+      state.timer = window.setTimeout(() => {
+        state.timer = null;
+        state.flow = "result";
+        $("reviewBtn").hidden = true;
+        $("routeBtn").hidden = false;
+        $("routeBtn").disabled = false;
+        $("reviewBtn").disabled = false;
+        $("topState").className = "tag tag-ok";
+        setText("topState", "Evidence reviewed");
+        setText("actionStatus", "Evidence is ready. Route the flag with a human rationale.");
+        setText("overlayLegend", "Reviewed AI flag - specialist review is the next safe action");
+        addAudit("AI flag reviewed", "Reviewer inspected overlay, source, and input checks", "REVIEWER", "is-human");
+      }, 520);
+    }
+
+    function openDialog(dialog) {
+      if (typeof dialog.showModal === "function") {
+        dialog.showModal();
+      } else {
+        dialog.classList.add("dialog-fallback");
+        dialog.setAttribute("open", "");
+      }
+    }
+
+    function closeDialog(dialog) {
+      if (typeof dialog.close === "function" && dialog.open) {
+        dialog.close();
+      } else {
+        dialog.removeAttribute("open");
+        dialog.classList.remove("dialog-fallback");
+      }
+    }
+
+    function routeFlag(event) {
+      event.preventDefault();
+      if (state.flow !== "result") return;
+      setText("routeError", "");
+      openDialog($("routeDialog"));
+      $("routeRationale").focus();
+    }
+
+    function submitRoute(event) {
+      event.preventDefault();
+      const rationale = $("routeRationale").value.trim();
+      if (!rationale || !$("routeAttest").checked) {
+        setText("routeError", "Add a rationale and select the human attestation to continue.");
+        return;
+      }
+      closeDialog($("routeDialog"));
+      state.flow = "working";
+      setBusy("Routing to specialist review...");
+      state.timer = window.setTimeout(() => {
+        state.timer = null;
+        state.flow = "pending";
+        $("routeBtn").hidden = true;
+        $("routeBtn").disabled = false;
+        $("topState").className = "tag tag-ok";
+        setText("topState", "Pending specialist review");
+        setText("actionStatus", "Pending specialist review. Audit event recorded.");
+        addAudit("Routed to specialist review", "Human rationale and attestation recorded; simulated queue pending", "REVIEWER", "is-human");
+        $("reviewBtn").disabled = false;
+      }, 620);
+    }
+
+    function openExceptionDialog() {
+      if (!currentCase().exception || state.flow === "working") return;
+      setText("exceptionError", "");
+      openDialog($("exceptionDialog"));
+      $("exceptionRationale").focus();
+    }
+
+    function submitException(event) {
+      event.preventDefault();
+      if (!$("exceptionRationale").value.trim()) {
+        setText("exceptionError", "Add an escalation rationale to continue.");
+        return;
+      }
+      closeDialog($("exceptionDialog"));
+      state.flow = "working";
+      setBusy("Submitting simulated escalation...");
+      state.timer = window.setTimeout(() => {
+        state.timer = null;
+        state.flow = "escalated";
+        $("escalateBtn").hidden = true;
+        $("withdrawBtn").hidden = false;
+        $("topState").className = "tag tag-warn";
+        setText("topState", "Escalation simulated");
+        setText("exceptionStatus", "Escalation sent to imaging QA / specialist (simulated).");
+        setText("actionStatus", "AI-assisted routing remains suppressed.");
+        addAudit("Exception escalated", "Incomplete tile and low illustrative confidence sent to QA / specialist", "REVIEWER", "is-human");
+      }, 620);
+    }
+
+    function withdrawEscalation() {
+      if (state.flow !== "escalated") return;
+      state.flow = "ready";
+      $("escalateBtn").hidden = false;
+      $("withdrawBtn").hidden = true;
+      $("topState").className = "tag tag-stop";
+      setText("topState", "Manual review required");
+      setText("exceptionStatus", "Simulated escalation withdrawn; input remains unresolved.");
+      setText("actionStatus", "Manual review is required for this input exception.");
+      addAudit("Escalation withdrawn", "Reversible simulation; no AI-assisted route created", "REVIEWER", "is-human");
+      setReadyControls();
+    }
+
+    function toggleOverlay() {
+      if (currentCase().exception) return;
+      state.overlay = !state.overlay;
+      $("slideSvg").classList.toggle("overlay-off", !state.overlay);
+      $("overlayBtn").setAttribute("aria-pressed", state.overlay ? "true" : "false");
+      $("overlayBtn").textContent = state.overlay ? "ROI overlay on" : "ROI overlay off";
+      setText("overlayLegend", state.overlay ? "AI flag overlay - inspect before routing" : "AI flag overlay hidden");
+    }
+
+    function resetDemo() {
+      clearTimer();
+      state.selectedId = FIXTURE_DATA.cases[0].id;
+      state.flow = "ready";
+      state.overlay = true;
+      renderQueue();
+      renderAudit(FIXTURE_DATA.baseAudit);
+      updateCaseDetails();
+      setText("routeError", "");
+      setText("exceptionError", "");
+      $("routeRationale").value = "Reviewed the synthetic ROI overlay and provenance; routing the flagged region for specialist review.";
+      $("routeAttest").checked = true;
+      setText("actionStatus", "Review the overlay and evidence before routing.");
+    }
+
+    $("reviewBtn").addEventListener("click", reviewFlag);
+    $("routeBtn").addEventListener("click", () => openDialog($("routeDialog")));
+    $("routeForm").addEventListener("submit", submitRoute);
+    $("closeRouteBtn").addEventListener("click", () => closeDialog($("routeDialog")));
+    $("cancelRouteBtn").addEventListener("click", () => closeDialog($("routeDialog")));
+    $("escalateBtn").addEventListener("click", openExceptionDialog);
+    $("exceptionForm").addEventListener("submit", submitException);
+    $("closeExceptionBtn").addEventListener("click", () => closeDialog($("exceptionDialog")));
+    $("cancelExceptionBtn").addEventListener("click", () => closeDialog($("exceptionDialog")));
+    $("withdrawBtn").addEventListener("click", withdrawEscalation);
+    $("overlayBtn").addEventListener("click", toggleOverlay);
+    $("resetBtn").addEventListener("click", resetDemo);
+
+    renderQueue();
+    renderAudit(FIXTURE_DATA.baseAudit);
+    updateCaseDetails();
+  </script>
+</body>
+</html>

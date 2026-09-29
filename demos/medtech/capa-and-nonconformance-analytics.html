@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#201f1e">
+  <title>CAPA &amp; Nonconformance Analytics — illustrative demo</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* --------------------------- CAPA analytics workspace tokens and layout */
+body {
+  --on-accent: #ffffff;
+  --workspace-width: 1560px;
+  --space-panel: 18px;
+}
+
+.btn-primary {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+  color: var(--on-accent);
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+  filter: brightness(.92);
+}
+
+.workspace { width: min(100%, var(--workspace-width)); margin: 0 auto; padding: 22px 28px 30px; }
+.context-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--muted); font-size: 13px; }
+.crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.crumbs span + span::before { content: "/"; color: var(--muted-soft); margin-right: 8px; }
+.motion-tag { border: 1px solid var(--accent-line); background: var(--accent-soft); color: var(--accent-strong); border-radius: 999px; padding: 3px 9px; font-size: 12px; font-weight: 600; }
+.page-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; margin: 18px 0 15px; }
+.page-heading h1 { margin: 2px 0 5px; font-size: clamp(23px, 2.6vw, 31px); line-height: 1.18; letter-spacing: -.025em; }
+.page-heading p { margin: 0; max-width: 68ch; color: var(--muted); }
+.eyebrow { color: var(--accent-strong) !important; font-size: 12px; font-weight: 700; letter-spacing: .035em; }
+.scope-strip { display: flex; flex-wrap: wrap; gap: 8px 22px; padding: 9px 12px; margin-bottom: 14px; border: 1px solid var(--line); background: var(--surface); border-radius: var(--radius); font-size: 12.5px; color: var(--muted); }
+.scope-strip strong { color: var(--ink-soft); font-weight: 600; }
+.workspace-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(330px, .85fr); gap: 14px; align-items: start; }
+.card { min-width: 0; }
+
+.object-panel { grid-column: 2; grid-row: 1; border-top: 3px solid var(--accent); }
+.object-body { display: grid; gap: 13px; padding: var(--space-panel); }
+.object-title-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.object-title-row h2 { margin: 0; font-size: 20px; line-height: 1.25; }
+.object-kicker { display: block; margin-bottom: 3px; font-family: var(--mono); color: var(--muted); font-size: 12px; }
+.object-summary { margin: 0; color: var(--ink-soft); }
+.facts { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 14px; padding-top: 11px; border-top: 1px solid var(--line-soft); }
+.facts dt { margin: 0; }
+.rationale { padding: 10px 11px; margin: 0; border-left: 3px solid var(--accent); background: var(--accent-soft); color: var(--ink-soft); font-size: 13px; }
+.rationale strong { color: var(--ink); }
+.primary-action { width: 100%; justify-content: center; min-height: 44px; }
+.status-line { min-height: 0; }
+.status-line:empty { display: none; }
+.substate { display: grid; gap: 11px; padding-top: 13px; border-top: 1px solid var(--line); }
+.substate h3 { margin: 0; font-size: 15px; }
+.substate p { margin: 0; }
+.evidence-list { display: grid; gap: 8px; list-style: none; margin: 0; padding: 0; }
+.evidence-list li { display: grid; gap: 1px; padding: 9px 10px; border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--bg); font-size: 13px; }
+.evidence-list strong { font-weight: 600; }
+.evidence-list small { color: var(--muted); font-size: 12px; }
+.attest { font-size: 13px; }
+.attest input { accent-color: var(--accent-strong); }
+.handoff-note { padding: 10px 11px; border: 1px solid #a7d9a7; border-radius: var(--radius); background: var(--ok-bg); color: #0b5c0b; font-size: 13px; }
+.exception-note { padding: 10px 11px; border: 1px solid #e6d08a; border-radius: var(--radius); background: var(--warn-bg); color: #674309; font-size: 13px; }
+.exception-note strong { color: #4f3306; }
+
+.signals-panel { grid-column: 1; grid-row: 1; }
+.signals-body { padding: 12px 15px 15px; }
+.trend-wrap { min-width: 0; padding-bottom: 12px; border-bottom: 1px solid var(--line-soft); }
+.trend-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 2px; }
+.trend-heading h3 { margin: 0; font-size: 13px; }
+.trend-heading span { color: var(--muted); font-size: 12px; }
+.trend-chart { display: block; width: 100%; height: auto; overflow: visible; }
+.trend-chart text { fill: var(--muted); font: 11px var(--font); }
+.trend-chart .grid-line { stroke: var(--line-soft); stroke-width: 1; }
+.trend-chart .baseline { stroke: var(--line); stroke-width: 1; }
+.trend-chart .trend-bar { fill: var(--accent); }
+.signals-heading { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 12px; margin: 13px 0 8px; }
+.signals-heading h3 { margin: 0; font-size: 14px; }
+.signals-heading p { margin: 0; color: var(--muted); font-size: 12px; }
+.signal-list { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+.signal-choice {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px;
+  width: 100%; padding: 10px 11px; border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--surface); color: var(--ink); text-align: left; font: inherit; cursor: pointer;
+}
+.signal-choice:hover { background: var(--surface-2); border-color: var(--muted-soft); }
+.signal-choice[aria-pressed="true"] { border-color: var(--accent-strong); box-shadow: inset 3px 0 0 var(--accent-strong); background: var(--accent-soft); }
+.signal-choice:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
+.signal-main { display: grid; gap: 2px; min-width: 0; }
+.signal-main strong { font-size: 13.5px; line-height: 1.3; }
+.signal-main small { color: var(--muted); font-size: 12px; }
+.signal-id { color: var(--muted); font: 11px var(--mono); white-space: nowrap; }
+.signal-footnote { margin: 9px 0 0; color: var(--muted); font-size: 11.5px; }
+
+.workloads { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 15px; margin-top: 14px; padding: 12px 15px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--surface); font-size: 12px; }
+.workloads h2 { margin: 0 0 4px; font-size: 12px; }
+.workloads p { margin: 0; color: var(--muted); }
+.workload-list { display: flex; flex-wrap: wrap; gap: 5px; align-content: start; }
+.svc-chip { font-size: 11.5px; }
+.workload-note { grid-column: 1 / -1; color: var(--muted); font-size: 11.5px; }
+
+@media (max-width: 850px) {
+  .workspace { padding: 18px 18px 25px; }
+  .workspace-grid { grid-template-columns: minmax(0, 1fr); }
+  .object-panel { grid-column: 1; grid-row: 1; }
+  .signals-panel { grid-column: 1; grid-row: 2; }
+}
+
+@media (max-width: 560px) {
+  .workspace { padding: 14px 12px 22px; }
+  .appbar { align-items: flex-start; }
+  .brand { margin-right: auto; }
+  .who { flex-basis: 100%; text-align: left; }
+  .disclosure { font-size: 11px; padding: 4px 8px; }
+  .page-heading { align-items: flex-start; flex-direction: column; gap: 11px; margin-top: 14px; }
+  .page-heading .btn { align-self: flex-start; }
+  .context-row { align-items: flex-start; }
+  .object-body { padding: 14px; }
+  .facts { gap: 9px; }
+  .facts dd { font-size: 13px; }
+  .workloads { grid-template-columns: 1fr; gap: 9px; }
+  .workload-note { grid-column: 1; }
+  .signal-choice { padding: 9px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:focus-within { scroll-behavior: auto; }
+}
+  </style>
+</head>
+<body data-subvertical="medtech">
+  <header class="appbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">◆</span>
+      <span>
+        <span class="brand-name">Cindercone · Quality Ops</span>
+        <span class="brand-sub">Fictional manufacturing workspace</span>
+      </span>
+    </div>
+    <p class="disclosure"><span aria-hidden="true">●</span> Illustrative demo - synthetic data</p>
+    <p class="who"><b>Morgan Vale</b> · CAPA Manager</p>
+  </header>
+
+  <main class="workspace">
+    <div class="context-row">
+      <nav class="crumbs" aria-label="Workspace context">
+        <span>Quality operations</span><span>Nonconformance signals</span>
+      </nav>
+      <span class="motion-tag">PoV workflow</span>
+    </div>
+
+    <section class="page-heading" aria-labelledby="page-title">
+      <div>
+        <p class="eyebrow">SIGNAL REVIEW · FICTIONAL OPERATING DATA</p>
+        <h1 id="page-title">Recurring nonconformance signals</h1>
+        <p>Inspect a repeat pattern across sample sources, then decide whether to request a human quality review.</p>
+      </div>
+      <button class="btn" id="reset-demo" type="button">Reset demo</button>
+    </section>
+
+    <div class="scope-strip" aria-label="Sample data context">
+      <span><strong>Workspace:</strong> Cindercone Instruments</span>
+      <span><strong>Coverage:</strong> 2 mock source exports</span>
+      <span><strong>Lookback:</strong> 8 fictional weeks</span>
+      <span>Counts and dates are fictional operational data, not outcomes.</span>
+    </div>
+
+    <div class="workspace-grid">
+      <section class="card object-panel" aria-labelledby="object-heading">
+        <div class="card-head">
+          <h2 id="object-heading">Selected signal</h2>
+          <span class="card-note">Analyst review required</span>
+        </div>
+        <div class="object-body">
+          <div class="object-title-row">
+            <div>
+              <span class="object-kicker mono" id="signal-id">SIG-02418</span>
+              <h2 id="signal-title">Seal inspection notes · assembly cell 4</h2>
+            </div>
+            <span class="tag tag-ok" id="signal-badge">Source labels aligned</span>
+          </div>
+          <p class="object-summary" id="signal-summary">Similar inspection notes appear in multiple mock records. The pattern is a lead for review, not a confirmed cause.</p>
+          <dl class="facts">
+            <div><dt>Sample window</dt><dd id="signal-window">18–21 Aug 2026</dd></div>
+            <div><dt>Mock records</dt><dd id="signal-count">4 records</dd></div>
+            <div><dt>Source exports</dt><dd id="signal-sources">Line log A · inspection extract B</dd></div>
+            <div><dt>Signal status</dt><dd id="signal-status">Pattern to review</dd></div>
+          </dl>
+          <p class="rationale"><strong>Why it surfaced:</strong> <span id="signal-rationale">Repeated wording appears across separate sample entries. No root cause or product disposition is inferred.</span></p>
+
+          <button class="btn btn-primary primary-action" id="inspect-records" type="button">Inspect source records</button>
+          <p class="status-line" id="live-status" role="status" aria-live="polite"></p>
+
+          <section class="substate" id="review-state" aria-labelledby="review-heading" hidden>
+            <div>
+              <h3 id="review-heading">Source records for human review</h3>
+              <p class="card-note">Fictional excerpts only. Similar wording does not establish a root cause.</p>
+            </div>
+            <ul class="evidence-list" id="evidence-list"></ul>
+            <label class="attest">
+              <input id="review-confirm" type="checkbox">
+              <span>I inspected these sample sources. A quality reviewer must decide what happens next.</span>
+            </label>
+            <button class="btn btn-primary" id="route-review" type="button" disabled>Simulate quality-review handoff</button>
+            <p class="handoff-note" id="route-ack" hidden></p>
+          </section>
+
+          <section class="substate" id="exception-state" aria-labelledby="exception-heading" hidden>
+            <div>
+              <h3 id="exception-heading">Pause: source mapping is unresolved</h3>
+              <p class="card-note">Do not combine or interpret these records until a person checks the source labels.</p>
+            </div>
+            <p class="exception-note" id="mapping-detail"></p>
+            <p class="rationale"><strong>Human escalation:</strong> Ask the Data Analytics Lead to confirm whether the two labels refer to the same work cell. No record is joined and no CAPA decision is made.</p>
+            <button class="btn btn-primary" id="escalate-mapping" type="button">Simulate escalation to Data Analytics Lead</button>
+            <p class="handoff-note" id="escalation-ack" hidden></p>
+          </section>
+        </div>
+      </section>
+
+      <section class="card signals-panel" aria-labelledby="signals-title">
+        <div class="card-head">
+          <h2 id="signals-title">Signal patterns</h2>
+          <span class="card-note">Review one signal at a time</span>
+        </div>
+        <div class="signals-body">
+          <div class="trend-wrap">
+            <div class="trend-heading">
+              <h3>Nonconformance entries by sample week</h3>
+              <span>Fictional operational counts</span>
+            </div>
+            <svg class="trend-chart" id="trend-chart" viewBox="0 0 620 166" role="img" aria-labelledby="trend-title trend-description"></svg>
+          </div>
+          <div class="signals-heading">
+            <h3>Candidate signals</h3>
+            <p>Choose a row to inspect its context</p>
+          </div>
+          <ul class="signal-list" id="signal-list" aria-label="Synthetic candidate nonconformance signals"></ul>
+          <p class="signal-footnote">Signal grouping is illustrative. A quality professional validates records and determines whether an investigation is warranted.</p>
+        </div>
+      </section>
+    </div>
+
+    <section class="workloads" aria-labelledby="workloads-title">
+      <div>
+        <h2 id="workloads-title">Catalog workloads for this use case</h2>
+        <p>Names only; this offline mock does not connect to services.</p>
+      </div>
+      <div class="workload-list" aria-label="Catalog workload names">
+        <span class="svc-chip">Microsoft Fabric</span>
+        <span class="svc-chip">Power BI</span>
+        <span class="svc-chip">Azure Machine Learning</span>
+        <span class="svc-chip">Azure Databricks</span>
+      </div>
+      <small class="workload-note">Catalog-aligned workload labels do not imply a live integration, service behavior, or validated outcome in this demo.</small>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>Signal review is not a CAPA disposition, quality release, or compliance determination.</span>
+    <span class="claim"><b>Human accountability:</b> A quality professional reviews evidence, documents rationale, and escalates uncertainty.</span>
+  </footer>
+
+  <script>
+    "use strict";
+
+    const fixtureData = {
+      organization: "Cindercone Instruments",
+      reviewer: "Casey Lin · Manufacturing Quality Lead",
+      analyst: "Morgan Vale · CAPA Manager",
+      trend: {
+        title: "Synthetic nonconformance entries by week",
+        description: "Eight fictional weekly counts. They are operational sample data, not business outcomes.",
+        values: [2, 3, 2, 4, 3, 5, 4, 6],
+        labels: ["W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8"]
+      },
+      signals: [
+        {
+          id: "SIG-02418",
+          title: "Seal inspection notes · assembly cell 4",
+          shortLabel: "Seal inspection notes",
+          location: "Assembly cell 4 · line export",
+          window: "18–21 Aug 2026",
+          count: 4,
+          sources: "Line log A · inspection extract B",
+          mapping: "aligned",
+          summary: "Similar inspection notes appear in multiple mock records. The pattern is a lead for review, not a confirmed cause.",
+          rationale: "Repeated wording appears across separate sample entries. No root cause or product disposition is inferred.",
+          evidence: [
+            { id: "SYN-NC-041", source: "Line log A", date: "18 Aug 2026", note: "Seal-edge variation noted during a fictional shift check." },
+            { id: "SYN-NC-044", source: "Inspection extract B", date: "19 Aug 2026", note: "Similar seal-edge wording in a separate synthetic inspection entry." },
+            { id: "SYN-NC-052", source: "Line log A", date: "20 Aug 2026", note: "Repeat phrase recorded; no cause stated in the sample." },
+            { id: "SYN-NC-057", source: "Inspection extract B", date: "21 Aug 2026", note: "Related wording in the final fictional sample entry." }
+          ]
+        },
+        {
+          id: "SIG-02419",
+          title: "Incoming check labels · supplier sample",
+          shortLabel: "Incoming check labels",
+          location: "Incoming check · supplier extract",
+          window: "20–22 Aug 2026",
+          count: 3,
+          sources: "Supplier extract C · receiving log D",
+          mapping: "unresolved",
+          summary: "A recurring-looking label spans two mock exports, but the work-cell identifiers do not match.",
+          rationale: "This candidate is deliberately low-confidence: source labels differ and the sample has no approved crosswalk.",
+          mappingDetail: "Supplier extract C uses “CELL-B3”; receiving log D uses “B-03”. The fictional fixture contains no approved mapping between these labels.",
+          evidence: [
+            { id: "SYN-NC-063", source: "Supplier extract C", date: "20 Aug 2026", note: "Work-cell label recorded as CELL-B3." },
+            { id: "SYN-NC-066", source: "Receiving log D", date: "21 Aug 2026", note: "Work-cell label recorded as B-03; relationship not verified." },
+            { id: "SYN-NC-069", source: "Supplier extract C", date: "22 Aug 2026", note: "Similar note appears, but source mapping remains unresolved." }
+          ]
+        }
+      ]
+    };
+
+    const state = {
+      name: "ready",
+      selectedId: fixtureData.signals[0].id,
+      reviewed: false,
+      timer: null
+    };
+    const byId = (id) => document.getElementById(id);
+    const selectedSignal = () => fixtureData.signals.find((item) => item.id === state.selectedId);
+    const svgNamespace = "http://www.w3.org/2000/svg";
+
+    function setText(id, value) {
+      byId(id).textContent = value;
+    }
+
+    function appendSvg(parent, name, attributes, text) {
+      const element = document.createElementNS(svgNamespace, name);
+      Object.entries(attributes).forEach(([key, value]) => element.setAttribute(key, String(value)));
+      if (text !== undefined) element.textContent = text;
+      parent.append(element);
+      return element;
+    }
+
+    function renderTrend() {
+      const chart = byId("trend-chart");
+      chart.replaceChildren();
+      appendSvg(chart, "title", { id: "trend-title" }, fixtureData.trend.title);
+      appendSvg(chart, "desc", { id: "trend-description" }, fixtureData.trend.description);
+      const left = 30;
+      const baseline = 132;
+      const chartHeight = 94;
+      const barWidth = 35;
+      const gap = 37;
+      const maxValue = Math.max(...fixtureData.trend.values);
+      appendSvg(chart, "line", { x1: 22, y1: baseline, x2: 604, y2: baseline, class: "baseline" });
+      [0.33, 0.66, 1].forEach((fraction) => {
+        const y = baseline - chartHeight * fraction;
+        appendSvg(chart, "line", { x1: 22, y1: y, x2: 604, y2: y, class: "grid-line" });
+      });
+      fixtureData.trend.values.forEach((value, index) => {
+        const x = left + index * (barWidth + gap);
+        const height = (value / maxValue) * chartHeight;
+        appendSvg(chart, "rect", {
+          x, y: baseline - height, width: barWidth, height, rx: 2, class: "trend-bar"
+        });
+        appendSvg(chart, "text", { x: x + barWidth / 2, y: 151, "text-anchor": "middle" }, fixtureData.trend.labels[index]);
+        appendSvg(chart, "text", { x: x + barWidth / 2, y: baseline - height - 6, "text-anchor": "middle" }, String(value));
+      });
+    }
+
+    function renderSignalChoices() {
+      const list = byId("signal-list");
+      fixtureData.signals.forEach((signal) => {
+        const item = document.createElement("li");
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "signal-choice";
+        button.dataset.signalId = signal.id;
+        button.setAttribute("aria-pressed", String(signal.id === state.selectedId));
+
+        const main = document.createElement("span");
+        main.className = "signal-main";
+        const label = document.createElement("strong");
+        label.textContent = signal.shortLabel;
+        const context = document.createElement("small");
+        context.textContent = `${signal.location} · ${signal.count} fictional entries`;
+        main.append(label, context);
+
+        const id = document.createElement("span");
+        id.className = "signal-id";
+        id.textContent = signal.id;
+        button.append(main, id);
+        button.addEventListener("click", () => {
+          if (state.name === "working") return;
+          state.selectedId = signal.id;
+          state.name = "ready";
+          state.reviewed = false;
+          render();
+        });
+        item.append(button);
+        list.append(item);
+      });
+    }
+
+    function renderEvidence(signal) {
+      const list = byId("evidence-list");
+      list.replaceChildren();
+      signal.evidence.forEach((record) => {
+        const item = document.createElement("li");
+        const heading = document.createElement("strong");
+        heading.textContent = `${record.id} · ${record.source}`;
+        const detail = document.createElement("span");
+        detail.textContent = record.note;
+        const date = document.createElement("small");
+        date.textContent = `${record.date} · fictional source excerpt`;
+        item.append(heading, detail, date);
+        list.append(item);
+      });
+    }
+
+    function updatePanel(signal) {
+      setText("signal-id", signal.id);
+      setText("signal-title", signal.title);
+      setText("signal-summary", signal.summary);
+      setText("signal-window", signal.window);
+      setText("signal-count", `${signal.count} fictional records`);
+      setText("signal-sources", signal.sources);
+      setText("signal-status", signal.mapping === "aligned" ? "Pattern to review" : "Source mapping unresolved");
+      setText("signal-rationale", signal.rationale);
+
+      const badge = byId("signal-badge");
+      badge.textContent = signal.mapping === "aligned" ? "Source labels aligned" : "Mapping needs review";
+      badge.className = signal.mapping === "aligned" ? "tag tag-ok" : "tag tag-warn";
+      fixtureData.signals.forEach((item) => {
+        const choice = document.querySelector(`[data-signal-id="${item.id}"]`);
+        if (choice) choice.setAttribute("aria-pressed", String(item.id === signal.id));
+      });
+
+      renderEvidence(signal);
+      setText("mapping-detail", signal.mappingDetail || "");
+
+      const busy = state.name === "working";
+      const reviewing = state.name === "review" || state.name === "routed";
+      const exception = state.name === "exception" || state.name === "escalated";
+      byId("review-state").hidden = !reviewing;
+      byId("exception-state").hidden = !exception;
+      byId("route-ack").hidden = state.name !== "routed";
+      byId("escalation-ack").hidden = state.name !== "escalated";
+      byId("route-review").hidden = state.name === "routed";
+      byId("review-confirm").disabled = state.name === "routed";
+      byId("review-confirm").checked = state.reviewed;
+      byId("route-review").disabled = !state.reviewed || state.name !== "review";
+      byId("escalate-mapping").hidden = state.name === "escalated";
+
+      const inspect = byId("inspect-records");
+      inspect.disabled = busy || reviewing || exception;
+      inspect.textContent = busy ? "Inspecting sample records…" : "Inspect source records";
+      inspect.setAttribute("aria-busy", String(busy));
+      if (busy) {
+        setText("live-status", "Inspecting the selected fictional source records.");
+      } else if (state.name === "review") {
+        setText("live-status", "Source records are ready for human review. No root cause has been determined.");
+      } else if (state.name === "exception") {
+        setText("live-status", "Review paused because sample source labels do not match.");
+      } else if (state.name === "routed") {
+        setText("live-status", "A fictional quality-review handoff is staged. Nothing was submitted.");
+      } else if (state.name === "escalated") {
+        setText("live-status", "A fictional mapping-gap escalation is staged. Nothing was submitted.");
+      } else if (state.name === "reset") {
+        setText("live-status", "Demo reset. The initial synthetic signal is selected.");
+      } else {
+        setText("live-status", "");
+      }
+
+      setText("route-ack", `Review request staged for ${fixtureData.reviewer}. Demo only: no CAPA was opened and no quality disposition was made.`);
+      setText("escalation-ack", "Mapping-gap escalation staged for the Data Analytics Lead. Demo only: no source join or CAPA decision was made.");
+    }
+
+    function render() {
+      updatePanel(selectedSignal());
+    }
+
+    function resetDemo() {
+      if (state.timer !== null) window.clearTimeout(state.timer);
+      state.timer = null;
+      state.name = "reset";
+      state.selectedId = fixtureData.signals[0].id;
+      state.reviewed = false;
+      render();
+    }
+
+    function inspectRecords() {
+      if (state.name !== "ready" && state.name !== "reset") return;
+      state.name = "working";
+      render();
+      state.timer = window.setTimeout(() => {
+        state.timer = null;
+        state.name = selectedSignal().mapping === "aligned" ? "review" : "exception";
+        render();
+      }, 450);
+    }
+
+    byId("reset-demo").addEventListener("click", resetDemo);
+    byId("inspect-records").addEventListener("click", inspectRecords);
+    byId("review-confirm").addEventListener("change", (event) => {
+      state.reviewed = event.currentTarget.checked;
+      byId("route-review").disabled = !state.reviewed || state.name !== "review";
+    });
+    byId("route-review").addEventListener("click", () => {
+      if (state.name !== "review" || !state.reviewed) return;
+      state.name = "routed";
+      render();
+    });
+    byId("escalate-mapping").addEventListener("click", () => {
+      if (state.name !== "exception") return;
+      state.name = "escalated";
+      render();
+    });
+
+    renderTrend();
+    renderSignalChoices();
+    render();
+  </script>
+</body>
+</html>

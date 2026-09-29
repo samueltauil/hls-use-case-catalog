@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Submission section review | HLS catalog demo</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+body { --on-accent: var(--surface); }
+.appbar .brand-mark { font-size: 21px; line-height: 1; }
+.workspace { max-width: 1600px; margin: 0 auto; padding: 18px; }
+.context { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.context h1 { font-size: clamp(20px, 2.2vw, 27px); line-height: 1.2; margin: 2px 0 5px; }
+.context p { margin: 0; color: var(--muted); font-size: 13px; }
+.eyebrow { font-size: 12px; color: var(--accent-strong); font-weight: 700; }
+.context .btn { align-self: center; }
+.workgrid { display: grid; grid-template-columns: minmax(270px, .76fr) minmax(0, 1.5fr); gap: 14px; align-items: start; }
+.panel-stack { grid-column: 2; grid-row: 1; }
+.source-card { grid-column: 1; grid-row: 1; }
+.audit-card { grid-column: 2; grid-row: 2; }
+.source-list { display: grid; gap: 9px; }
+.attest span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+.source-item { border: 1px solid var(--line); border-radius: var(--radius); padding: 9px 11px; }
+.source-item strong { display: block; font-size: 13px; }
+.source-item p { margin: 3px 0 0; font-size: 12.5px; color: var(--muted); }
+.source-item.is-conflict { border-color: var(--warn); background: var(--warn-bg); }
+.panel-stack { display: grid; gap: 13px; }
+.draft-header { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; justify-content: space-between; }
+.draft-header .card-note { margin: 0; }
+.section-title { margin: 0 0 9px; font-size: 17px; }
+.draft-text { line-height: 1.7; margin: 0 0 13px; }
+.draft-text:empty { display: none; }
+.references { border-top: 1px solid var(--line); padding-top: 11px; display: grid; gap: 7px; }
+.references h3 { font-size: 13px; margin: 0; }
+.references button { justify-self: start; text-align: left; }
+.empty-state { padding: 13px 0; max-width: 56ch; }
+.empty-state p { color: var(--muted); margin: 5px 0 14px; }
+.empty-state strong { font-size: 17px; }
+.review-box { border-left: 3px solid var(--accent-strong); padding: 1px 0 1px 13px; }
+.review-box p { margin: 2px 0 11px; font-size: 13px; color: var(--muted); }
+.field textarea { width: 100%; }
+.review-box .actions { margin-top: 10px; }
+.btn-primary { background: var(--accent-strong); border-color: var(--accent-strong); color: var(--on-accent); }
+.btn-primary:hover:not(:disabled) { background: var(--ink); border-color: var(--ink); }
+.notice { margin-bottom: 12px; }
+.audit li { grid-template-columns: minmax(0, 1fr); gap: 0; border-bottom: 1px solid var(--line-soft); padding-bottom: 7px; }
+.audit li:last-child { border: 0; padding: 0; }
+.audit time { display: block; }
+.audit span { overflow-wrap: anywhere; }
+.footer { margin-top: 12px; }
+@media (max-width: 800px) {
+  .workgrid { grid-template-columns: minmax(0, 1fr); }
+  .panel-stack, .source-card, .audit-card { grid-column: 1; grid-row: auto; }
+  .workspace { padding: 13px; }
+}
+@media (max-width: 500px) {
+  .appbar .brand { flex-basis: 100%; }
+  .who { font-size: 12px; }
+  .context .btn { align-self: flex-start; }
+  .actions .btn { width: 100%; justify-content: center; }
+}
+  </style>
+</head>
+<body data-subvertical="pharma-life-sciences">
+  <header class="appbar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">◇</span><span><span class="brand-name">Submission workspace</span><span class="brand-sub">Asterfold Bio · regulatory operations · sample workspace</span></span></div>
+    <p class="disclosure">Illustrative demo - synthetic data</p>
+    <p class="who">Workspace role <b>Head of Regulatory Affairs</b></p>
+  </header>
+  <main class="workspace">
+    <div class="context">
+      <div>
+        <span class="eyebrow">Clinical Development &amp; Trials / Submission preparation</span>
+        <h1>Clinical overview · section draft</h1>
+        <p>AFB-SUB-042 · fictional Asterfold Bio · Module 2 working section · not a filing package</p>
+      </div>
+      <button class="btn" id="reset" type="button">Reset scenario</button>
+    </div>
+    <div class="workgrid">
+      <div class="panel-stack">
+        <section class="card" aria-labelledby="draft-heading">
+          <div class="card-head draft-header"><h2 id="draft-heading">Authoring canvas</h2><span class="st st-idle" id="state-label">Not drafted</span></div>
+          <div class="card-body">
+            <div id="empty" class="empty-state">
+              <strong>Prepare a grounded working draft</strong>
+              <p>Assemble the section from the sample source set. Generated language stays a proposal until a person reviews it.</p>
+              <button class="btn btn-primary" id="generate" type="button">Prepare section draft</button>
+            </div>
+            <div id="working" class="notice" hidden>Preparing sample draft from selected excerpts…</div>
+            <div id="draft" hidden>
+              <h3 class="section-title">Clinical overview · proposed wording</h3>
+              <div class="notice notice-warn">Generated sample text · not approved or suitable for submission. Check every claim against source excerpts.</div>
+              <p class="draft-text" id="draft-text"></p>
+              <div class="references"><h3>Evidence to inspect</h3><div id="citation-buttons" class="actions"></div></div>
+            </div>
+            <div id="exception" hidden>
+              <div class="notice notice-stop"><div><strong>Source conflict · drafting held</strong><span class="notice-note">The selected safety excerpts disagree. No proposed language is available for routing; Regulatory Operations must resolve the source version with Quality.</span></div></div>
+              <button class="btn btn-primary" id="escalate" type="button">Escalate source conflict</button>
+            </div>
+            <div id="routed" class="notice notice-ok" hidden><div><strong>Routed for human review</strong><span class="notice-note">Quality Lead and Medical Writing Lead must review the proposed section. Head of Regulatory Affairs remains accountable for final content; nothing was filed or approved.</span></div></div>
+            <div id="escalated" class="notice notice-warn" hidden><div><strong>Conflict escalated</strong><span class="notice-note">Regulatory Operations and Quality Lead have a simulated review task. No draft was routed or submitted.</span></div></div>
+          </div>
+        </section>
+        <section class="card" id="review-section" aria-labelledby="review-heading" hidden>
+          <div class="card-head"><h2 id="review-heading">Human review gate</h2><span class="card-note">Internal routing only</span></div>
+          <div class="card-body review-box">
+            <p>Inspect both citations, then record why the proposed language is ready for quality and medical writing review. Routing does not approve it.</p>
+            <div class="field"><label for="rationale">Review rationale (sample text only; no sensitive data)</label><textarea id="rationale" maxlength="300" placeholder="Describe the source comparison and any edits needed"></textarea></div>
+            <div class="actions"><button class="btn btn-primary" type="button" id="route" disabled>Route for human review</button></div>
+            <p class="dlg-error" id="review-hint">Inspect both evidence excerpts before routing.</p>
+          </div>
+        </section>
+      </div>
+      <section class="card source-card" aria-labelledby="sources-heading">
+        <div class="card-head"><h2 id="sources-heading">Controlled source set</h2><span class="card-note">Sample excerpts · read-only</span></div>
+        <div class="card-body">
+          <p class="status-line">Use only the selected fictional sources. A conflicting superseded note must be escalated, not silently reconciled.</p>
+          <div class="source-list" id="source-list"></div>
+          <label class="attest" style="margin-top:12px"><input type="checkbox" id="conflict"><span>Include superseded safety note (exception scenario)<small>Rebuilds the draft from a conflicting sample source set.</small></span></label>
+        </div>
+      </section>
+      <section class="card audit-card" aria-labelledby="audit-heading">
+        <div class="card-head"><h2 id="audit-heading">Activity record</h2><span class="card-note">Fictional, session-only</span></div>
+        <div class="card-body"><ol class="audit" id="audit"></ol></div>
+      </section>
+    </div>
+  </main>
+  <footer class="footer">
+    <div class="built"><span>Catalog workloads:</span><span class="svc-chip">Azure OpenAI in Azure AI Foundry Models</span><span class="svc-chip">Azure AI Search</span><span class="svc-chip">Microsoft Copilot Studio</span><span class="svc-chip">Microsoft Purview</span></div>
+    <span class="claim">Illustrative workflow only; no live services, document storage, approval, or filing.</span>
+  </footer>
+  <dialog id="source-dialog" aria-labelledby="dialog-heading">
+    <div class="dlg-head"><div><h2 id="dialog-heading"></h2><span class="dlg-sub" id="dialog-meta"></span></div><button class="btn" type="button" id="close-source" aria-label="Close source excerpt">Close</button></div>
+    <div class="dlg-body"><div class="evidence" id="dialog-excerpt"></div><p class="status-line" id="dialog-note"></p></div>
+    <div class="dlg-foot"><button class="btn btn-primary" type="button" id="confirm-source">I compared this excerpt</button></div>
+  </dialog>
+  <p class="sr-only" role="status" aria-live="polite" id="announcement"></p>
+  <script>
+    const fixture = {
+      organization: "Asterfold Bio (fictional)",
+      section: "AFB-SUB-042 · Clinical overview working section",
+      draft: "In the fictional AFB-042 program, the sample clinical summary describes a planned review of study findings before any submission language is finalized. The source register identifies the clinical narrative as revision C and the safety synopsis as revision D. This working paragraph is a content-reuse proposal only; confirm the study interpretation and reconcile any subsequent safety updates before inclusion in a submission.",
+      sources: [
+        { id: "SRC-CL-014", title: "Clinical narrative", version: "Rev C", date: "Sample effective date: 2026-06-12", excerpt: "AFB-042 fictional clinical narrative: results and interpretation require medical writing verification before use in the clinical overview.", note: "Controlled sample excerpt. Human reviewer must verify context; not a clinical conclusion." },
+        { id: "SRC-SF-008", title: "Safety synopsis", version: "Rev D", date: "Sample effective date: 2026-07-08", excerpt: "AFB-042 fictional safety synopsis: review subsequent safety updates and reconcile section wording before submission assembly.", note: "Controlled sample excerpt. No real safety findings or patient information." },
+        { id: "SRC-SF-008-OLD", title: "Superseded safety note", version: "Rev B", date: "Sample effective date: 2026-05-02", excerpt: "AFB-042 fictional superseded note: draft wording may proceed without reconciling later safety updates.", note: "Conflicts with Rev D. Do not treat superseded wording as current evidence." }
+      ]
+    };
+    const $ = (id) => document.getElementById(id);
+    const sourceList = $("source-list");
+    const audit = $("audit");
+    const inspected = new Set();
+    let phase = "ready";
+    let activeSource = null;
+    let timer = null;
+
+    function log(actor, action) {
+      const item = document.createElement("li");
+      const stamp = document.createElement("time");
+      stamp.textContent = "Sample";
+      const detail = document.createElement("span");
+      const name = document.createElement("span");
+      name.className = "actor " + (actor === "Workspace" ? "is-system" : "is-human");
+      name.textContent = actor + ":";
+      detail.append(name, document.createTextNode(" " + action));
+      item.append(stamp, detail);
+      audit.prepend(item);
+    }
+    function announce(message) { $("announcement").textContent = message; }
+    function show(id, visible) { $(id).hidden = !visible; }
+    function renderSources() {
+      sourceList.replaceChildren();
+      const selected = fixture.sources.slice(0, $("conflict").checked ? 3 : 2);
+      for (const source of selected) {
+        const item = document.createElement("div");
+        item.className = "source-item" + (source.id.endsWith("OLD") ? " is-conflict" : "");
+        const title = document.createElement("strong");
+        title.textContent = source.title + " · " + source.version;
+        const meta = document.createElement("p");
+        meta.textContent = source.id + " · " + source.date;
+        item.append(title, meta);
+        sourceList.append(item);
+      }
+    }
+    function render() {
+      show("empty", phase === "ready");
+      show("working", phase === "working");
+      show("draft", phase === "draft" || phase === "routed");
+      show("exception", phase === "exception");
+      show("review-section", phase === "draft");
+      show("routed", phase === "routed");
+      show("escalated", phase === "escalated");
+      $("conflict").disabled = phase === "working" || phase === "routed" || phase === "escalated";
+      $("state-label").textContent = {
+        ready: "Not drafted", working: "Preparing", draft: "Proposed · review required",
+        exception: "Held · source conflict", escalated: "Escalated · awaiting resolution",
+        routed: "Awaiting human review"
+      }[phase];
+      $("state-label").className = "st " + (phase === "routed" ? "st-ok" : phase === "exception" || phase === "escalated" ? "st-stop" : phase === "draft" ? "st-warn" : "st-idle");
+      renderSources();
+      updateRoute();
+    }
+    function updateRoute() {
+      const ready = inspected.size === 2 && $("rationale").value.trim().length > 0;
+      $("route").disabled = !ready;
+      $("review-hint").textContent = inspected.size < 2
+        ? "Inspect both evidence excerpts before routing."
+        : ready ? "Ready to route for review; no approval or filing will occur." : "Enter a review rationale before routing.";
+    }
+    function populateDraft() {
+      $("draft-text").textContent = fixture.draft;
+      const buttons = $("citation-buttons");
+      buttons.replaceChildren();
+      for (const source of fixture.sources.slice(0, 2)) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "btn-link";
+        button.textContent = "Inspect " + source.id + " · " + source.version;
+        button.addEventListener("click", () => openSource(source));
+        buttons.append(button);
+      }
+    }
+    function openSource(source) {
+      activeSource = source;
+      $("dialog-heading").textContent = source.title;
+      $("dialog-meta").textContent = source.id + " · " + source.version + " · " + source.date;
+      $("dialog-excerpt").textContent = source.excerpt;
+      $("dialog-note").textContent = source.note;
+      $("source-dialog").showModal();
+    }
+    $("generate").addEventListener("click", () => {
+      if (phase !== "ready") return;
+      phase = "working";
+      render();
+      announce("Preparing sample section draft.");
+      timer = setTimeout(() => {
+        timer = null;
+        phase = $("conflict").checked ? "exception" : "draft";
+        if (phase === "draft") populateDraft();
+        log("Workspace", phase === "draft" ? "Prepared a proposed draft; citations require inspection." : "Held drafting because selected sample sources conflict.");
+        render();
+        announce(phase === "draft" ? "Draft ready for source review." : "Source conflict. Draft held; escalation available.");
+      }, 420);
+    });
+    $("conflict").addEventListener("change", () => {
+      if (phase === "draft" || phase === "exception") {
+        phase = "ready";
+        inspected.clear();
+        $("rationale").value = "";
+        log("Workspace", "Source selection changed; previous working result cleared.");
+        announce("Source selection changed. Prepare the draft again.");
+      }
+      render();
+    });
+    $("close-source").addEventListener("click", () => $("source-dialog").close());
+    $("confirm-source").addEventListener("click", () => {
+      if (!activeSource) return;
+      if (!inspected.has(activeSource.id)) log("Head of Regulatory Affairs", "Compared " + activeSource.id + " with proposed wording.");
+      inspected.add(activeSource.id);
+      activeSource = null;
+      $("source-dialog").close();
+      updateRoute();
+      announce(inspected.size + " of 2 sample sources inspected.");
+    });
+    $("source-dialog").addEventListener("close", () => { activeSource = null; });
+    $("rationale").addEventListener("input", updateRoute);
+    $("route").addEventListener("click", () => {
+      if (phase !== "draft" || inspected.size !== 2 || !$("rationale").value.trim()) return;
+      phase = "routed";
+      log("Head of Regulatory Affairs", "Routed working section to Quality Lead and Medical Writing Lead. Rationale: " + $("rationale").value.trim());
+      render();
+      announce("Proposed section routed for human review. No approval or filing occurred.");
+    });
+    $("escalate").addEventListener("click", () => {
+      if (phase !== "exception") return;
+      phase = "escalated";
+      log("Head of Regulatory Affairs", "Escalated conflicting revisions to Regulatory Operations and Quality Lead; drafting remains on hold.");
+      render();
+      announce("Conflict escalated to Regulatory Operations and Quality Lead.");
+    });
+    $("reset").addEventListener("click", () => {
+      clearTimeout(timer);
+      timer = null;
+      if ($("source-dialog").open) $("source-dialog").close();
+      phase = "ready";
+      inspected.clear();
+      $("conflict").checked = false;
+      $("rationale").value = "";
+      audit.replaceChildren();
+      log("Workspace", "Opened " + fixture.section + " for " + fixture.organization + ".");
+      render();
+      announce("Scenario reset. Ready to prepare a draft.");
+    });
+    $("reset").click();
+  </script>
+</body>
+</html>

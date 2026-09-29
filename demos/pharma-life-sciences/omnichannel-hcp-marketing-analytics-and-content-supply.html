@@ -1,0 +1,552 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Illustrative HCP journey and content review workbench using synthetic data.">
+  <title>HCP journey and content review | Illustrative demo</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+body { --on-accent: var(--surface); }
+.btn-primary, .btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); color: var(--on-accent); }
+.appbar .brand-mark { width: 22px; height: 22px; border: 2px solid var(--accent); border-radius: 4px; display: grid; place-items: center; font-size: 13px; font-weight: 700; }
+.workspace { max-width: 1500px; margin: 0 auto; padding: 20px 24px 36px; }
+.heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 15px; }
+.heading h1 { margin: 0; font-size: clamp(21px, 2vw, 27px); line-height: 1.25; }
+.heading p { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+.heading .actions { justify-content: flex-end; }
+.selector { display: flex; align-items: center; flex-wrap: wrap; gap: 9px 15px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 14px; }
+.selector label { font-weight: 600; font-size: 13px; }
+select { font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); min-height: 38px; padding: 6px 10px; max-width: 100%; }
+.selector .context { color: var(--muted); font-size: 13px; margin-left: auto; }
+.status-panel { margin-bottom: 14px; }
+.status-panel p { margin: 0; }
+.status-panel strong { display: block; }
+.desk { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 14px; align-items: start; }
+.stack { display: grid; gap: 14px; min-width: 0; }
+.summary { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; padding: 12px 15px; border-bottom: 1px solid var(--line-soft); }
+.summary p { margin: 3px 0 0; font-size: 13px; color: var(--muted); }
+.summary h2 { margin: 0; font-size: 16px; }
+.path { list-style: none; margin: 0; padding: 9px 12px 12px; display: grid; gap: 6px; }
+.path li { min-width: 0; }
+.touch { display: grid; grid-template-columns: 62px minmax(0, 1fr) auto; gap: 10px; width: 100%; text-align: left; align-items: center; border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--surface); padding: 10px 12px; color: var(--ink); font: inherit; cursor: pointer; min-height: 60px; }
+.touch:hover { background: var(--surface-2); }
+.touch[aria-pressed="true"] { border-color: var(--accent-strong); box-shadow: inset 3px 0 var(--accent-strong); background: var(--accent-soft); }
+.touch time { font-size: 12px; color: var(--muted); }
+.touch b, .touch small { display: block; }
+.touch b { font-size: 13.5px; }
+.touch small { color: var(--muted); font-size: 12px; }
+.touch .tag { white-space: normal; text-align: center; }
+.detail { border-top: 1px solid var(--line); background: var(--bg); padding: 12px 15px; }
+.detail h3 { margin: 0 0 7px; font-size: 14px; }
+.detail p { margin: 5px 0; font-size: 13px; }
+.detail b { color: var(--ink-soft); }
+.detail .interpretation { border-left: 3px solid var(--accent-strong); padding-left: 10px; }
+.draft { padding: 13px 15px; }
+.draft h3 { margin: 0 0 6px; font-size: 14px; }
+.draft p { margin: 0 0 8px; font-size: 13.5px; }
+.draft .copy { padding: 11px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); font-size: 14px; white-space: pre-line; }
+.source { padding: 11px 15px 14px; border-top: 1px solid var(--line-soft); }
+.source h3 { margin: 0 0 5px; font-size: 14px; }
+.source p { margin: 4px 0; font-size: 13px; }
+.source blockquote { margin: 8px 0; padding-left: 11px; border-left: 3px solid var(--accent-strong); font-size: 13px; }
+.audit-card { grid-column: 1 / -1; }
+.audit-card .card-body { padding-top: 10px; }
+.audit li { grid-template-columns: 70px minmax(0, 1fr); }
+.footer { margin-top: 8px; }
+.footer .built { max-width: 100%; }
+.dlg-body p { margin: 0; }
+.dlg-body .copy { margin: 0; white-space: pre-line; font-size: 13px; }
+@media (max-width: 850px) {
+  .desk { grid-template-columns: 1fr; }
+  .heading { flex-wrap: wrap; }
+  .heading .actions { justify-content: flex-start; }
+}
+@media (max-width: 520px) {
+  .workspace { padding: 14px 12px 25px; }
+  .appbar .who { display: none; }
+  .appbar .brand { flex-basis: 100%; }
+  .selector .context { margin-left: 0; }
+  .touch { grid-template-columns: 48px minmax(0, 1fr); }
+  .touch .tag { grid-column: 2; justify-self: start; }
+  .heading .actions .btn { min-height: 44px; }
+}
+  </style>
+</head>
+<body data-subvertical="pharma-life-sciences">
+  <header class="appbar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">H</span><span><span class="brand-name">HLS / Campaign workbench</span><span class="brand-sub">Pharma / Life Sciences · Commercial &amp; Market Access</span></span></div>
+    <p class="disclosure">Illustrative demo - synthetic data</p>
+    <p class="who">Working as <b>VP Brand Marketing</b></p>
+  </header>
+  <main class="workspace">
+    <div class="heading">
+      <div>
+        <h1>Review the HCP channel journey</h1>
+        <p>Fictional Lumafern Labs · Education campaign LF-042 · Sample operational records, not measured outcomes</p>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn btn-primary" id="prepare">Prepare MLR review</button>
+        <button type="button" class="btn" id="escalate" hidden>Request data reconciliation</button>
+        <button type="button" class="btn" id="reset">Reset demo</button>
+      </div>
+    </div>
+    <div class="selector">
+      <label for="scenario">Sample journey</label>
+      <select id="scenario">
+        <option value="linked">Linked channel events</option>
+        <option value="gap">Missing attribution link</option>
+      </select>
+      <span class="context">Review context: campaign LF-042 · Sample period: September 2026</span>
+    </div>
+    <div class="notice status-panel" id="status" role="status" aria-live="polite">
+      <div><strong id="status-title">Draft awaiting marketing review</strong><p id="status-text">Inspect a touchpoint and its evidence, then prepare the content for MLR review. No content is sent to HCPs.</p></div>
+    </div>
+    <div class="desk">
+      <section class="card" aria-labelledby="journey-title">
+        <div class="summary"><div><h2 id="journey-title">Journey trace · synthetic cohort HC-SAMPLE-17</h2><p id="journey-description">Cross-channel sequence; select an event to inspect its record.</p></div><span class="tag" id="confidence">Directional link</span></div>
+        <ol class="path" id="path"></ol>
+        <div class="detail" aria-live="polite">
+          <h3 id="detail-title">Event evidence</h3>
+          <p><b>Source:</b> <span id="detail-source"></span></p>
+          <p><b>Record:</b> <span id="detail-record"></span></p>
+          <p class="interpretation" id="detail-note"></p>
+        </div>
+      </section>
+      <div class="stack">
+        <section class="card" aria-labelledby="draft-title">
+          <div class="card-head"><h2 id="draft-title">Content supply · email follow-up</h2><span class="tag tag-warn" id="draft-state">AI-assisted draft · unapproved</span></div>
+          <div class="draft"><h3>Draft for human review</h3><p id="recommendation">Suggested next channel: email, based on this illustrative journey. A sequence is not proof of attribution.</p><div class="copy" id="draft-copy"></div></div>
+          <div class="source"><h3>Reference for draft review</h3><p><b>Sample approved source:</b> Education brief EDU-LF-07, revision 2 · effective 01 Sep 2026 · fictional</p><blockquote id="source-excerpt"></blockquote><p>Marketing must verify alignment; MLR must approve any external use. This draft has not been released.</p></div>
+        </section>
+        <section class="card" aria-labelledby="decision-title">
+          <div class="card-head"><h2 id="decision-title">Decision boundary</h2></div>
+          <div class="card-body"><p class="status-line" id="boundary">Directional journey evidence supports review, not a causal claim. Human MLR review is required before any content use.</p></div>
+        </section>
+      </div>
+      <section class="card audit-card" aria-labelledby="audit-title">
+        <div class="card-head"><h2 id="audit-title">Review trail</h2><span class="card-note">Local simulation · resets on refresh</span></div>
+        <div class="card-body"><ol class="audit" id="audit"></ol></div>
+      </section>
+    </div>
+  </main>
+  <footer class="footer"><span>Illustrative workload mapping from this catalog record:</span><div class="built"><span class="svc-chip">Microsoft Fabric</span><span class="svc-chip">Power BI</span><span class="svc-chip">Azure OpenAI in Azure AI Foundry Models</span><span class="svc-chip">Azure AI Search</span></div></footer>
+
+  <dialog id="review" aria-labelledby="review-title">
+    <div class="dlg-head"><div><h2 id="review-title">Route draft to human MLR review</h2><span class="dlg-sub">Illustrative demo - synthetic data · No approval or delivery.</span></div><button type="button" class="btn" id="close-review" aria-label="Close review">Close</button></div>
+    <div class="dlg-body">
+      <dl class="meta-grid"><div><dt>Campaign</dt><dd>LF-042 · Lumafern Labs (fictional)</dd></div><div><dt>Source</dt><dd>EDU-LF-07 rev 2 · effective 01 Sep 2026</dd></div><div><dt>Evidence</dt><dd>Directional link; no causal attribution</dd></div><div><dt>Recipient</dt><dd>MLR review lead (simulated)</dd></div></dl>
+      <p><b>Draft being routed</b></p><p class="evidence copy" id="review-copy"></p>
+      <label class="attest"><input type="checkbox" id="attest"><span>I inspected the sample source and journey evidence. Route for MLR review only; do not publish.</span></label>
+      <p class="dlg-error" id="review-error" role="alert"></p>
+    </div>
+    <div class="dlg-foot"><button type="button" class="btn" id="cancel-review">Cancel</button><button type="button" class="btn btn-primary" id="route">Route for MLR review</button></div>
+  </dialog>
+  <script>
+    const fixture = {
+      campaign: "LF-042",
+      draft: "Subject: Explore the Lumafern education module\n\nHello, please review the fictional Lumafern education module for a discussion of general care-pathway topics. If useful, request a conversation with the field education team.",
+      excerpt: "The education module provides general care-pathway discussion prompts for HCP education. No treatment, safety, or efficacy claims are included in this sample brief.",
+      linked: {
+        confidence: "Directional link",
+        description: "Cross-channel sequence; select an event to inspect its record.",
+        events: [
+          { date: "Sep 03", channel: "Professional portal", action: "Module page opened", label: "Observed", source: "Sample portal event · EVT-LF-031", record: "Education module page viewed in the fictional cohort.", note: "Observed channel activity; it does not establish individual intent." },
+          { date: "Sep 08", channel: "Email", action: "Education link opened", label: "Observed", source: "Sample email event · EVT-LF-048", record: "Education link opened after the portal visit.", note: "Events are linked in this sample journey, but the sequence is not causal attribution." },
+          { date: "Sep 12", channel: "Field follow-up", action: "Discussion requested", label: "Review signal", source: "Sample field log · EVT-LF-062", record: "A discussion request was logged for this synthetic cohort.", note: "Consider a reviewable email follow-up; marketing and MLR still decide whether it can be used." }
+        ]
+      },
+      gap: {
+        confidence: "Link missing",
+        description: "An email event cannot be joined to the journey; attribution is unresolved.",
+        events: [
+          { date: "Sep 03", channel: "Professional portal", action: "Module page opened", label: "Observed", source: "Sample portal event · EVT-LF-031", record: "Education module page viewed in the fictional cohort.", note: "Portal activity is observed, but no later cross-channel linkage is confirmed." },
+          { date: "Sep 08", channel: "Email", action: "Unmatched event", label: "Link missing", source: "Sample email event · EVT-LF-048", record: "The synthetic email event has no matching journey key.", note: "Do not infer a channel effect or recommend a mix change from this incomplete trace." },
+          { date: "Sep 12", channel: "Field follow-up", action: "Pending match", label: "Unverified", source: "Sample field log · EVT-LF-062", record: "Follow-up appears in a separate sample record; cohort match is unresolved.", note: "Ask analytics to reconcile records before routing the recommendation." }
+        ]
+      }
+    };
+    const $ = (id) => document.getElementById(id);
+    const state = { scenario: "linked", selected: 1, outcome: "ready" };
+    const initialTrail = [{ actor: "Sample import", action: "Journey events and education brief loaded for review." }];
+
+    function trail(actor, action) {
+      const item = document.createElement("li");
+      const marker = document.createElement("span");
+      marker.className = "mono";
+      marker.textContent = "Sample";
+      const body = document.createElement("span");
+      const name = document.createElement("span");
+      name.className = "actor " + (actor === "Sample import" ? "is-system" : "is-human");
+      name.textContent = actor + " · ";
+      body.append(name, document.createTextNode(action));
+      item.append(marker, body);
+      $("audit").append(item);
+    }
+
+    function status(title, message, kind) {
+      $("status-title").textContent = title;
+      $("status-text").textContent = message;
+      $("status").className = "notice status-panel" + (kind ? " notice-" + kind : "");
+    }
+
+    function showDetail() {
+      const event = fixture[state.scenario].events[state.selected];
+      $("detail-title").textContent = event.channel + " · " + event.action;
+      $("detail-source").textContent = event.source;
+      $("detail-record").textContent = event.record;
+      $("detail-note").textContent = event.note;
+      [...$("path").querySelectorAll("button")].forEach((button, index) => {
+        button.setAttribute("aria-pressed", String(index === state.selected));
+      });
+    }
+
+    function render() {
+      const scene = fixture[state.scenario];
+      $("journey-description").textContent = scene.description;
+      $("confidence").textContent = scene.confidence;
+      $("confidence").className = state.scenario === "gap" ? "tag tag-warn" : "tag";
+      $("path").replaceChildren();
+      scene.events.forEach((event, index) => {
+        const li = document.createElement("li");
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "touch";
+        button.setAttribute("aria-label", event.date + ": " + event.channel + ", " + event.action + ". Inspect evidence");
+        const date = document.createElement("time");
+        date.textContent = event.date;
+        const text = document.createElement("span");
+        const channel = document.createElement("b");
+        channel.textContent = event.channel;
+        const action = document.createElement("small");
+        action.textContent = event.action;
+        text.append(channel, action);
+        const label = document.createElement("span");
+        label.className = event.label === "Link missing" ? "tag tag-warn" : "tag";
+        label.textContent = event.label;
+        button.append(date, text, label);
+        button.addEventListener("click", () => { state.selected = index; showDetail(); });
+        li.append(button);
+        $("path").append(li);
+      });
+      showDetail();
+      $("prepare").hidden = state.scenario === "gap" || state.outcome !== "ready";
+      $("escalate").hidden = state.scenario !== "gap" || state.outcome !== "ready";
+      $("boundary").textContent = state.scenario === "gap"
+        ? "Attribution gap: do not route a channel recommendation. Request analytics reconciliation; MLR review remains required for any future content use."
+        : "Directional journey evidence supports review, not a causal claim. Human MLR review is required before any content use.";
+      $("recommendation").textContent = state.scenario === "gap"
+        ? "Channel recommendation withheld: the draft is retained for reference only until analytics reconciles the journey."
+        : "Suggested next channel: email, based on this illustrative journey. A sequence is not proof of attribution.";
+      $("draft-state").textContent = state.outcome === "routed" ? "Pending human MLR review" : "AI-assisted draft · unapproved";
+      $("draft-state").className = state.outcome === "routed" ? "tag" : "tag tag-warn";
+    }
+
+    function start() {
+      state.scenario = "linked";
+      state.selected = 1;
+      state.outcome = "ready";
+      $("scenario").value = "linked";
+      $("audit").replaceChildren();
+      initialTrail.forEach((entry) => trail(entry.actor, entry.action));
+      status("Draft awaiting marketing review", "Inspect a touchpoint and its evidence, then prepare the content for MLR review. No content is sent to HCPs.");
+      render();
+    }
+
+    $("draft-copy").textContent = fixture.draft;
+    $("review-copy").textContent = fixture.draft;
+    $("source-excerpt").textContent = fixture.excerpt;
+    $("scenario").addEventListener("change", (event) => {
+      state.scenario = event.target.value;
+      state.selected = 1;
+      state.outcome = "ready";
+      $("audit").replaceChildren();
+      trail("Sample import", "Loaded " + (state.scenario === "gap" ? "the missing-link exception" : "the linked journey") + " for review.");
+      status(state.scenario === "gap" ? "Attribution gap · route blocked" : "Draft awaiting marketing review",
+        state.scenario === "gap" ? "The email event cannot be linked to the journey. Request analytics reconciliation instead of routing a recommendation." : "Inspect a touchpoint and its evidence, then prepare the content for MLR review.",
+        state.scenario === "gap" ? "warn" : "");
+      render();
+    });
+    $("prepare").addEventListener("click", () => {
+      if (state.scenario !== "linked" || state.outcome !== "ready") return;
+      $("attest").checked = false;
+      $("review-error").textContent = "";
+      $("review").showModal();
+    });
+    function closeReview() { $("review").close(); }
+    $("close-review").addEventListener("click", closeReview);
+    $("cancel-review").addEventListener("click", closeReview);
+    $("route").addEventListener("click", () => {
+      if (!$("attest").checked) {
+        $("review-error").textContent = "Confirm you inspected the evidence before routing.";
+        $("attest").focus();
+        return;
+      }
+      closeReview();
+      state.outcome = "routed";
+      trail("VP Brand Marketing", "Routed draft and sample evidence to the human MLR review lead. Approval remains pending.");
+      status("Pending human MLR review", "Draft and source were routed in this simulation. No content was approved or sent.", "ok");
+      render();
+    });
+    $("escalate").addEventListener("click", () => {
+      if (state.scenario !== "gap" || state.outcome !== "ready") return;
+      state.outcome = "escalated";
+      trail("VP Brand Marketing", "Requested analytics reconciliation for the unmatched email event; recommendation remains blocked.");
+      status("Reconciliation requested", "Analytics lead will review the missing journey key in this simulation. Content routing remains blocked.", "warn");
+      render();
+    });
+    $("reset").addEventListener("click", () => {
+      if ($("review").open) closeReview();
+      start();
+    });
+    start();
+  </script>
+</body>
+</html>

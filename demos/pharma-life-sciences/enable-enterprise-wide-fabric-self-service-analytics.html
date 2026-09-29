@@ -1,0 +1,811 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Illustrative governed self-service analytics request workbench using synthetic data.">
+  <title>Governed analytics request workbench - illustrative demo</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+  </style>
+  <style>
+    body { --on-accent: #fff; }
+    .btn-primary, .chip[aria-pressed="true"] { color: var(--on-accent); }
+    .shell { max-width: 1440px; margin: 0 auto; padding: 18px; }
+    .casebar { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 15px; }
+    .eyebrow { margin: 0 0 3px; color: var(--muted); font-size: 12px; font-weight: 600; }
+    h1 { margin: 0; font-size: clamp(22px, 2.5vw, 31px); line-height: 1.2; }
+    .casebar p:not(.eyebrow) { max-width: 76ch; margin: 6px 0 0; color: var(--ink-soft); }
+    .request-id { padding: 7px 10px; border: 1px solid var(--accent-line); border-radius: var(--radius); background: var(--accent-soft); color: var(--accent-strong); font: 12px var(--mono); }
+    .workspace { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(285px, .8fr); gap: 16px; align-items: start; }
+    .main-stack, .side-stack { display: grid; gap: 16px; }
+    .progress { display: grid; grid-template-columns: repeat(3, 1fr); margin: 0; padding: 0; list-style: none; border-bottom: 1px solid var(--line-soft); }
+    .progress li { padding: 10px 12px; color: var(--muted); font-size: 13px; }
+    .progress li + li { border-left: 1px solid var(--line-soft); }
+    .progress .active { color: var(--ink); font-weight: 600; box-shadow: inset 0 -3px var(--accent); }
+    .progress .done { color: var(--ink-soft); }
+    .step-num { display: inline-grid; place-items: center; width: 20px; height: 20px; margin-right: 5px; border-radius: 50%; background: var(--surface-2); font-size: 12px; }
+    .progress .active .step-num, .progress .done .step-num { background: var(--accent); color: var(--on-accent); }
+    .request-list { display: grid; gap: 9px; }
+    .request {
+      width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 9px 14px; align-items: center; text-align: left;
+      padding: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--ink); font: inherit; cursor: pointer;
+    }
+    .request:hover { border-color: var(--accent-line); background: var(--accent-soft); }
+    .request[aria-pressed="true"] { border: 2px solid var(--accent); padding: 11px; background: var(--accent-soft); }
+    .request-name { display: block; font-weight: 600; }
+    .request-detail { display: block; margin-top: 2px; color: var(--muted); font-size: 12.5px; }
+    .request-meta { color: var(--muted); font-size: 12px; white-space: nowrap; }
+    .selection { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, .75fr); gap: 14px; }
+    .selection h3 { margin: 0 0 4px; font-size: 16px; }
+    .selection p { margin: 0; color: var(--ink-soft); }
+    .source-list { display: grid; gap: 8px; padding: 11px; border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--bg); }
+    .source-list b { font-size: 13px; }
+    .source-list span { color: var(--muted); font-size: 12.5px; }
+    .action-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 11px; margin-top: 14px; }
+    .data-product { display: grid; gap: 10px; }
+    .data-product label { color: var(--muted); font-size: 13px; font-weight: 600; }
+    select { width: 100%; min-height: 42px; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--ink); font: inherit; }
+    .packet { display: grid; gap: 12px; }
+    .packet-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+    .packet-item { padding: 11px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); }
+    .packet-item b { display: block; margin-bottom: 3px; font-size: 13px; }
+    .packet-item span { color: var(--muted); font-size: 12.5px; }
+    .packet-item.is-ready { border-color: var(--accent-line); background: var(--accent-soft); }
+    .packet-item.is-ready b { color: var(--accent-strong); }
+    .rationale { padding: 11px 12px; border-left: 3px solid var(--accent); background: var(--bg); font-size: 13px; color: var(--ink-soft); }
+    .rationale b { color: var(--ink); }
+    .empty { margin: 0; color: var(--muted); font-size: 13px; }
+    .review-card { border-color: var(--accent-line); }
+    .mini-list { display: grid; gap: 10px; }
+    .mini-list div { padding-bottom: 10px; border-bottom: 1px solid var(--line-soft); }
+    .mini-list div:last-child { padding-bottom: 0; border-bottom: 0; }
+    .mini-list b { display: block; font-size: 13px; }
+    .mini-list span { display: block; margin-top: 2px; color: var(--muted); font-size: 12.5px; }
+    .exception-actions { display: grid; gap: 10px; }
+    @media (max-width: 900px) {
+      .workspace { grid-template-columns: 1fr; }
+      .side-stack { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 620px) {
+      .shell { padding: 14px; }
+      .side-stack, .selection, .packet-grid { grid-template-columns: 1fr; }
+      .progress li { padding: 9px 6px; font-size: 11.5px; }
+      .step-num { margin-right: 2px; }
+      .request { grid-template-columns: 1fr; }
+      .request-meta { white-space: normal; }
+      .action-row { align-items: stretch; }
+      .action-row .btn { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body data-subvertical="pharma-life-sciences">
+  <header class="appbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">◆</span>
+      <span><span class="brand-name">Harborview Bioanalytics</span><span class="brand-sub">Governed self-service request workbench</span></span>
+    </div>
+    <p class="disclosure">Illustrative demo - synthetic data</p>
+    <p class="who">Working as <b>Amara Olsen</b><br>Business Unit Analytics Lead</p>
+  </header>
+
+  <main class="shell">
+    <section class="casebar" aria-labelledby="page-title">
+      <div>
+        <p class="eyebrow">Data, AI &amp; Platform Foundation / PoV</p>
+        <h1 id="page-title">Governed analytics request</h1>
+        <p>Prepare a curated data-product request for accountable review. This illustrative workspace does not grant access, publish reports, or change enterprise data.</p>
+      </div>
+      <div class="request-id">REQUEST / HBA-042</div>
+    </section>
+
+    <div class="workspace">
+      <div class="main-stack">
+        <section class="card" aria-labelledby="requests-title">
+          <div class="card-head">
+            <div><h2 id="requests-title">Business request queue</h2><span class="card-note">Synthetic request inventory supplied for this PoV</span></div>
+            <span id="queue-status" class="tag">1 ready to prepare</span>
+          </div>
+          <ol class="progress" aria-label="Request progress">
+            <li id="step-select" class="active"><span class="step-num">1</span>Select request</li>
+            <li id="step-packet"><span class="step-num">2</span>Prepare review</li>
+            <li id="step-handoff"><span class="step-num">3</span>Record handoff</li>
+          </ol>
+          <div class="card-body">
+            <div id="request-list" class="request-list" aria-live="polite"></div>
+          </div>
+        </section>
+
+        <section id="selection-card" class="card" aria-labelledby="selection-title">
+          <div class="card-head">
+            <div><h2 id="selection-title">Request detail</h2><span class="card-note">Select a curated data product, then prepare a review packet</span></div>
+            <span id="request-tag" class="tag tag-ok">Owner named</span>
+          </div>
+          <div class="card-body">
+            <div id="selection-content"></div>
+            <div class="action-row">
+              <p id="selection-status" class="status-line">Choose a request to inspect its purpose and evidence.</p>
+              <div class="actions">
+                <button id="reset-button" class="btn" type="button">Reset</button>
+                <button id="selection-exception-button" class="btn" type="button" hidden>Review owner exception</button>
+                <button id="prepare-button" class="btn btn-primary" type="button">Prepare review packet</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="packet-card" class="card review-card" hidden aria-labelledby="packet-title">
+          <div class="card-head">
+            <div><h2 id="packet-title">Governance review packet</h2><span class="card-note">Prepared from the selected synthetic request and its stated evidence</span></div>
+            <span class="tag tag-ok">Ready for accountable review</span>
+          </div>
+          <div class="card-body packet">
+            <div id="packet-grid" class="packet-grid"></div>
+            <div id="packet-rationale" class="rationale"></div>
+            <div class="actions">
+              <button id="open-review-button" class="btn btn-primary" type="button">Review and record handoff</button>
+              <button id="show-exception-button" class="btn" type="button">Show owner exception</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="complete-card" class="card" hidden aria-labelledby="complete-title">
+          <div class="card-head"><h2 id="complete-title">Handoff recorded</h2><span class="tag tag-ok">Human-approved</span></div>
+          <div class="card-body">
+            <div class="notice notice-ok">
+              <span aria-hidden="true">✓</span>
+              <div><b>The governance review handoff is recorded for the named owners.</b><span class="notice-note">This is a reversible, illustrative planning record only. It does not approve data access or enact a platform change.</span></div>
+            </div>
+            <div class="actions" style="margin-top:12px"><button id="replay-button" class="btn" type="button">Start another request</button></div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="side-stack" aria-label="Request context">
+        <section class="card" aria-labelledby="context-title">
+          <div class="card-head"><h2 id="context-title">Decision context</h2><span class="tag">Confirmed input</span></div>
+          <div class="card-body">
+            <dl class="facts">
+              <div><dt>Accountable sponsor</dt><dd>Dana Mercer, fictional CDAO</dd></div>
+              <div><dt>Starting motion</dt><dd>PoV</dd></div>
+              <div><dt>Objective</dt><dd>Governed self-service</dd></div>
+              <div><dt>Scope</dt><dd>Enterprise analytics</dd></div>
+            </dl>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="guardrail-title">
+          <div class="card-head"><h2 id="guardrail-title">Review guardrails</h2><span class="card-note">Human accountable</span></div>
+          <div class="card-body mini-list">
+            <div><b>Federated governance</b><span>A named owner and Data Governance Lead review the request before any separate access decision.</span></div>
+            <div><b>Curated data products</b><span>Business users select an approved product rather than create an ungoverned spreadsheet copy.</span></div>
+            <div><b>Enablement</b><span>Use the rationale and source details to guide adoption; no decision is made by this demo.</span></div>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="audit-title">
+          <div class="card-head"><h2 id="audit-title">Request audit</h2><span class="card-note">Sample activity</span></div>
+          <div class="card-body"><ul id="audit-list" class="audit"></ul></div>
+        </section>
+
+        <section id="exception-card" class="card" hidden aria-labelledby="exception-title">
+          <div class="card-head"><h2 id="exception-title">Owner exception</h2><span class="tag tag-warn">Escalation needed</span></div>
+          <div class="card-body exception-actions">
+            <div class="notice notice-warn">
+              <span aria-hidden="true">!</span>
+              <div><b>This illustrative request has no named data owner.</b><span class="notice-note">It cannot proceed to a governance handoff until the Data Governance Lead assigns an accountable owner.</span></div>
+            </div>
+            <button id="escalate-button" class="btn btn-primary" type="button">Escalate to Data Governance Lead</button>
+            <button id="return-button" class="btn" type="button">Return to selected request</button>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <span>Illustrative demo - synthetic data only</span>
+    <span class="svc-chip">Microsoft Fabric</span>
+    <span class="svc-chip">Power BI</span>
+    <span class="svc-chip">Microsoft Purview</span>
+    <span class="claim"><b>Catalog value:</b> Reduce reporting backlog, speed decisions, and empower business users with governed self-service (time down, quality up).</span>
+  </footer>
+
+  <dialog id="review-dialog" aria-labelledby="review-title">
+    <div class="dlg-head">
+      <div><h2 id="review-title">Record an accountable handoff</h2><span class="dlg-sub">Dana Mercer, fictional CDAO, remains accountable for the governance review decision.</span></div>
+    </div>
+    <div class="dlg-body">
+      <div id="review-evidence" class="evidence"></div>
+      <label class="attest"><input id="review-attest" type="checkbox"><span>I reviewed the selected data product, stated purpose, sources, effective date, and owner. I approve a review handoff only; no access is granted by this action.</span></label>
+      <p id="review-status" class="status-line">Attestation is required before the handoff can be recorded.</p>
+    </div>
+    <div class="dlg-foot">
+      <button id="cancel-review-button" class="btn" type="button">Cancel</button>
+      <button id="record-handoff-button" class="btn btn-primary" type="button" disabled>Record review handoff</button>
+    </div>
+  </dialog>
+
+  <dialog id="escalation-dialog" aria-labelledby="escalation-title">
+    <div class="dlg-head">
+      <div><h2 id="escalation-title">Record owner escalation</h2><span class="dlg-sub">This simulated escalation creates no ticket and grants no access.</span></div>
+    </div>
+    <div class="dlg-body">
+      <div class="evidence">Sample exception: request HBA-043 identifies a business purpose but has no accountable data owner. The request must remain pending until a fictional Data Governance Lead assigns an owner and confirms the rationale.</div>
+      <label class="attest"><input id="escalation-attest" type="checkbox"><span>I confirm that this request should be routed to the Data Governance Lead for owner assignment and review.</span></label>
+      <p id="escalation-status" class="status-line">Confirmation is required before the escalation can be recorded.</p>
+    </div>
+    <div class="dlg-foot">
+      <button id="cancel-escalation-button" class="btn" type="button">Cancel</button>
+      <button id="record-escalation-button" class="btn btn-primary" type="button" disabled>Record escalation</button>
+    </div>
+  </dialog>
+
+  <p id="live-status" class="sr-only" aria-live="polite"></p>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const fixture = {
+        requests: [
+          {
+            id: "HBA-042",
+            name: "Enrollment operations trend view",
+            team: "Clinical Operations Analytics",
+            purpose: "Explore synthetic enrollment operations trends without waiting for a central reporting build.",
+            product: "Enrollment operations curated product",
+            source: "Sample data-product register HBA-042-A",
+            effective: "15 Apr 2026",
+            owner: "Lin Park, fictional Clinical Operations Data Owner",
+            status: "Ready to prepare",
+            tone: "ok",
+            rationale: "A curated product supports the stated operational question while retaining a named owner, an effective date, and a reviewable source."
+          },
+          {
+            id: "HBA-043",
+            name: "Commercial launch planning view",
+            team: "Commercial Analytics",
+            purpose: "Explore synthetic launch-planning patterns from a shared business view.",
+            product: "Commercial launch curated product",
+            source: "Sample business request HBA-043-B",
+            effective: "Unconfirmed",
+            owner: "No owner named",
+            status: "Owner assignment needed",
+            tone: "warn",
+            rationale: "The stated purpose is understandable, but there is no accountable data owner. The request must be escalated rather than prepared for handoff."
+          }
+        ],
+        products: [
+          "Enrollment operations curated product",
+          "Commercial launch curated product",
+          "Quality supply overview curated product"
+        ],
+        audit: [
+          ["09:12", "Amara Olsen", "Opened sample request HBA-042.", "human"],
+          ["09:10", "System", "Loaded the illustrative curated-product register.", "system"],
+          ["09:06", "Lin Park", "Published the sample source reference and effective date.", "human"]
+        ]
+      };
+
+      const state = { selectedId: "HBA-042", phase: "ready", audit: [...fixture.audit] };
+      const elements = {
+        requestList: document.getElementById("request-list"),
+        selection: document.getElementById("selection-content"),
+        selectionStatus: document.getElementById("selection-status"),
+        requestTag: document.getElementById("request-tag"),
+        queueStatus: document.getElementById("queue-status"),
+        selectionException: document.getElementById("selection-exception-button"),
+        prepare: document.getElementById("prepare-button"),
+        packet: document.getElementById("packet-card"),
+        packetGrid: document.getElementById("packet-grid"),
+        packetRationale: document.getElementById("packet-rationale"),
+        complete: document.getElementById("complete-card"),
+        exception: document.getElementById("exception-card"),
+        audit: document.getElementById("audit-list"),
+        live: document.getElementById("live-status"),
+        reviewDialog: document.getElementById("review-dialog"),
+        escalationDialog: document.getElementById("escalation-dialog"),
+        reviewAttest: document.getElementById("review-attest"),
+        recordHandoff: document.getElementById("record-handoff-button"),
+        escalationAttest: document.getElementById("escalation-attest"),
+        recordEscalation: document.getElementById("record-escalation-button")
+      };
+
+      function selected() {
+        return fixture.requests.find((request) => request.id === state.selectedId);
+      }
+
+      function addAudit(actor, message, kind) {
+        state.audit.unshift(["now", actor, message, kind]);
+      }
+
+      function renderAudit() {
+        elements.audit.replaceChildren();
+        state.audit.slice(0, 5).forEach(([time, actor, message, kind]) => {
+          const item = document.createElement("li");
+          const stamp = document.createElement("time");
+          const detail = document.createElement("span");
+          const actorNode = document.createElement("span");
+          stamp.textContent = time;
+          actorNode.className = `actor is-${kind}`;
+          actorNode.textContent = actor;
+          detail.append(actorNode, ` ${message}`);
+          item.append(stamp, detail);
+          elements.audit.append(item);
+        });
+      }
+
+      function renderRequests() {
+        elements.requestList.replaceChildren();
+        fixture.requests.forEach((request) => {
+          const button = document.createElement("button");
+          const detail = document.createElement("span");
+          const label = document.createElement("span");
+          const copy = document.createElement("span");
+          const meta = document.createElement("span");
+          button.type = "button";
+          button.className = "request";
+          button.setAttribute("aria-pressed", String(request.id === state.selectedId));
+          label.className = "request-name";
+          label.textContent = request.name;
+          copy.className = "request-detail";
+          copy.textContent = `${request.team} · ${request.id}`;
+          detail.append(label, copy);
+          meta.className = request.tone === "warn" ? "tag tag-warn" : "tag tag-ok";
+          meta.textContent = request.status;
+          button.append(detail, meta);
+          button.addEventListener("click", () => {
+            state.selectedId = request.id;
+            state.phase = "ready";
+            elements.packet.hidden = true;
+            elements.complete.hidden = true;
+            elements.exception.hidden = true;
+            render();
+            elements.live.textContent = `${request.name} selected.`;
+          });
+          elements.requestList.append(button);
+        });
+      }
+
+      function renderSelection() {
+        const request = selected();
+        elements.selection.replaceChildren();
+        const wrap = document.createElement("div");
+        wrap.className = "selection";
+        const copy = document.createElement("div");
+        const title = document.createElement("h3");
+        const detail = document.createElement("p");
+        const product = document.createElement("div");
+        const label = document.createElement("label");
+        const select = document.createElement("select");
+        title.textContent = request.name;
+        detail.textContent = request.purpose;
+        copy.append(title, detail);
+        product.className = "data-product";
+        label.htmlFor = "product-select";
+        label.textContent = "Curated data product";
+        select.id = "product-select";
+        fixture.products.forEach((productName) => {
+          const option = document.createElement("option");
+          option.value = productName;
+          option.textContent = productName;
+          option.selected = productName === request.product;
+          select.append(option);
+        });
+        select.addEventListener("change", () => {
+          request.product = select.value;
+          elements.selectionStatus.textContent = "Curated product selection updated. Prepare a review packet to keep the decision reviewable.";
+          elements.live.textContent = "Curated data product selection updated.";
+        });
+        product.append(label, select);
+        wrap.append(copy, product);
+        const sources = document.createElement("div");
+        sources.className = "source-list";
+        const sourceTitle = document.createElement("b");
+        const source = document.createElement("span");
+        const effective = document.createElement("span");
+        const owner = document.createElement("span");
+        sourceTitle.textContent = "Review evidence";
+        source.textContent = `Source: ${request.source}`;
+        effective.textContent = `Effective: ${request.effective}`;
+        owner.textContent = `Accountable owner: ${request.owner}`;
+        sources.append(sourceTitle, source, effective, owner);
+        elements.selection.append(wrap, sources);
+        elements.requestTag.className = request.tone === "warn" ? "tag tag-warn" : "tag tag-ok";
+        elements.requestTag.textContent = request.tone === "warn" ? "Owner missing" : "Owner named";
+        elements.prepare.disabled = request.tone === "warn";
+        elements.selectionException.hidden = request.tone !== "warn";
+        elements.selectionStatus.textContent = request.tone === "warn"
+          ? "This request cannot be prepared because no accountable owner is named. Use the exception path to escalate."
+          : "Review the business purpose, curated product, and evidence before preparing the packet.";
+      }
+
+      function renderPacket() {
+        const request = selected();
+        elements.packetGrid.replaceChildren();
+        [
+          ["Business purpose", request.purpose],
+          ["Curated product", request.product],
+          ["Accountability", request.owner]
+        ].forEach(([label, detail], index) => {
+          const item = document.createElement("div");
+          const heading = document.createElement("b");
+          const copy = document.createElement("span");
+          item.className = index === 1 ? "packet-item is-ready" : "packet-item";
+          heading.textContent = label;
+          copy.textContent = detail;
+          item.append(heading, copy);
+          elements.packetGrid.append(item);
+        });
+        elements.packetRationale.replaceChildren();
+        const heading = document.createElement("b");
+        heading.textContent = "Rationale: ";
+        elements.packetRationale.append(heading, request.rationale);
+      }
+
+      function setProgress(active) {
+        const steps = [
+          document.getElementById("step-select"),
+          document.getElementById("step-packet"),
+          document.getElementById("step-handoff")
+        ];
+        steps.forEach((step, index) => {
+          step.classList.toggle("active", index === active);
+          step.classList.toggle("done", index < active);
+        });
+      }
+
+      function render() {
+        renderRequests();
+        renderSelection();
+        renderAudit();
+        elements.queueStatus.textContent = state.phase === "complete" ? "Handoff recorded" : "1 ready to prepare";
+        setProgress(state.phase === "packet" ? 1 : state.phase === "complete" ? 2 : 0);
+      }
+
+      function preparePacket() {
+        const request = selected();
+        if (request.tone === "warn") {
+          showException();
+          return;
+        }
+        elements.prepare.disabled = true;
+        elements.prepare.textContent = "Preparing packet...";
+        elements.selectionStatus.textContent = "Checking the selected purpose, evidence, and accountable owner...";
+        setTimeout(() => {
+          state.phase = "packet";
+          renderPacket();
+          elements.packet.hidden = false;
+          elements.prepare.disabled = false;
+          elements.prepare.textContent = "Prepare review packet";
+          elements.selectionStatus.textContent = "Review packet ready. An accountable reviewer can now record a handoff.";
+          addAudit("System", `Prepared the review packet for ${request.id}.`, "system");
+          render();
+          elements.packet.scrollIntoView({ block: "nearest", behavior: "smooth" });
+          elements.live.textContent = "Governance review packet is ready for accountable review.";
+        }, 650);
+      }
+
+      function showException() {
+        elements.exception.hidden = false;
+        elements.exception.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        elements.live.textContent = "Owner exception shown. Escalation is required before this request can proceed.";
+      }
+
+      document.getElementById("prepare-button").addEventListener("click", preparePacket);
+      document.getElementById("selection-exception-button").addEventListener("click", showException);
+      document.getElementById("reset-button").addEventListener("click", () => {
+        state.selectedId = "HBA-042";
+        state.phase = "ready";
+        elements.packet.hidden = true;
+        elements.complete.hidden = true;
+        elements.exception.hidden = true;
+        render();
+        elements.live.textContent = "Request workbench reset to the sample ready request.";
+      });
+      document.getElementById("replay-button").addEventListener("click", () => {
+        document.getElementById("reset-button").click();
+        document.getElementById("requests-title").scrollIntoView({ block: "nearest", behavior: "smooth" });
+      });
+      document.getElementById("show-exception-button").addEventListener("click", showException);
+      document.getElementById("return-button").addEventListener("click", () => {
+        elements.exception.hidden = true;
+        elements.live.textContent = "Returned to the selected request.";
+      });
+      document.getElementById("open-review-button").addEventListener("click", () => {
+        const request = selected();
+        document.getElementById("review-evidence").textContent =
+          `Sample request ${request.id}\nCurated product: ${request.product}\nSource: ${request.source}\nEffective date: ${request.effective}\nAccountable owner: ${request.owner}\n\nThis action records a review handoff only; it does not grant data access.`;
+        elements.reviewAttest.checked = false;
+        elements.recordHandoff.disabled = true;
+        document.getElementById("review-status").textContent = "Attestation is required before the handoff can be recorded.";
+        elements.reviewDialog.showModal();
+      });
+      document.getElementById("cancel-review-button").addEventListener("click", () => elements.reviewDialog.close());
+      elements.reviewAttest.addEventListener("change", () => {
+        elements.recordHandoff.disabled = !elements.reviewAttest.checked;
+        document.getElementById("review-status").textContent = elements.reviewAttest.checked
+          ? "Attestation recorded. You may now record the review handoff."
+          : "Attestation is required before the handoff can be recorded.";
+      });
+      elements.recordHandoff.addEventListener("click", () => {
+        state.phase = "complete";
+        elements.reviewDialog.close();
+        elements.complete.hidden = false;
+        addAudit("Dana Mercer", `Recorded the accountable review handoff for ${selected().id}.`, "human");
+        render();
+        elements.complete.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        elements.live.textContent = "Human-approved review handoff recorded. No access was granted.";
+      });
+      document.getElementById("escalate-button").addEventListener("click", () => {
+        elements.escalationAttest.checked = false;
+        elements.recordEscalation.disabled = true;
+        document.getElementById("escalation-status").textContent = "Confirmation is required before the escalation can be recorded.";
+        elements.escalationDialog.showModal();
+      });
+      document.getElementById("cancel-escalation-button").addEventListener("click", () => elements.escalationDialog.close());
+      elements.escalationAttest.addEventListener("change", () => {
+        elements.recordEscalation.disabled = !elements.escalationAttest.checked;
+        document.getElementById("escalation-status").textContent = elements.escalationAttest.checked
+          ? "Confirmation recorded. You may now record the escalation."
+          : "Confirmation is required before the escalation can be recorded.";
+      });
+      elements.recordEscalation.addEventListener("click", () => {
+        elements.escalationDialog.close();
+        addAudit("Amara Olsen", "Recorded an owner-assignment escalation for HBA-043.", "human");
+        renderAudit();
+        elements.live.textContent = "Owner escalation recorded. The request remains pending and no access was granted.";
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

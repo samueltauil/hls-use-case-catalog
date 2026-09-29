@@ -1,0 +1,842 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Claims adjustment workbench — Illustrative demo</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* --------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* -------------------------------------------------------- workbench layout */
+body {
+  --panel-gap: 14px;
+}
+.skip-link {
+  position: fixed; left: 12px; top: 8px; z-index: 50; padding: 8px 12px;
+  background: var(--surface); color: var(--ink); border: 1px solid var(--line);
+  border-radius: var(--radius); transform: translateY(-150%);
+}
+.skip-link:focus { transform: translateY(0); }
+.appbar { min-height: 62px; }
+.brand-mark { width: 22px; height: 22px; }
+.appbar .who { max-width: 210px; }
+.workspace {
+  width: min(1680px, 100%);
+  margin: 0 auto;
+  padding: 19px 24px 24px;
+}
+.page-head {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 12px 24px; margin-bottom: 13px;
+}
+.page-head h1 { margin: 0; font-size: clamp(22px, 2.1vw, 28px); line-height: 1.2; letter-spacing: -.025em; }
+.page-head p { margin: 3px 0 0; color: var(--muted); font-size: 13px; }
+.eyebrow { margin: 0 0 4px !important; color: var(--accent-strong) !important; font-size: 12px !important; font-weight: 700; }
+.page-tools { display: flex; align-items: center; gap: 12px; }
+.workspace-status { margin: 0 0 12px; padding: 7px 10px; min-height: 36px; border-left: 3px solid var(--accent); background: var(--accent-soft); color: var(--accent-strong); font-size: 13px; }
+.work-grid {
+  display: grid;
+  grid-template-columns: 224px minmax(390px, 1fr) minmax(270px, 310px);
+  gap: var(--panel-gap);
+  align-items: start;
+}
+.panel { min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.panel-head { padding: 13px 14px 11px; border-bottom: 1px solid var(--line-soft); }
+.panel-head-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.panel-head h2, .panel-head h3 { margin: 0; font-size: 14px; font-weight: 650; }
+.panel-head p { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
+.queue { overflow: hidden; }
+.queue-list { display: grid; }
+.queue-item {
+  width: 100%; text-align: left; display: grid; gap: 5px; padding: 12px 13px;
+  font: inherit; color: var(--ink); background: var(--surface); border: 0;
+  border-bottom: 1px solid var(--line-soft); cursor: pointer;
+}
+.queue-item:last-child { border-bottom: 0; }
+.queue-item:hover { background: var(--bg); }
+.queue-item[aria-pressed="true"] { background: var(--accent-soft); box-shadow: inset 3px 0 var(--accent); }
+.queue-top { display: flex; justify-content: space-between; align-items: center; gap: 7px; }
+.queue-id { font: 600 12px/1.4 var(--mono); }
+.queue-subject { display: block; overflow-wrap: anywhere; font-size: 13px; font-weight: 600; }
+.queue-meta { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 11.5px; color: var(--muted); }
+.queue-status { font-weight: 600; }
+.case-panel { overflow: hidden; }
+.case-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--line-soft); }
+.case-kicker { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.case-kicker p { margin: 0; color: var(--muted); font-size: 12px; }
+.case-head h2 { margin: 0; font: 600 18px/1.4 var(--mono); overflow-wrap: anywhere; }
+.case-head .case-subtitle { margin: 3px 0 0; color: var(--muted); font-size: 13px; }
+.state-pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface-2); color: var(--ink-soft); font-size: 11.5px; font-weight: 650; }
+.state-pill::before { width: 7px; height: 7px; content: ""; border-radius: 50%; background: var(--muted); }
+.state-pill[data-tone="ok"] { color: #0b5c0b; background: var(--ok-bg); border-color: #a7d9a7; }
+.state-pill[data-tone="ok"]::before { background: var(--ok); }
+.state-pill[data-tone="warn"] { color: #7a4e08; background: var(--warn-bg); border-color: #e6d08a; }
+.state-pill[data-tone="warn"]::before { background: var(--warn); }
+.state-pill[data-tone="stop"] { color: #8b1f25; background: var(--stop-bg); border-color: #e5b4b7; }
+.state-pill[data-tone="stop"]::before { background: var(--stop); }
+.case-body { display: grid; gap: 13px; padding: 14px 16px 16px; }
+.case-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 12px; margin: 0; }
+.case-facts > div { min-width: 0; }
+.case-facts dt { margin-bottom: 2px; color: var(--muted); font-size: 11.5px; }
+.case-facts dd { margin: 0; overflow-wrap: anywhere; font-size: 13px; font-weight: 550; }
+.amount-box { border: 1px solid var(--line-soft); border-radius: var(--radius); overflow: hidden; }
+.amount-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(76px, .7fr) minmax(76px, .7fr); gap: 8px; padding: 7px 11px; background: var(--surface-2); color: var(--muted); font-size: 11px; }
+.amount-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(76px, .7fr) minmax(76px, .7fr); gap: 8px; align-items: center; padding: 11px; }
+.amount-row + .amount-row { border-top: 1px solid var(--line-soft); }
+.amount-name { min-width: 0; font-size: 13px; font-weight: 600; overflow-wrap: anywhere; }
+.amount-value { font: 600 13px/1.4 var(--mono); text-align: right; white-space: nowrap; }
+.amount-value small { display: none; font: 500 10px/1.3 var(--font); color: var(--muted); }
+.total-row { border-top: 1px solid var(--line) !important; background: var(--bg); }
+.total-row .amount-name { font-weight: 700; }
+.total-row .amount-value { color: var(--accent-strong); }
+.basis-title { margin: 0 0 4px; font-size: 12px; font-weight: 700; }
+.basis-copy { margin: 0; color: var(--ink-soft); font-size: 13px; }
+.evidence-label { display: flex; align-items: baseline; justify-content: space-between; gap: 7px; margin-bottom: 7px; }
+.evidence-label h3 { margin: 0; font-size: 12px; }
+.evidence-label span { color: var(--muted); font-size: 11px; }
+.source-list { display: grid; gap: 7px; }
+.source-note { padding: 8px 9px; background: var(--bg); border: 1px solid var(--line-soft); border-left: 2px solid var(--accent); }
+.source-note strong { display: block; margin-bottom: 2px; font-size: 11.5px; }
+.source-note p { margin: 0; color: var(--ink-soft); font-size: 12px; line-height: 1.45; }
+.case-footnote { margin: 0; color: var(--muted); font-size: 11.5px; }
+.decision-panel { padding: 14px; }
+.decision-panel h2 { margin: 0 0 2px; font-size: 15px; }
+.decision-intro { margin: 0 0 12px; color: var(--muted); font-size: 12px; }
+.recommendation {
+  padding: 11px 12px; border-left: 3px solid var(--accent); background: var(--accent-soft);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+.recommendation[data-tone="warn"] { border-left-color: var(--warn); background: var(--warn-bg); }
+.recommendation[data-tone="ok"] { border-left-color: var(--ok); background: var(--ok-bg); }
+.recommendation-label { display: block; margin-bottom: 3px; color: var(--muted); font-size: 11px; font-weight: 650; }
+.recommendation strong { display: block; font-size: 14px; line-height: 1.35; }
+.rationale { margin: 10px 0 12px; font-size: 13px; line-height: 1.5; }
+.evidence-details { margin: 0 0 12px; border-top: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft); }
+.evidence-details summary { padding: 8px 0; cursor: pointer; color: var(--accent-strong); font-size: 12px; font-weight: 650; }
+.evidence-details[open] summary { margin-bottom: 7px; }
+.review-rule { margin: 0 0 13px; padding: 9px 10px; background: var(--surface-2); border: 1px solid var(--line-soft); border-radius: var(--radius); color: var(--ink-soft); font-size: 12px; }
+.decision-panel .btn { width: 100%; justify-content: center; }
+.decision-panel .btn-primary { color: #fff; }
+.action-note { margin: 7px 0 0; color: var(--muted); font-size: 11.5px; text-align: center; }
+.audit-panel { margin-top: var(--panel-gap); padding: 12px 14px; }
+.audit-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.audit-head h2 { margin: 0; font-size: 13px; }
+.audit-head span { color: var(--muted); font-size: 11px; }
+.audit-entry { display: grid; grid-template-columns: 44px minmax(80px, .45fr) minmax(0, 1.5fr); gap: 8px; align-items: baseline; padding: 6px 0; border-top: 1px solid var(--line-soft); font-size: 12px; }
+.audit-time { color: var(--muted); font: 11px var(--mono); }
+.audit-actor { font-weight: 650; }
+.audit-event { color: var(--ink-soft); }
+.workload-footer { margin-top: 15px; padding: 10px 12px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11.5px; }
+.workload-footer p { margin: 0 0 7px; }
+.workload-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.workload-list span { padding: 3px 7px; border: 1px solid var(--line); background: var(--surface); border-radius: 4px; color: var(--ink-soft); }
+.screen-disclaimer { display: block; margin-top: 7px; color: var(--muted); }
+
+@media (max-width: 1120px) {
+  .work-grid { grid-template-columns: 205px minmax(0, 1fr); }
+  .decision-panel { grid-column: 2; }
+}
+@media (max-width: 760px) {
+  .workspace { padding: 14px 14px 20px; }
+  .page-head { align-items: flex-start; }
+  .work-grid { grid-template-columns: minmax(0, 1fr); }
+  .decision-panel { grid-column: auto; }
+  .queue-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .queue-item { border-bottom: 0; border-right: 1px solid var(--line-soft); }
+  .queue-item:last-child { border-right: 0; }
+  .case-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 480px) {
+  .appbar { align-items: center; }
+  .brand { flex-basis: auto; }
+  .appbar .who { order: 3; flex: 1 1 100%; max-width: none; text-align: left; }
+  .disclosure { font-size: 11px; padding: 4px 7px; }
+  .workspace { padding-inline: 11px; }
+  .page-head { gap: 9px; }
+  .page-head h1 { font-size: 22px; }
+  .page-head .btn { padding-inline: 9px; }
+  .queue-list { grid-template-columns: 1fr; }
+  .queue-item { border-right: 0; border-bottom: 1px solid var(--line-soft); }
+  .queue-item:last-child { border-bottom: 0; }
+  .case-body { padding-inline: 12px; }
+  .case-head { padding-inline: 12px; }
+  .amount-head { display: none; }
+  .amount-row { grid-template-columns: minmax(0, 1fr) minmax(0, .8fr); gap: 7px 8px; }
+  .amount-name { grid-column: 1 / -1; }
+  .amount-value { display: flex; justify-content: space-between; gap: 8px; text-align: left; }
+  .amount-value small { display: inline; }
+  .audit-entry { grid-template-columns: 42px minmax(0, 1fr); }
+  .audit-event { grid-column: 2; }
+}
+  </style>
+</head>
+<body data-subvertical="health-payers">
+  <a class="skip-link" href="#main">Skip to adjustment work</a>
+  <header class="appbar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 4h7v7H4zm9 0h7v7h-7zM4 13h7v7H4zm9 0h7v7h-7z"/></svg>
+      <div><span class="brand-name">Claims operations</span><span class="brand-sub">Adjustment workbench · sample environment</span></div>
+    </div>
+    <p class="who"><b>Jordan Vale</b> · Claims adjuster <span class="sr-only">(fictional demo reviewer)</span></p>
+    <p class="disclosure"><span aria-hidden="true">●</span> Illustrative demo - synthetic data</p>
+  </header>
+
+  <main class="workspace" id="main">
+    <div class="page-head">
+      <div>
+        <p class="eyebrow">Claims · payment administration</p>
+        <h1>Adjustment workbench</h1>
+        <p>Review a proposed correction against its source notes before staging it.</p>
+      </div>
+      <div class="page-tools">
+        <button class="btn" id="resetButton" type="button">Reset demo</button>
+      </div>
+    </div>
+
+    <p class="workspace-status" id="liveStatus" role="status" aria-live="polite" aria-atomic="true" tabindex="-1">A synthetic correction is ready for reviewer approval. No payment has been posted.</p>
+
+    <div class="work-grid">
+      <aside class="panel queue" aria-labelledby="queueHeading">
+        <div class="panel-head">
+          <div class="panel-head-row"><h2 id="queueHeading">Adjustment queue</h2><span class="tag">2 sample cases</span></div>
+          <p>Choose a fictional case to review.</p>
+        </div>
+        <div class="queue-list" id="queueList"></div>
+      </aside>
+
+      <section class="panel case-panel" aria-labelledby="caseTitle">
+        <div class="case-head">
+          <div class="case-kicker">
+            <p>Adjustment review · synthetic record</p>
+            <span class="state-pill" id="caseStatePill" data-tone="neutral">Needs review</span>
+          </div>
+          <h2 id="caseTitle" tabindex="-1"></h2>
+          <p class="case-subtitle" id="caseSubtitle"></p>
+        </div>
+        <div class="case-body">
+          <dl class="case-facts">
+            <div><dt>Provider</dt><dd id="providerValue"></dd></div>
+            <div><dt>Request received</dt><dd id="receivedValue"></dd></div>
+            <div><dt>Adjustment reason</dt><dd id="reasonValue"></dd></div>
+          </dl>
+
+          <section aria-labelledby="amountHeading">
+            <div class="evidence-label"><h3 id="amountHeading">Claim amount comparison</h3><span>Mock values only</span></div>
+            <div class="amount-box" id="amountBox">
+              <div class="amount-head" aria-hidden="true"><span>Claim summary</span><span style="text-align:right">Current</span><span style="text-align:right">Requested</span></div>
+              <div class="amount-row">
+                <span class="amount-name" id="lineName"></span>
+                <span class="amount-value"><small>Current</small><span id="currentAmount"></span></span>
+                <span class="amount-value"><small>Requested</small><span id="requestedAmount"></span></span>
+              </div>
+              <div class="amount-row total-row">
+                <span class="amount-name" id="totalLabel"></span>
+                <span class="amount-value"><small>Change</small><span id="changeAmount"></span></span>
+                <span class="amount-value"><small>Disposition</small><span id="dispositionAmount"></span></span>
+              </div>
+            </div>
+          </section>
+
+          <section aria-labelledby="evidenceHeading">
+            <div class="evidence-label"><h3 id="evidenceHeading">Source notes</h3><span>Fictional reference excerpts</span></div>
+            <div class="source-list">
+              <article class="source-note"><strong id="sourceOneTitle"></strong><p id="sourceOneText"></p></article>
+              <article class="source-note"><strong id="sourceTwoTitle"></strong><p id="sourceTwoText"></p></article>
+            </div>
+          </section>
+          <p class="case-footnote">Source descriptions and amounts are synthetic operational data, not policy, coverage guidance, or a real claim.</p>
+        </div>
+      </section>
+
+      <aside class="panel decision-panel" id="decisionPanel" aria-labelledby="decisionHeading">
+        <h2 id="decisionHeading">Reviewer decision</h2>
+        <p class="decision-intro">The recommendation is not a payment decision.</p>
+        <div class="recommendation" id="recommendationBox" data-tone="neutral">
+          <span class="recommendation-label" id="recommendationLabel"></span>
+          <strong id="recommendationValue"></strong>
+        </div>
+        <p class="rationale" id="rationaleText"></p>
+        <details class="evidence-details" id="sourceDetails">
+          <summary>Inspect source references</summary>
+          <div class="source-list">
+            <article class="source-note"><strong id="detailOneTitle"></strong><p id="detailOneText"></p></article>
+            <article class="source-note"><strong id="detailTwoTitle"></strong><p id="detailTwoText"></p></article>
+          </div>
+        </details>
+        <p class="review-rule" id="reviewRule"></p>
+        <button class="btn btn-primary" id="decisionButton" type="button"></button>
+        <p class="action-note" id="actionNote"></p>
+      </aside>
+    </div>
+
+    <section class="panel audit-panel" aria-labelledby="auditHeading">
+      <div class="audit-head"><h2 id="auditHeading">Decision log</h2><span>Local mock activity · no external system contacted</span></div>
+      <div id="auditEntries" aria-live="polite"></div>
+    </section>
+
+    <footer class="workload-footer">
+      <p>Catalog-mapped workloads for this use case (illustrative reference only):</p>
+      <div class="workload-list" id="workloadList" aria-label="Catalog-mapped Microsoft workloads"></div>
+      <small class="screen-disclaimer">This self-contained mock does not call these services or transmit case data. Human approval is required before any downstream posting in a real workflow.</small>
+    </footer>
+  </main>
+
+  <script>
+    "use strict";
+
+    // Synthetic fixture data is isolated here so each replay stays deterministic.
+    const DEMO_FIXTURES = {
+      reviewer: "Jordan Vale",
+      workloads: [
+        "Azure OpenAI in Azure AI Foundry Models",
+        "Azure Machine Learning",
+        "Azure Logic Apps",
+        "Azure Functions"
+      ],
+      cases: [
+        {
+          id: "CLM-SYN-20418",
+          subject: "Duplicate line correction",
+          provider: "Pine Lantern Family Practice (fictional)",
+          receivedAt: "29 Sep 2026 · 9:16 a.m. (sample time)",
+          reason: "Repeated service line",
+          lineName: "Adjusted claim total",
+          currentAmount: "$184.00",
+          requestedAmount: "$164.00",
+          changeAmount: "−$20.00",
+          dispositionAmount: "$164.00",
+          totalLabel: "Revised total",
+          recommendationLabel: "Suggested correction · source notes align",
+          recommendationValue: "Revise the synthetic total to $164.00",
+          rationale: "The request identifies one repeated $20.00 line, and the reconciliation note lists that line once. The sample sources agree; a human reviewer must still approve before the correction is staged.",
+          sourceOneTitle: "Adjustment request · REQ-SYN-041",
+          sourceOneText: "“Remove the repeated $20.00 line. Requested revised total: $164.00.”",
+          sourceTwoTitle: "Reconciliation note · REC-SYN-041",
+          sourceTwoText: "“One supported $20.00 line appears in the itemization; revised total shown as $164.00.”",
+          kind: "aligned"
+        },
+        {
+          id: "CLM-SYN-20426",
+          subject: "Correction amount conflict",
+          provider: "Juniper Vale Clinic (fictional)",
+          receivedAt: "29 Sep 2026 · 9:22 a.m. (sample time)",
+          reason: "Conflicting source amounts",
+          lineName: "Adjustment request",
+          currentAmount: "$212.00",
+          requestedAmount: "$194.00",
+          changeAmount: "Withheld",
+          dispositionAmount: "Not calculated",
+          totalLabel: "Proposed correction",
+          recommendationLabel: "Exception · conflicting source notes",
+          recommendationValue: "No correction recommendation",
+          rationale: "The request describes an $18.00 reduction, while the reconciliation note describes $28.00. The source records do not agree, so this mock withholds a correction and requires adjudication.",
+          sourceOneTitle: "Adjustment request · REQ-SYN-052",
+          sourceOneText: "“Reduce the current $212.00 total by $18.00; requested revised total: $194.00.”",
+          sourceTwoTitle: "Reconciliation note · REC-SYN-052",
+          sourceTwoText: "“The reviewed item shows a $28.00 reduction; revised total would be $184.00.”",
+          kind: "conflict"
+        }
+      ]
+    };
+
+    const byId = (id) => document.getElementById(id);
+    const queueList = byId("queueList");
+    const decisionButton = byId("decisionButton");
+    const resetButton = byId("resetButton");
+    const liveStatus = byId("liveStatus");
+    const auditEntries = byId("auditEntries");
+    const decisionPanel = byId("decisionPanel");
+
+    let selectedId = DEMO_FIXTURES.cases[0].id;
+    let state = "ready";
+    let outcomes = Object.create(null);
+    let transitionTimer = 0;
+
+    function setText(id, value) {
+      byId(id).textContent = value;
+    }
+
+    function selectedCase() {
+      return DEMO_FIXTURES.cases.find((item) => item.id === selectedId);
+    }
+
+    function announce(message, tone) {
+      liveStatus.textContent = message;
+      liveStatus.style.borderLeftColor = tone === "warn" ? "var(--warn)" : tone === "ok" ? "var(--ok)" : "var(--accent)";
+      liveStatus.style.background = tone === "warn" ? "var(--warn-bg)" : tone === "ok" ? "var(--ok-bg)" : "var(--accent-soft)";
+      liveStatus.style.color = tone === "warn" ? "#7a4e08" : tone === "ok" ? "#0b5c0b" : "var(--accent-strong)";
+    }
+
+    function queueStatus(item) {
+      if (outcomes[item.id] === "result") return "Staged · sample";
+      if (outcomes[item.id] === "escalated") return "Escalated · sample";
+      return item.kind === "conflict" ? "Evidence conflict" : "Needs review";
+    }
+
+    function renderQueue() {
+      queueList.replaceChildren();
+      DEMO_FIXTURES.cases.forEach((item) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "queue-item";
+        button.dataset.caseId = item.id;
+        button.setAttribute("aria-pressed", String(item.id === selectedId));
+        button.disabled = state === "working";
+
+        const top = document.createElement("span");
+        top.className = "queue-top";
+        const id = document.createElement("span");
+        id.className = "queue-id";
+        id.textContent = item.id;
+        const marker = document.createElement("span");
+        marker.className = "tag " + (item.kind === "conflict" ? "tag-warn" : "tag-ok");
+        marker.textContent = item.kind === "conflict" ? "Review" : "Suggested";
+        top.append(id, marker);
+
+        const subject = document.createElement("span");
+        subject.className = "queue-subject";
+        subject.textContent = item.subject;
+        const meta = document.createElement("span");
+        meta.className = "queue-meta";
+        const fictional = document.createElement("span");
+        fictional.textContent = "Synthetic case";
+        const status = document.createElement("span");
+        status.className = "queue-status";
+        status.textContent = queueStatus(item);
+        meta.append(fictional, status);
+        button.append(top, subject, meta);
+        button.addEventListener("click", () => selectCase(item.id));
+        queueList.append(button);
+      });
+    }
+
+    function renderWorkloads() {
+        const list = byId("workloadList");
+        list.replaceChildren();
+        DEMO_FIXTURES.workloads.forEach((workload) => {
+          const chip = document.createElement("span");
+          chip.textContent = workload;
+          list.append(chip);
+        });
+    }
+
+    function renderAudit(item) {
+      auditEntries.replaceChildren();
+      const entries = [
+        { time: item.id === DEMO_FIXTURES.cases[0].id ? "09:16" : "09:22", actor: "Workflow mock", event: "Recommendation prepared from synthetic source notes; awaiting human review.", human: false }
+      ];
+      if (outcomes[item.id] === "result") {
+        entries.push({ time: "09:25", actor: DEMO_FIXTURES.reviewer, event: "Reviewer approval recorded; correction staged for downstream posting review. No payment sent.", human: true });
+      } else if (outcomes[item.id] === "escalated") {
+        entries.push({ time: "09:25", actor: DEMO_FIXTURES.reviewer, event: "Source conflict routed to the mock adjudication queue; no correction staged.", human: true });
+      }
+      const list = document.createElement("ol");
+      list.className = "audit";
+      entries.forEach((entry) => {
+        const row = document.createElement("li");
+        row.className = "audit-entry";
+        const time = document.createElement("span");
+        time.className = "audit-time";
+        time.textContent = entry.time;
+        const actor = document.createElement("span");
+        actor.className = "audit-actor";
+        actor.textContent = entry.actor;
+        if (!entry.human) actor.style.color = "var(--muted)";
+        const event = document.createElement("span");
+        event.className = "audit-event";
+        event.textContent = entry.event;
+        row.append(time, actor, event);
+        list.append(row);
+      });
+      auditEntries.append(list);
+    }
+
+    function render() {
+      const item = selectedCase();
+      const hasConflict = item.kind === "conflict";
+      const outcome = outcomes[item.id];
+      const busy = state === "working";
+      const completed = state === "result" || state === "escalated";
+
+      setText("caseTitle", item.id);
+      setText("caseSubtitle", item.subject + " · fictional payer operations record");
+      setText("providerValue", item.provider);
+      setText("receivedValue", item.receivedAt);
+      setText("reasonValue", item.reason);
+      setText("lineName", item.lineName);
+      setText("currentAmount", item.currentAmount);
+      setText("requestedAmount", item.requestedAmount);
+      setText("changeAmount", item.changeAmount);
+      setText("dispositionAmount", item.dispositionAmount);
+      setText("totalLabel", item.totalLabel);
+      setText("sourceOneTitle", item.sourceOneTitle);
+      setText("sourceOneText", item.sourceOneText);
+      setText("sourceTwoTitle", item.sourceTwoTitle);
+      setText("sourceTwoText", item.sourceTwoText);
+      setText("detailOneTitle", item.sourceOneTitle);
+      setText("detailOneText", item.sourceOneText);
+      setText("detailTwoTitle", item.sourceTwoTitle);
+      setText("detailTwoText", item.sourceTwoText);
+      setText("rationaleText", item.rationale);
+      setText("recommendationLabel", item.recommendationLabel);
+      setText("recommendationValue", item.recommendationValue);
+
+      const pill = byId("caseStatePill");
+      const recommendation = byId("recommendationBox");
+      if (busy) {
+        setText("caseStatePill", hasConflict ? "Routing exception" : "Staging correction");
+        pill.dataset.tone = "neutral";
+        recommendation.dataset.tone = "neutral";
+      } else if (outcome === "result") {
+        setText("caseStatePill", "Staged · reviewer approved");
+        pill.dataset.tone = "ok";
+        recommendation.dataset.tone = "ok";
+      } else if (outcome === "escalated") {
+        setText("caseStatePill", "Escalated · no correction staged");
+        pill.dataset.tone = "warn";
+        recommendation.dataset.tone = "warn";
+      } else if (hasConflict) {
+        setText("caseStatePill", "Evidence conflict");
+        pill.dataset.tone = "warn";
+        recommendation.dataset.tone = "warn";
+      } else {
+        setText("caseStatePill", state === "reset" ? "Ready · reset" : "Needs reviewer approval");
+        pill.dataset.tone = "neutral";
+        recommendation.dataset.tone = "neutral";
+      }
+
+      setText("reviewRule", hasConflict
+        ? "Do not stage a financial correction while the source amounts disagree. Route the case for adjudication."
+        : "Human approval is required. This demo only stages a review record; it never posts or sends a payment.");
+      setText("actionNote", hasConflict
+        ? "Escalation preserves the source conflict for a person to resolve."
+        : "Approving stages this sample correction for downstream review only.");
+
+      decisionPanel.setAttribute("aria-busy", String(busy));
+      if (busy) {
+        decisionButton.disabled = true;
+        setText("decisionButton", hasConflict ? "Recording escalation…" : "Recording approval…");
+      } else if (completed) {
+        decisionButton.disabled = false;
+        setText("decisionButton", "Run again · reset demo");
+      } else {
+        decisionButton.disabled = false;
+        setText("decisionButton", hasConflict ? "Route to adjudication" : "Approve & stage correction");
+      }
+      renderQueue();
+      renderAudit(item);
+    }
+
+    function selectCase(id) {
+      if (state === "working") return;
+      selectedId = id;
+      const item = selectedCase();
+      state = outcomes[id] || (item.kind === "conflict" ? "exception" : "ready");
+      byId("sourceDetails").open = false;
+      if (state === "exception") {
+        announce("Source amounts conflict. No correction is available; route this synthetic case for human adjudication.", "warn");
+      } else if (state === "result") {
+        announce("This sample correction was reviewer-approved and staged for downstream review. No payment was sent.", "ok");
+      } else if (state === "escalated") {
+        announce("This sample case is already routed to adjudication; no correction was staged.", "warn");
+      } else {
+        announce("A synthetic correction is ready for reviewer approval. No payment has been posted.");
+      }
+      render();
+      const selectedButton = queueList.querySelector('[data-case-id="' + id + '"]');
+      if (selectedButton) selectedButton.focus();
+    }
+
+    function completeTransition() {
+      const item = selectedCase();
+      state = item.kind === "conflict" ? "escalated" : "result";
+      outcomes[item.id] = state;
+      render();
+      if (state === "result") {
+        announce("Reviewer approval recorded. The synthetic correction is staged for downstream posting review; no payment was sent.", "ok");
+      } else {
+        announce("The source conflict is recorded in the mock adjudication queue. No correction was staged.", "warn");
+      }
+      liveStatus.focus();
+    }
+
+    function decide() {
+      if (state === "working") return;
+      if (state === "result" || state === "escalated") {
+        resetDemo();
+        return;
+      }
+      const item = selectedCase();
+      if (item.kind === "conflict" && state !== "exception") return;
+      state = "working";
+      announce(item.kind === "conflict"
+        ? "Recording a mock escalation to adjudication…"
+        : "Recording reviewer approval in this local demo…");
+      render();
+      transitionTimer = window.setTimeout(completeTransition, 500);
+    }
+
+    function resetDemo() {
+      window.clearTimeout(transitionTimer);
+      outcomes = Object.create(null);
+      selectedId = DEMO_FIXTURES.cases[0].id;
+      state = "reset";
+      byId("sourceDetails").open = false;
+      announce("Demo reset. The first synthetic correction is ready for review.");
+      render();
+      byId("caseTitle").focus();
+    }
+
+    resetButton.addEventListener("click", resetDemo);
+    decisionButton.addEventListener("click", decide);
+    renderWorkloads();
+    render();
+  </script>
+</body>
+</html>

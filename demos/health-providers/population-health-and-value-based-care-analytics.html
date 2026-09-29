@@ -1,0 +1,717 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Population worklist | Illustrative provider demo</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* --------------------------------------------------------- demo layout */
+body { --page-max: 1500px; }
+.page { width: min(var(--page-max), 100%); margin: 0 auto; padding: 18px 22px 28px; }
+.page-heading { display: flex; flex-wrap: wrap; gap: 14px; align-items: end; justify-content: space-between; margin-bottom: 14px; }
+.page-heading h1 { margin: 0; font-size: clamp(22px, 2.1vw, 30px); letter-spacing: -.025em; line-height: 1.16; }
+.page-heading p { margin: 5px 0 0; color: var(--muted); }
+.eyebrow { margin: 0 0 3px !important; color: var(--accent-strong) !important; font-size: 12px; font-weight: 700; }
+.context { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; margin-bottom: 14px; padding: 11px 13px; border: 1px solid var(--accent-line); border-left: 4px solid var(--accent); border-radius: var(--radius); background: var(--accent-soft); }
+.context b { color: var(--accent-strong); }
+.context span { font-size: 13px; color: var(--ink-soft); }
+.layout { display: grid; grid-template-columns: minmax(240px, 280px) minmax(0, 1fr) minmax(230px, 290px); gap: 14px; align-items: start; }
+.queue-tools { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 11px; }
+.cohort-list { display: grid; gap: 7px; }
+.cohort-row { width: 100%; padding: 11px; text-align: left; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--ink); cursor: pointer; }
+.cohort-row:hover { border-color: var(--accent-line); background: var(--accent-soft); }
+.cohort-row[aria-pressed="true"] { border: 2px solid var(--accent); padding: 10px; background: var(--accent-soft); }
+.cohort-row strong, .cohort-row small { display: block; }
+.cohort-row small { margin-top: 2px; color: var(--muted); font-size: 12px; }
+.row-meta { display: flex; justify-content: space-between; gap: 8px; align-items: center; margin-top: 8px; }
+.priority { font-size: 12px; font-weight: 700; color: var(--accent-strong); }
+.case-top { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+.case-top h2 { margin: 0; font-size: 20px; letter-spacing: -.015em; }
+.case-id { margin: 3px 0 0; color: var(--muted); font-size: 12.5px; }
+.summary { margin: 14px 0; padding: 12px; border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--bg); }
+.summary h3 { margin: 0 0 5px; font-size: 14px; }
+.summary p { margin: 0; color: var(--ink-soft); }
+.signal-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft); }
+.signal { padding: 12px 10px; border-right: 1px solid var(--line-soft); }
+.signal:last-child { border-right: 0; }
+.signal span, .signal strong { display: block; }
+.signal span { color: var(--muted); font-size: 12px; }
+.signal strong { margin-top: 3px; font-size: 14px; }
+.review-block { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line-soft); }
+.review-block h3 { margin: 0 0 7px; font-size: 14px; }
+.source-toggle { margin-top: 12px; }
+.sources { display: grid; gap: 7px; margin-top: 10px; padding: 11px; border-left: 3px solid var(--accent); background: var(--bg); font-size: 13px; }
+.sources b { font-size: 12.5px; }
+.decision-box { display: grid; gap: 10px; margin-top: 14px; padding: 13px; border: 1px solid var(--accent-line); border-radius: var(--radius); background: var(--accent-soft); }
+.decision-box h3 { margin: 0; font-size: 14px; color: var(--accent-strong); }
+.decision-box p { margin: 0; color: var(--ink-soft); font-size: 13.5px; }
+.rail { display: grid; gap: 14px; }
+.rail h2 { margin: 0; font-size: 14.5px; }
+.rail .card-body { display: grid; gap: 11px; }
+.definition { margin: 0; font-size: 13px; color: var(--ink-soft); }
+.definition b { color: var(--ink); }
+.audit li { grid-template-columns: 47px minmax(0, 1fr); }
+.legend { display: grid; gap: 7px; font-size: 12.5px; color: var(--muted); }
+.legend span { display: flex; gap: 7px; align-items: center; }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); }
+.dot-warn { background: var(--warn); }
+.dot-ok { background: var(--ok); }
+.dialog-actions { justify-content: space-between; }
+
+@media (max-width: 1050px) {
+  .layout { grid-template-columns: minmax(225px, 275px) minmax(0, 1fr); }
+  .rail { grid-column: 1 / -1; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 700px) {
+  .page { padding: 14px; }
+  .layout, .rail { grid-template-columns: 1fr; }
+  .signal-grid { grid-template-columns: 1fr; }
+  .signal { border-right: 0; border-bottom: 1px solid var(--line-soft); }
+  .signal:last-child { border-bottom: 0; }
+  .page-heading { align-items: start; }
+}
+  </style>
+</head>
+<body data-subvertical="health-providers">
+  <header class="appbar">
+    <div class="brand">
+      <svg class="brand-mark" width="25" height="25" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M10.5 2h3v7h7v3h-7v7h-3v-7h-7V9h7z"/></svg>
+      <div><span class="brand-name">Northstar Population Operations</span><span class="brand-sub">Value-based care worklist</span></div>
+    </div>
+    <p class="disclosure">Illustrative demo - synthetic data</p>
+    <p class="who">Signed in as <b>Avery Cole</b><br>Chief Population Health Officer</p>
+  </header>
+
+  <main class="page">
+    <div class="page-heading">
+      <div>
+        <p class="eyebrow">Daily population review</p>
+        <h1>Rising-risk outreach worklist</h1>
+        <p>Review sample evidence before a care-team handoff. This view does not diagnose or automate outreach.</p>
+      </div>
+      <button class="btn" id="resetDemo" type="button">Reset demo</button>
+    </div>
+
+    <section class="context" aria-label="Worklist context">
+      <b>Northstar Community Health (fictional)</b>
+      <span><strong>Contract:</strong> Harbor Pathway Shared Care - sample</span>
+      <span><strong>Measurement period:</strong> Sample Q3</span>
+      <span><strong>Review owner:</strong> Avery Cole</span>
+    </section>
+
+    <div class="layout">
+      <aside class="card" aria-labelledby="cohortHeading">
+        <div class="card-head">
+          <h2 id="cohortHeading">Cohort review queue</h2>
+          <span class="card-note" id="queueCount">3 sample records</span>
+        </div>
+        <div class="card-body">
+          <div class="queue-tools" aria-label="Queue filters">
+            <button class="chip" type="button" data-filter="all" aria-pressed="true">All</button>
+            <button class="chip" type="button" data-filter="rising" aria-pressed="false">Rising risk</button>
+            <button class="chip" type="button" data-filter="review" aria-pressed="false">Needs review</button>
+          </div>
+          <div class="cohort-list" id="cohortList" aria-label="Sample member review records"></div>
+          <p class="status-line" id="queueStatus" aria-live="polite">Select a record to review its sample evidence.</p>
+        </div>
+      </aside>
+
+      <section class="card" aria-labelledby="caseHeading">
+        <div class="card-body">
+          <div class="case-top">
+            <div>
+              <h2 id="caseHeading">Selected review record</h2>
+              <p class="case-id mono" id="caseId"></p>
+            </div>
+            <span class="tag" id="caseStatus"></span>
+          </div>
+
+          <section class="summary" aria-labelledby="whyHeading">
+            <h3 id="whyHeading">Why this record is in review</h3>
+            <p id="caseSummary"></p>
+          </section>
+
+          <div class="signal-grid" aria-label="Sample evidence summary">
+            <div class="signal"><span>Contract attribution</span><strong id="attribution"></strong></div>
+            <div class="signal"><span>Care-gap focus</span><strong id="careGap"></strong></div>
+            <div class="signal"><span>Source freshness</span><strong id="freshness"></strong></div>
+          </div>
+
+          <section class="review-block" aria-labelledby="rationaleHeading">
+            <h3 id="rationaleHeading">Review rationale</h3>
+            <div class="evidence" id="rationale"></div>
+            <div class="source-toggle">
+              <button class="btn-link" id="toggleSources" type="button" aria-expanded="false" aria-controls="sources">Show sample sources</button>
+              <div class="sources" id="sources" hidden></div>
+            </div>
+          </section>
+
+          <section class="decision-box" aria-labelledby="decisionHeading">
+            <h3 id="decisionHeading">Human decision required</h3>
+            <p id="decisionText"></p>
+            <div class="actions">
+              <button class="btn btn-primary" id="reviewAction" type="button">Review outreach request</button>
+              <button class="btn" id="escalateAction" type="button" hidden>Escalate attribution</button>
+            </div>
+            <p class="status-line" id="decisionStatus" aria-live="polite"></p>
+          </section>
+        </div>
+      </section>
+
+      <aside class="rail" aria-label="Review context">
+        <section class="card">
+          <div class="card-head"><h2>Contract guardrails</h2></div>
+          <div class="card-body">
+            <p class="definition"><b>Sample attribution definition:</b> Confirm the member and care-gap record against the Harbor Pathway Shared Care sample definition before requesting outreach.</p>
+            <p class="definition"><b>Escalation:</b> Contract Operations resolves attribution mismatches. No care-team request is created for unresolved records.</p>
+          </div>
+        </section>
+        <section class="card">
+          <div class="card-head"><h2>Review audit</h2></div>
+          <div class="card-body">
+            <ol class="audit" id="auditLog">
+              <li><time>09:12</time><span><b class="actor is-system">Sample data refresh</b><br>Clinical, claims, and social-needs sample inputs aligned to the sample cohort.</span></li>
+              <li><time>09:18</time><span><b class="actor is-human">Avery Cole</b><br>Opened this worklist for human review.</span></li>
+            </ol>
+          </div>
+        </section>
+        <section class="card">
+          <div class="card-head"><h2>Illustrative analytics foundation</h2></div>
+          <div class="card-body">
+            <div class="built"><span class="svc-chip">Microsoft Fabric</span><span class="svc-chip">Azure Databricks</span><span class="svc-chip">Azure Machine Learning</span><span class="svc-chip">Microsoft Purview</span></div>
+            <p class="card-note">Canonical product labels mapped from the selected catalog workload.</p>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <span>Illustrative demo - synthetic data. Fictional organization, people, contract, and identifiers.</span>
+    <span class="claim"><b>Catalog value context:</b> Risk stratification and gap-closure analytics can support quality scores, shared savings, and avoidable-utilization reduction for chronic populations.</span>
+  </footer>
+
+  <dialog id="reviewDialog" aria-labelledby="dialogTitle">
+    <div class="dlg-head">
+      <div><h2 id="dialogTitle">Confirm care-team outreach request</h2><span class="dlg-sub">Reversible request; no outreach is sent by this demo.</span></div>
+      <button class="btn" id="closeDialog" type="button">Close</button>
+    </div>
+    <div class="dlg-body">
+      <div class="notice notice-warn"><span aria-hidden="true">!</span><div><b>Human review remains accountable.</b><span class="notice-note">This creates a sample work item only. It is not clinical guidance, a diagnosis, or an automated care decision.</span></div></div>
+      <dl class="meta-grid">
+        <div><dt>Record</dt><dd id="dialogRecord"></dd></div>
+        <div><dt>Requested action</dt><dd>Care-team outreach review</dd></div>
+        <div><dt>Sample source cutoff</dt><dd>30 Sep 2026</dd></div>
+      </dl>
+      <label class="attest"><input id="attestReview" type="checkbox"><span>I reviewed the sample attribution, source context, and care-gap rationale. I am requesting human care-team review, not approving a clinical action.</span></label>
+      <p class="dlg-error" id="dialogError" aria-live="polite"></p>
+    </div>
+    <div class="dlg-foot dialog-actions">
+      <button class="btn" id="cancelReview" type="button">Cancel</button>
+      <button class="btn btn-primary" id="confirmReview" type="button" disabled>Create sample work item</button>
+    </div>
+  </dialog>
+
+  <script>
+    const DEMO_DATA = {
+      records: [
+        {
+          id: "SYN-HP-2048", name: "Morgan Lee", filter: "rising", priority: "Priority 1",
+          status: "Ready for review", statusClass: "tag-warn",
+          summary: "A synthetic rising-risk pattern and an open preventive-care gap warrant a human review before care-team follow-up.",
+          attribution: "Matched - sample", gap: "Preventive follow-up", freshness: "Claims: sample Sep 2026",
+          rationale: "Sample clinical activity and sample claims activity indicate a change in utilization pattern. A fictional social-needs screen notes transportation as a possible outreach consideration. This is a prioritization signal, not a clinical finding.",
+          sources: ["Sample clinical activity | 28 Sep 2026", "Sample claims activity | 27 Sep 2026", "Sample social-needs screen | 19 Sep 2026"],
+          action: "Review the sample evidence, then request care-team outreach review if the contract attribution remains appropriate.",
+          eligible: true
+        },
+        {
+          id: "SYN-HP-1992", name: "Jordan Patel", filter: "rising", priority: "Priority 2",
+          status: "Ready for review", statusClass: "tag-warn",
+          summary: "A synthetic chronic-population record has a care-gap signal that should be reviewed against the sample contract population.",
+          attribution: "Matched - sample", gap: "Medication reconciliation", freshness: "Clinical: sample Sep 2026",
+          rationale: "A sample care-gap record and fictional claims activity meet the worklist's review criteria. The care team decides whether any outreach is appropriate after reviewing the record.",
+          sources: ["Sample care-gap extract | 29 Sep 2026", "Sample claims activity | 27 Sep 2026", "Sample attribution roster | 30 Sep 2026"],
+          action: "Review the sample evidence, then request care-team outreach review if the contract attribution remains appropriate.",
+          eligible: true
+        },
+        {
+          id: "SYN-HP-2115", name: "Rowan Kim", filter: "review", priority: "Attribution review",
+          status: "Needs contract review", statusClass: "tag-stop",
+          summary: "The sample claims and attribution inputs point to different contract populations. Outreach is blocked pending human contract review.",
+          attribution: "Mismatch - sample", gap: "Preventive follow-up", freshness: "Attribution: sample Sep 2026",
+          rationale: "The fictional claims activity is associated with Harbor Pathway Shared Care, while the sample attribution roster identifies a different contract population. This record must be resolved by Contract Operations before it can enter a care-team queue.",
+          sources: ["Sample claims activity | 27 Sep 2026", "Sample attribution roster | 30 Sep 2026", "Sample contract definition | 30 Sep 2026"],
+          action: "Do not request outreach. Escalate the sample attribution mismatch to Contract Operations for definition review.",
+          eligible: false
+        }
+      ]
+    };
+
+    const state = { selectedId: "SYN-HP-2048", filter: "all", completed: new Set(), escalated: new Set() };
+    const byId = (id) => DEMO_DATA.records.find((record) => record.id === id);
+    const elements = {
+      cohortList: document.querySelector("#cohortList"),
+      queueCount: document.querySelector("#queueCount"),
+      queueStatus: document.querySelector("#queueStatus"),
+      caseId: document.querySelector("#caseId"),
+      caseStatus: document.querySelector("#caseStatus"),
+      caseSummary: document.querySelector("#caseSummary"),
+      attribution: document.querySelector("#attribution"),
+      careGap: document.querySelector("#careGap"),
+      freshness: document.querySelector("#freshness"),
+      rationale: document.querySelector("#rationale"),
+      sources: document.querySelector("#sources"),
+      toggleSources: document.querySelector("#toggleSources"),
+      decisionText: document.querySelector("#decisionText"),
+      decisionStatus: document.querySelector("#decisionStatus"),
+      reviewAction: document.querySelector("#reviewAction"),
+      escalateAction: document.querySelector("#escalateAction"),
+      auditLog: document.querySelector("#auditLog"),
+      dialog: document.querySelector("#reviewDialog"),
+      dialogRecord: document.querySelector("#dialogRecord"),
+      attest: document.querySelector("#attestReview"),
+      confirm: document.querySelector("#confirmReview"),
+      dialogError: document.querySelector("#dialogError")
+    };
+
+    function selectedRecord() {
+      return byId(state.selectedId);
+    }
+
+    function addAudit(actor, message, human) {
+      const item = document.createElement("li");
+      const time = document.createElement("time");
+      const content = document.createElement("span");
+      const actorName = document.createElement("b");
+      time.textContent = "Now";
+      actorName.className = `actor ${human ? "is-human" : "is-system"}`;
+      actorName.textContent = actor;
+      content.append(actorName, document.createElement("br"), document.createTextNode(message));
+      item.append(time, content);
+      elements.auditLog.prepend(item);
+    }
+
+    function statusFor(record) {
+      if (state.completed.has(record.id)) return { text: "Work item created", className: "tag-ok" };
+      if (state.escalated.has(record.id)) return { text: "Escalated", className: "tag-stop" };
+      return { text: record.status, className: record.statusClass };
+    }
+
+    function renderQueue() {
+      const visible = DEMO_DATA.records.filter((record) => state.filter === "all" || record.filter === state.filter);
+      elements.cohortList.replaceChildren();
+      visible.forEach((record) => {
+        const status = statusFor(record);
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "cohort-row";
+        button.dataset.recordId = record.id;
+        button.setAttribute("aria-pressed", String(record.id === state.selectedId));
+        const name = document.createElement("strong");
+        const identifier = document.createElement("small");
+        const meta = document.createElement("span");
+        const priority = document.createElement("span");
+        const tag = document.createElement("span");
+        name.textContent = record.name;
+        identifier.className = "mono";
+        identifier.textContent = record.id;
+        meta.className = "row-meta";
+        priority.className = "priority";
+        priority.textContent = record.priority;
+        tag.className = `tag ${status.className}`;
+        tag.textContent = status.text;
+        meta.append(priority, tag);
+        button.append(name, identifier, meta);
+        elements.cohortList.append(button);
+      });
+      elements.queueCount.textContent = `${visible.length} sample record${visible.length === 1 ? "" : "s"}`;
+    }
+
+    function renderSelected() {
+      const record = selectedRecord();
+      const status = statusFor(record);
+      elements.caseId.textContent = `${record.name} | ${record.id}`;
+      elements.caseStatus.className = `tag ${status.className}`;
+      elements.caseStatus.textContent = status.text;
+      elements.caseSummary.textContent = record.summary;
+      elements.attribution.textContent = record.attribution;
+      elements.careGap.textContent = record.gap;
+      elements.freshness.textContent = record.freshness;
+      elements.rationale.textContent = record.rationale;
+      elements.sources.replaceChildren();
+      record.sources.forEach((source) => {
+        const line = document.createElement("span");
+        line.textContent = source;
+        elements.sources.append(line);
+      });
+      elements.decisionText.textContent = record.action;
+      const complete = state.completed.has(record.id);
+      const escalated = state.escalated.has(record.id);
+      elements.reviewAction.hidden = !record.eligible;
+      elements.escalateAction.hidden = record.eligible;
+      elements.reviewAction.disabled = complete;
+      elements.reviewAction.textContent = complete ? "Sample work item created" : "Review outreach request";
+      elements.escalateAction.disabled = escalated;
+      elements.escalateAction.textContent = escalated ? "Attribution escalated" : "Escalate attribution";
+      elements.decisionStatus.textContent = complete
+        ? "Sample work item is ready for care-team review. No outreach has been sent."
+        : escalated
+          ? "Sample attribution mismatch escalated to Contract Operations. Outreach remains blocked."
+          : "";
+    }
+
+    function selectRecord(id) {
+      state.selectedId = id;
+      elements.sources.hidden = true;
+      elements.toggleSources.setAttribute("aria-expanded", "false");
+      elements.toggleSources.textContent = "Show sample sources";
+      renderQueue();
+      renderSelected();
+      elements.queueStatus.textContent = `${selectedRecord().name} selected for review.`;
+    }
+
+    function openReview() {
+      const record = selectedRecord();
+      elements.dialogRecord.textContent = `${record.name} | ${record.id}`;
+      elements.attest.checked = false;
+      elements.confirm.disabled = true;
+      elements.dialogError.textContent = "";
+      if (typeof elements.dialog.showModal === "function") elements.dialog.showModal();
+    }
+
+    document.querySelectorAll("[data-filter]").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.filter = button.dataset.filter;
+        document.querySelectorAll("[data-filter]").forEach((filter) => filter.setAttribute("aria-pressed", String(filter === button)));
+        const visible = DEMO_DATA.records.filter((record) => state.filter === "all" || record.filter === state.filter);
+        if (!visible.some((record) => record.id === state.selectedId)) state.selectedId = visible[0].id;
+        renderQueue();
+        renderSelected();
+        elements.queueStatus.textContent = `${button.textContent} filter applied.`;
+      });
+    });
+
+    elements.cohortList.addEventListener("click", (event) => {
+      const row = event.target.closest("[data-record-id]");
+      if (row) selectRecord(row.dataset.recordId);
+    });
+
+    elements.toggleSources.addEventListener("click", () => {
+      const willShow = elements.sources.hidden;
+      elements.sources.hidden = !willShow;
+      elements.toggleSources.setAttribute("aria-expanded", String(willShow));
+      elements.toggleSources.textContent = willShow ? "Hide sample sources" : "Show sample sources";
+    });
+
+    elements.reviewAction.addEventListener("click", openReview);
+    elements.attest.addEventListener("change", () => {
+      elements.confirm.disabled = !elements.attest.checked;
+      elements.dialogError.textContent = "";
+    });
+    elements.confirm.addEventListener("click", () => {
+      if (!elements.attest.checked) {
+        elements.dialogError.textContent = "Confirm that you reviewed the sample evidence before creating the work item.";
+        return;
+      }
+      elements.confirm.disabled = true;
+      elements.confirm.textContent = "Creating sample work item...";
+      window.setTimeout(() => {
+        const record = selectedRecord();
+        state.completed.add(record.id);
+        elements.dialog.close();
+        elements.confirm.textContent = "Create sample work item";
+        renderQueue();
+        renderSelected();
+        elements.queueStatus.textContent = `Sample work item created for ${record.name}; no outreach was sent.`;
+        addAudit("Avery Cole", `Created a reversible sample care-team review work item for ${record.id}.`, true);
+      }, 450);
+    });
+
+    elements.escalateAction.addEventListener("click", () => {
+      const record = selectedRecord();
+      elements.escalateAction.disabled = true;
+      elements.escalateAction.textContent = "Escalating...";
+      window.setTimeout(() => {
+        state.escalated.add(record.id);
+        renderQueue();
+        renderSelected();
+        elements.queueStatus.textContent = `Sample attribution exception for ${record.name} escalated to Contract Operations.`;
+        addAudit("Avery Cole", `Escalated sample attribution mismatch for ${record.id} to Contract Operations.`, true);
+      }, 350);
+    });
+
+    [document.querySelector("#closeDialog"), document.querySelector("#cancelReview")].forEach((button) => {
+      button.addEventListener("click", () => elements.dialog.close());
+    });
+
+    document.querySelector("#resetDemo").addEventListener("click", () => {
+      state.selectedId = "SYN-HP-2048";
+      state.filter = "all";
+      state.completed.clear();
+      state.escalated.clear();
+      document.querySelectorAll("[data-filter]").forEach((filter) => filter.setAttribute("aria-pressed", String(filter.dataset.filter === "all")));
+      elements.sources.hidden = true;
+      elements.toggleSources.setAttribute("aria-expanded", "false");
+      elements.toggleSources.textContent = "Show sample sources";
+      elements.auditLog.replaceChildren();
+      addAudit("Sample data refresh", "Clinical, claims, and social-needs sample inputs aligned to the sample cohort.", false);
+      addAudit("Avery Cole", "Reset the worklist to its initial sample review state.", true);
+      renderQueue();
+      renderSelected();
+      elements.queueStatus.textContent = "Demo reset. Morgan Lee is selected for review.";
+    });
+
+    renderQueue();
+    renderSelected();
+  </script>
+</body>
+</html>

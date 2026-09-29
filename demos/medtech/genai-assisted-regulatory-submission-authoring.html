@@ -1,0 +1,794 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A self-contained synthetic regulatory authoring workflow demonstration.">
+  <title>Regulatory submission authoring | Kiteframe Medical</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* ------------------------------------------------------ authoring workbench */
+body { min-height: 100%; }
+.brand-mark {
+  width: 27px; height: 27px; display: grid; place-items: center;
+  background: var(--accent); color: #fff; border-radius: 5px; font-size: 14px; font-weight: 700;
+}
+.brand-mark::before { content: "K"; }
+.page { width: min(1480px, 100%); margin: 0 auto; padding: 22px clamp(14px, 3vw, 38px) 34px; }
+.page-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 17px; }
+.eyebrow { margin: 0 0 3px; color: var(--muted); font-size: 12px; }
+h1 { margin: 0; font-size: clamp(22px, 3vw, 29px); line-height: 1.2; letter-spacing: -.02em; }
+.page-intro { margin: 5px 0 0; color: var(--muted); max-width: 68ch; font-size: 13.5px; }
+.user-context { padding-top: 4px; color: var(--muted); font-size: 13px; text-align: right; white-space: nowrap; }
+.user-context strong { color: var(--ink); }
+.submission-bar {
+  display: grid; grid-template-columns: minmax(180px, 1.1fr) minmax(140px, .7fr) minmax(140px, .65fr) auto;
+  gap: 14px; align-items: center; padding: 12px 15px; margin-bottom: 15px;
+  background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--accent);
+}
+.submission-title { min-width: 0; }
+.submission-title strong { display: block; font-size: 14px; }
+.submission-title span, .submission-fact span { display: block; color: var(--muted); font-size: 12px; }
+.submission-fact b { font-size: 13px; font-weight: 600; }
+.submission-status { justify-self: end; }
+.workspace { display: grid; grid-template-columns: minmax(0, 1.22fr) minmax(300px, .82fr); gap: 16px; align-items: start; }
+.editor, .sources { min-width: 0; }
+.editor { grid-column: 1; grid-row: 1; }
+.sources { grid-column: 2; grid-row: 1; }
+.panel-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.panel-heading h2 { margin: 0; font-size: 16px; }
+.panel-heading p { margin: 3px 0 0; color: var(--muted); font-size: 12.5px; }
+.section-picker { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: end; margin: 15px 0 13px; }
+.field select {
+  width: 100%; min-height: 40px; padding: 8px 34px 8px 10px; font: inherit;
+  color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+}
+.state-pill {
+  display: inline-flex; align-items: center; min-height: 29px; padding: 3px 9px;
+  color: var(--ink-soft); background: var(--surface-2); border: 1px solid var(--line);
+  border-radius: 999px; font-size: 11.5px; font-weight: 600; white-space: nowrap;
+}
+.state-pill[data-state="result"], .state-pill[data-state="reviewed"] { color: #0b5c0b; background: var(--ok-bg); border-color: #a7d9a7; }
+.state-pill[data-state="exception"], .state-pill[data-state="escalated"] { color: #7a4e08; background: var(--warn-bg); border-color: #e6d08a; }
+.workflow-status { margin: 9px 0 0; min-height: 21px; color: var(--muted); font-size: 12.5px; }
+.workflow-status[data-kind="success"] { color: #0b5c0b; }
+.workflow-status[data-kind="warning"] { color: #7a4e08; }
+.editor-rule { margin: 0 0 13px; }
+.draft-panel { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+.draft-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.draft-heading h3 { margin: 0; font-size: 14px; }
+.draft-copy { margin: 0; padding: 13px 14px; background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent); font-size: 14px; line-height: 1.65; }
+.citation-row { display: flex; flex-wrap: wrap; gap: 7px; margin: 9px 0 15px; }
+.citation-button {
+  border: 1px solid var(--accent-line); border-radius: 4px; background: var(--accent-soft);
+  color: var(--accent-strong); font: inherit; font-size: 12px; font-weight: 600;
+  padding: 4px 8px; cursor: pointer;
+}
+.citation-button:hover { border-color: var(--accent); }
+.review-form { display: grid; gap: 10px; padding-top: 12px; border-top: 1px solid var(--line-soft); }
+.review-form h3 { margin: 0; font-size: 14px; }
+.review-form textarea, .exception-panel textarea {
+  width: 100%; min-height: 73px; resize: vertical; padding: 9px 10px;
+  font: inherit; font-size: 13.5px; color: var(--ink); background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--radius);
+}
+.field-hint { margin: -5px 0 0; color: var(--muted); font-size: 12px; }
+.validation-message { min-height: 18px; margin: 0; color: var(--stop); font-size: 12.5px; }
+.reviewed-panel { margin-top: 13px; padding: 12px; background: var(--ok-bg); border: 1px solid #a7d9a7; border-radius: var(--radius); color: #0b5c0b; }
+.reviewed-panel h3 { margin: 0 0 3px; font-size: 14px; }
+.reviewed-panel p { margin: 4px 0 0; font-size: 13px; }
+.reviewed-panel .reviewed-rationale { padding-top: 7px; border-top: 1px solid #a7d9a7; overflow-wrap: anywhere; }
+.exception-panel { margin-top: 13px; padding: 13px; border: 1px solid #e6d08a; background: #fffaf0; border-radius: var(--radius); }
+.exception-panel h3 { margin: 0 0 5px; color: #7a4e08; font-size: 14px; }
+.exception-panel p { margin: 4px 0 10px; font-size: 13px; }
+.exception-panel .actions { margin-top: 10px; }
+.escalated-panel { margin-top: 12px; padding: 11px 12px; background: var(--warn-bg); border: 1px solid #e6d08a; border-radius: var(--radius); }
+.escalated-panel strong { display: block; margin-bottom: 3px; color: #7a4e08; font-size: 13px; }
+.escalated-panel p { margin: 0; font-size: 13px; }
+.evidence-list { display: grid; }
+.evidence-item { border-bottom: 1px solid var(--line-soft); }
+.evidence-item:last-child { border-bottom: 0; }
+.evidence-item summary { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 12px; align-items: center; padding: 12px 0; cursor: pointer; list-style-position: inside; }
+.evidence-title { font-size: 13px; font-weight: 600; }
+.evidence-meta { grid-column: 1; margin-left: 17px; color: var(--muted); font-size: 11.5px; }
+.evidence-item .tag { grid-column: 2; grid-row: 1 / span 2; white-space: normal; text-align: center; }
+.evidence-excerpt { margin: 0 0 12px 18px; padding: 10px 11px; background: var(--bg); border-left: 2px solid var(--accent-line); color: var(--ink-soft); font-size: 12.5px; line-height: 1.6; }
+.source-note { margin: 12px 0 0; padding-top: 10px; border-top: 1px solid var(--line-soft); color: var(--muted); font-size: 12px; }
+.footer { margin-top: 18px; }
+.footer-label { font-weight: 600; color: var(--ink-soft); }
+.services { display: flex; flex-wrap: wrap; gap: 5px; }
+.services .svc-chip { font-size: 11.5px; }
+.footer-note { width: 100%; margin: 2px 0 0; font-size: 11.5px; }
+.footer-note strong { color: var(--ink-soft); }
+
+@media (max-width: 850px) {
+  .page { padding-top: 17px; }
+  .workspace { grid-template-columns: minmax(0, 1fr); }
+  .editor, .sources { grid-column: 1; }
+  .editor { grid-row: 1; }
+  .sources { grid-row: 2; }
+  .submission-bar { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .submission-status { justify-self: start; }
+}
+@media (max-width: 540px) {
+  .page { padding: 14px 12px 24px; }
+  .page-heading { display: block; margin-bottom: 13px; }
+  .user-context { padding-top: 8px; text-align: left; white-space: normal; }
+  .submission-bar { gap: 9px 12px; padding: 11px 12px; }
+  .section-picker { grid-template-columns: minmax(0, 1fr); }
+  .panel-heading { flex-wrap: wrap; }
+  .card-body { padding: 12px; }
+  .actions .btn { width: 100%; justify-content: center; }
+  .disclosure { font-size: 11px; padding: 4px 8px; }
+}
+  </style>
+</head>
+<body data-subvertical="medtech">
+  <header class="appbar">
+    <div class="brand" aria-label="Kiteframe Medical regulatory workspace">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-name">Kiteframe Medical<span class="brand-sub">Regulatory workspace · fictional organization</span></span>
+    </div>
+    <p class="who"><b>Regulatory writer</b> · Mara Vale (fictional)</p>
+    <p class="disclosure"><span aria-hidden="true">◆</span> Illustrative demo - synthetic data</p>
+  </header>
+
+  <main class="page">
+    <div class="page-heading">
+      <div>
+        <p class="eyebrow">Regulatory, Quality &amp; Compliance / Authoring</p>
+        <h1>Submission workbench</h1>
+        <p class="page-intro">Assemble a cited section draft from the selected source pack. A person reviews every draft; nothing is submitted automatically.</p>
+      </div>
+      <p class="user-context">Signed in as <strong>Mara Vale</strong><br>Regulatory writer · synthetic demo user</p>
+    </div>
+
+    <section class="submission-bar" aria-label="Submission context">
+      <div class="submission-title">
+        <strong id="packet-name"></strong>
+        <span id="organization-name"></span>
+      </div>
+      <div class="submission-fact"><span>Work item</span><b id="packet-id" class="mono"></b></div>
+      <div class="submission-fact"><span>Current step</span><b>Section authoring</b></div>
+      <span class="tag submission-status" id="packet-state">Draft assembly</span>
+    </section>
+
+    <div class="workspace">
+      <section class="editor card" aria-labelledby="editor-heading">
+        <div class="card-head">
+          <div class="panel-heading">
+            <div>
+              <h2 id="editor-heading">Section editor</h2>
+              <p>Check the source trail before recording a human review.</p>
+            </div>
+          </div>
+          <button class="btn" id="reset-button" type="button">Reset workbench</button>
+        </div>
+        <div class="card-body">
+          <div class="section-picker">
+            <div class="field">
+              <label for="section-select">Submission section</label>
+              <select id="section-select"></select>
+            </div>
+            <span class="state-pill" id="state-pill" data-state="ready">Ready to draft</span>
+          </div>
+
+          <p class="rule editor-rule" id="grounding-rule">Draft only from the fictional, governed source excerpts shown here. Generated text is not approved content.</p>
+          <div class="actions">
+            <button class="btn btn-primary" id="generate-button" type="button">Generate cited draft</button>
+          </div>
+          <p class="workflow-status" id="workflow-status" role="status" aria-live="polite"></p>
+
+          <section class="draft-panel" id="draft-panel" aria-labelledby="draft-heading" hidden>
+            <div class="draft-heading">
+              <h3 id="draft-heading">Generated section draft</h3>
+              <span class="tag tag-warn">Needs human review</span>
+            </div>
+            <p class="draft-copy" id="draft-copy"></p>
+            <div class="citation-row" id="citation-row" aria-label="Draft citations"></div>
+
+            <form class="review-form" id="review-form" novalidate>
+              <h3>Human review</h3>
+              <div class="field">
+                <label for="review-rationale">Review rationale</label>
+                <textarea id="review-rationale" rows="3" maxlength="300" placeholder="Record what you checked before saving this draft."></textarea>
+              </div>
+              <p class="field-hint">This records a synthetic workflow note only. Do not enter sensitive information.</p>
+              <p class="validation-message" id="review-error" aria-live="polite"></p>
+              <div class="actions">
+                <button class="btn btn-primary" type="submit">Save reviewed draft</button>
+              </div>
+            </form>
+
+            <div class="reviewed-panel" id="reviewed-panel" hidden>
+              <h3>Human review recorded</h3>
+              <p id="reviewed-next-step"></p>
+              <p class="reviewed-rationale"><strong>Rationale:</strong> <span id="saved-rationale"></span></p>
+            </div>
+          </section>
+
+          <section class="exception-panel" id="exception-panel" aria-labelledby="exception-heading" hidden>
+            <h3 id="exception-heading">Source lineage needs a person</h3>
+            <p id="exception-copy"></p>
+            <p><strong>No draft was generated.</strong> Do not reconcile source revisions by inference. Review the citations and ask the Quality Systems Lead to confirm the governing source set.</p>
+            <div class="actions">
+              <button class="btn btn-primary" id="escalate-button" type="button">Log escalation for review</button>
+            </div>
+            <div class="escalated-panel" id="escalated-panel" hidden>
+              <strong>Escalation logged in this demo</strong>
+              <p id="escalation-outcome"></p>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <aside class="sources card" aria-labelledby="sources-heading">
+        <div class="card-head">
+          <div class="panel-heading">
+            <div>
+              <h2 id="sources-heading">Source pack</h2>
+              <p id="source-pack-summary"></p>
+            </div>
+          </div>
+          <span class="tag" id="source-pack-tag"></span>
+        </div>
+        <div class="card-body">
+          <div class="evidence-list" id="evidence-list"></div>
+          <p class="source-note">Fictional source excerpts for interaction testing only. Use the citation controls in a draft to inspect its supporting text.</p>
+        </div>
+      </aside>
+    </div>
+
+    <footer class="footer">
+      <span class="footer-label">Catalog-mapped workloads · illustrative</span>
+      <div class="services" id="service-list" aria-label="Catalog-mapped Microsoft workloads"></div>
+      <p class="footer-note"><strong>Demo boundary:</strong> source records, identities, revisions, and workflow notes are synthetic. Drafts are not regulatory advice, validated evidence, or submission-ready content.</p>
+    </footer>
+  </main>
+
+  <script>
+    "use strict";
+
+    const REGULATORY_DEMO_FIXTURES = Object.freeze({
+      organization: "Kiteframe Medical (fictional)",
+      user: "Mara Vale (fictional Regulatory Writer)",
+      packet: {
+        name: "KPM-22 product documentation",
+        id: "SUB-0427",
+        date: "2026-09-18"
+      },
+      workloads: [
+        "Azure OpenAI in Azure AI Foundry Models",
+        "Azure AI Search",
+        "Microsoft Purview",
+        "Microsoft Copilot Studio"
+      ],
+      sections: [
+        {
+          id: "device-overview",
+          label: "Device overview",
+          packLabel: "3 sample sources · aligned revisions",
+          sources: [
+            {
+              id: "SRC-014",
+              title: "Approved product brief",
+              revision: "Revision C · 2026-09-04",
+              status: "Approved sample source",
+              statusKind: "ok",
+              excerpt: "Kiteframe Pulse Monitor (KPM-22) is a wearable monitor intended to record single-lead signal data during rest sessions."
+            },
+            {
+              id: "SRC-021",
+              title: "Design description",
+              revision: "Revision B · 2026-09-08",
+              status: "Approved sample source",
+              statusKind: "ok",
+              excerpt: "The enclosure contains two dry electrodes and a status indicator. Recorded samples are held in the internal session buffer."
+            },
+            {
+              id: "SRC-031",
+              title: "Software architecture note",
+              revision: "Revision A · 2026-09-11",
+              status: "Approved sample source",
+              statusKind: "ok",
+              excerpt: "The export package includes the device identifier, session timestamp, and signal payload."
+            }
+          ],
+          draft: "Kiteframe Pulse Monitor (KPM-22) is a wearable monitor intended to record single-lead signal data during rest sessions. Its enclosure contains two dry electrodes and a status indicator; the internal session buffer holds recorded samples. The export package includes the device identifier, session timestamp, and signal payload.",
+          exception: null
+        },
+        {
+          id: "verification-summary",
+          label: "Verification summary",
+          packLabel: "2 sample sources · revision relationship unresolved",
+          sources: [
+            {
+              id: "DSP-082",
+              title: "Connection-cycle test protocol",
+              revision: "Revision D · 2026-09-09",
+              status: "Selected protocol",
+              statusKind: "ok",
+              excerpt: "Planned test scope: 1,000 connection cycles. The protocol revision shown in this pack is D."
+            },
+            {
+              id: "RSL-082",
+              title: "Connection-cycle execution log",
+              revision: "Revision C · 2026-09-10",
+              status: "Protocol link unresolved",
+              statusKind: "warn",
+              excerpt: "The execution log identifies protocol revision C. The selected source pack contains revision D; the relationship between these revisions is not documented."
+            }
+          ],
+          draft: null,
+          exception: "The execution log identifies protocol revision C, while the selected protocol is revision D. The source pack does not establish which version governed the recorded run."
+        }
+      ],
+      escalationRationale: "Hold drafting until the Quality Systems Lead confirms the governing protocol revision and source relationship."
+    });
+
+    const state = {
+      sectionId: REGULATORY_DEMO_FIXTURES.sections[0].id,
+      phase: "ready",
+      rationale: "",
+      timer: 0
+    };
+
+    const ui = {
+      packetName: document.getElementById("packet-name"),
+      organizationName: document.getElementById("organization-name"),
+      packetId: document.getElementById("packet-id"),
+      sectionSelect: document.getElementById("section-select"),
+      statePill: document.getElementById("state-pill"),
+      generateButton: document.getElementById("generate-button"),
+      resetButton: document.getElementById("reset-button"),
+      workflowStatus: document.getElementById("workflow-status"),
+      sourcePackSummary: document.getElementById("source-pack-summary"),
+      sourcePackTag: document.getElementById("source-pack-tag"),
+      evidenceList: document.getElementById("evidence-list"),
+      draftPanel: document.getElementById("draft-panel"),
+      draftCopy: document.getElementById("draft-copy"),
+      citationRow: document.getElementById("citation-row"),
+      reviewForm: document.getElementById("review-form"),
+      reviewRationale: document.getElementById("review-rationale"),
+      reviewError: document.getElementById("review-error"),
+      reviewedPanel: document.getElementById("reviewed-panel"),
+      reviewedNextStep: document.getElementById("reviewed-next-step"),
+      savedRationale: document.getElementById("saved-rationale"),
+      exceptionPanel: document.getElementById("exception-panel"),
+      exceptionCopy: document.getElementById("exception-copy"),
+      escalateButton: document.getElementById("escalate-button"),
+      escalatedPanel: document.getElementById("escalated-panel"),
+      escalationOutcome: document.getElementById("escalation-outcome"),
+      serviceList: document.getElementById("service-list")
+    };
+
+    function element(tag, className, text) {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text !== undefined) node.textContent = text;
+      return node;
+    }
+
+    function currentSection() {
+      return REGULATORY_DEMO_FIXTURES.sections.find((section) => section.id === state.sectionId);
+    }
+
+    function buildEvidence(section) {
+      ui.evidenceList.replaceChildren();
+      section.sources.forEach((source) => {
+        const details = element("details", "evidence-item");
+        details.id = `evidence-${source.id}`;
+        const summary = element("summary");
+        const title = element("span", "evidence-title", `${source.id} · ${source.title}`);
+        const meta = element("span", "evidence-meta", source.revision);
+        const tag = element("span", `tag ${source.statusKind === "ok" ? "tag-ok" : "tag-warn"}`, source.status);
+        summary.append(title, meta, tag);
+        const excerpt = element("p", "evidence-excerpt", source.excerpt);
+        details.append(summary, excerpt);
+        ui.evidenceList.append(details);
+      });
+      ui.sourcePackSummary.textContent = section.packLabel;
+      ui.sourcePackTag.textContent = section.exception ? "Review required" : "Sample sources";
+      ui.sourcePackTag.className = section.exception ? "tag tag-warn" : "tag";
+    }
+
+    function buildCitations(section) {
+      ui.citationRow.replaceChildren();
+      section.sources.forEach((source) => {
+        const button = element("button", "citation-button", `Inspect ${source.id}`);
+        button.type = "button";
+        button.dataset.sourceId = source.id;
+        button.setAttribute("aria-label", `Inspect citation ${source.id}: ${source.title}`);
+        ui.citationRow.append(button);
+      });
+    }
+
+    function announce(message, kind) {
+      ui.workflowStatus.textContent = message;
+      ui.workflowStatus.dataset.kind = kind || "";
+    }
+
+    function render() {
+      const section = currentSection();
+      const isDraft = state.phase === "result" || state.phase === "reviewed";
+      const isException = state.phase === "exception" || state.phase === "escalated";
+
+      ui.packetName.textContent = REGULATORY_DEMO_FIXTURES.packet.name;
+      ui.organizationName.textContent = REGULATORY_DEMO_FIXTURES.organization;
+      ui.packetId.textContent = REGULATORY_DEMO_FIXTURES.packet.id;
+      ui.sectionSelect.value = section.id;
+      ui.sectionSelect.disabled = state.phase === "working";
+      ui.generateButton.hidden = state.phase !== "ready";
+      ui.generateButton.disabled = state.phase === "working";
+      ui.statePill.dataset.state = state.phase;
+      ui.statePill.textContent = ({
+        ready: "Ready to draft",
+        working: "Checking sources",
+        result: "Draft ready · review required",
+        reviewed: "Human reviewed · sign-off pending",
+        exception: "Source conflict · draft held",
+        escalated: "Escalated · awaiting review"
+      })[state.phase];
+
+      buildEvidence(section);
+      ui.draftPanel.hidden = !isDraft;
+      ui.reviewForm.hidden = state.phase !== "result";
+      ui.reviewedPanel.hidden = state.phase !== "reviewed";
+      ui.exceptionPanel.hidden = !isException;
+      ui.escalatedPanel.hidden = state.phase !== "escalated";
+      ui.escalateButton.hidden = state.phase === "escalated";
+
+      if (isDraft) {
+        ui.draftCopy.textContent = section.draft;
+        buildCitations(section);
+      } else {
+        ui.citationRow.replaceChildren();
+      }
+      if (isException) ui.exceptionCopy.textContent = section.exception;
+      if (state.phase === "reviewed") {
+        ui.reviewedNextStep.textContent = "This synthetic draft remains pending regulatory lead sign-off. No submission was sent.";
+        ui.savedRationale.textContent = state.rationale;
+      }
+      if (state.phase === "escalated") {
+        ui.escalationOutcome.textContent = `Owner: Quality Systems Lead. Rationale: ${REGULATORY_DEMO_FIXTURES.escalationRationale}`;
+      }
+      if (state.phase === "working") {
+        ui.generateButton.textContent = "Checking sources…";
+        ui.generateButton.hidden = false;
+      } else {
+        ui.generateButton.textContent = "Generate cited draft";
+      }
+    }
+
+    REGULATORY_DEMO_FIXTURES.sections.forEach((section) => {
+      const option = element("option", "", section.label);
+      option.value = section.id;
+      ui.sectionSelect.append(option);
+    });
+    REGULATORY_DEMO_FIXTURES.workloads.forEach((workload) => {
+      ui.serviceList.append(element("span", "svc-chip", workload));
+    });
+
+    ui.sectionSelect.addEventListener("change", () => {
+      window.clearTimeout(state.timer);
+      state.sectionId = ui.sectionSelect.value;
+      state.phase = "ready";
+      state.rationale = "";
+      ui.reviewRationale.value = "";
+      ui.reviewError.textContent = "";
+      render();
+      announce(`Ready to work on ${currentSection().label}.`, currentSection().exception ? "warning" : "");
+    });
+
+    ui.generateButton.addEventListener("click", () => {
+      if (state.phase !== "ready") return;
+      state.phase = "working";
+      render();
+      announce("Checking the selected source revisions. No network request is made.", "");
+      state.timer = window.setTimeout(() => {
+        state.phase = currentSection().exception ? "exception" : "result";
+        render();
+        announce(
+          state.phase === "exception"
+            ? "Source lineage conflict found. Draft generation was held for human review."
+            : "Cited draft ready. Inspect the source excerpts, then record your review.",
+          state.phase === "exception" ? "warning" : ""
+        );
+      }, 420);
+    });
+
+    ui.reviewForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const rationale = ui.reviewRationale.value.trim();
+      if (!rationale) {
+        ui.reviewError.textContent = "Enter a brief review rationale before saving.";
+        ui.reviewRationale.focus();
+        return;
+      }
+      state.rationale = rationale;
+      state.phase = "reviewed";
+      ui.reviewError.textContent = "";
+      render();
+      announce("Human review recorded. Regulatory lead sign-off is still required.", "success");
+    });
+
+    ui.escalateButton.addEventListener("click", () => {
+      if (state.phase !== "exception") return;
+      state.phase = "escalated";
+      render();
+      announce("Escalation logged in this synthetic demo for Quality Systems Lead review.", "warning");
+    });
+
+    ui.resetButton.addEventListener("click", () => {
+      window.clearTimeout(state.timer);
+      state.sectionId = REGULATORY_DEMO_FIXTURES.sections[0].id;
+      state.phase = "ready";
+      state.rationale = "";
+      ui.reviewRationale.value = "";
+      ui.reviewError.textContent = "";
+      render();
+      announce("Workbench reset. Device overview is ready to draft.", "");
+      ui.sectionSelect.focus();
+    });
+
+    ui.citationRow.addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-source-id]");
+      if (!button) return;
+      const details = document.getElementById(`evidence-${button.dataset.sourceId}`);
+      if (!details) return;
+      details.open = true;
+      details.querySelector("summary").focus();
+      details.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+
+    render();
+  </script>
+</body>
+</html>

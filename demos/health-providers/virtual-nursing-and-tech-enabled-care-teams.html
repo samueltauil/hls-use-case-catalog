@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Virtual nursing handoff review | HLS demo</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* Layout tokens and state model:
+   shared shell tokens own color/type; these values only set workbench geometry.
+   ready -> working -> result | exception; reset returns to ready. */
+body {
+  --workbench-max: 1480px;
+  --queue-width: 248px;
+  --layout-gap: 14px;
+  --pane-padding: 12px;
+}
+
+.page {
+  width: min(var(--workbench-max), 100%);
+  margin-inline: auto;
+  padding: 14px 22px 20px;
+}
+.page-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 8px 20px;
+  margin-bottom: 10px;
+}
+.page-intro h1 { margin: 0; font-size: clamp(21px, 2vw, 27px); line-height: 1.2; letter-spacing: -.02em; }
+.eyebrow { margin: 0 0 4px; color: var(--muted); font-size: 12px; }
+.context-line { margin: 6px 0 0; color: var(--ink-soft); font-size: 13px; }
+.role-context { grid-column: 1 / -1; margin: 0; padding: 5px 9px; border-left: 3px solid var(--accent-line); background: var(--accent-soft); font-size: 12.5px; }
+.intro-actions { display: flex; gap: 9px; align-items: center; }
+
+.workbench { display: grid; grid-template-columns: var(--queue-width) minmax(0, 1fr); gap: var(--layout-gap); align-items: start; }
+.queue, .work-card, .audit-card { min-width: 0; }
+.queue { position: sticky; top: 82px; }
+.queue-title { margin: 0; font-size: 14px; }
+.queue-count { color: var(--muted); font-size: 12px; }
+.queue-list { list-style: none; padding: 0; margin: 0; }
+.queue-item { padding: 13px 14px; border-left: 3px solid var(--accent); background: var(--accent-soft); }
+.queue-item strong, .queue-item span { display: block; }
+.queue-item strong { font-size: 13px; overflow-wrap: anywhere; }
+.queue-item span { color: var(--muted); font-size: 12px; }
+.queue-foot { margin: 12px 0 0; color: var(--muted); font-size: 12px; }
+
+.work-card { overflow: hidden; }
+.work-head { align-items: center; padding-block: 9px; }
+.work-head h2 { font-size: 15px; }
+.work-body { display: grid; gap: 10px; padding: var(--pane-padding); }
+.handoff-id { display: flex; flex-wrap: wrap; align-items: center; gap: 7px 11px; min-width: 0; }
+.handoff-id .mono { overflow-wrap: anywhere; }
+.section-title { margin: 0; font-size: 13.5px; font-weight: 650; }
+.comparison { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.compare-pane { min-width: 0; padding: 10px 12px; }
+.compare-pane + .compare-pane { border-left: 1px solid var(--line); }
+.compare-pane h3 { margin: 0 0 9px; font-size: 13px; }
+.pane-meta { margin: -5px 0 9px; font-size: 11.5px; color: var(--muted); }
+.data-list { display: grid; grid-template-columns: minmax(90px, .75fr) minmax(0, 1.25fr); gap: 6px 12px; margin: 0; font-size: 12.5px; }
+.data-list dt { color: var(--muted); }
+.data-list dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.source-quote { margin: 8px 0 0; padding: 6px 9px; border-left: 2px solid var(--line); background: var(--bg); font-size: 12px; }
+.source-quote strong { display: block; margin-bottom: 2px; font-size: 11px; color: var(--muted); }
+.version-mismatch { color: var(--stop); font-weight: 700; }
+.review-area { display: grid; gap: 7px; }
+.finding-set { display: flex; flex-wrap: wrap; gap: 7px 18px; margin: 0; padding: 0; border: 0; }
+.finding-set legend { width: 100%; margin-bottom: 4px; font-size: 12.5px; color: var(--muted); font-weight: 600; }
+.finding-choice { display: inline-flex; align-items: flex-start; gap: 7px; font-size: 12.5px; }
+.finding-choice input { width: 16px; height: 16px; flex: none; margin: 2px 0 0; accent-color: var(--accent-strong); }
+.attest { margin: 0; padding: 9px 10px; font-size: 12.5px; }
+.attest input { accent-color: var(--accent-strong); }
+.rationale { margin: 0; font-size: 12px; color: var(--muted); }
+.actions { align-items: center; }
+.path-note { margin: 0; color: var(--muted); font-size: 11.5px; }
+.inline-notice { margin: 0; }
+.after-state { display: grid; gap: 10px; }
+.audit-card .card-body { padding: 11px 15px; }
+.audit-label { color: var(--muted); font-size: 11.5px; margin: 0 0 8px; }
+.audit-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+.audit-list li { display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 9px; font-size: 12px; }
+.audit-list time { font-family: var(--mono); color: var(--muted); font-size: 11px; }
+.handoff-responsibility { margin: 0; font-size: 12.5px; }
+.catalog-workloads { padding-inline: 18px; }
+.catalog-workloads .built { gap: 5px; }
+.footer-note { flex-basis: 100%; margin: 0; font-size: 11.5px; }
+
+@media (max-width: 860px) {
+  .page { padding-inline: 15px; }
+  .workbench { grid-template-columns: 1fr; }
+  .queue { position: static; }
+  .queue .card-head { padding-block: 9px; }
+  .queue-item { padding: 10px 12px; }
+  .queue-foot { margin-top: 7px; }
+}
+@media (max-width: 560px) {
+  .page { padding: 14px 12px 20px; }
+  .page-intro { grid-template-columns: 1fr; gap: 8px; }
+  .intro-actions { grid-row: 1; justify-content: flex-end; }
+  .intro-actions .btn { min-height: 36px; }
+  .role-context { font-size: 12px; }
+  .comparison { grid-template-columns: 1fr; }
+  .compare-pane + .compare-pane { border-left: 0; border-top: 1px solid var(--line); }
+  .compare-pane { padding: 10px 12px; }
+  .data-list { grid-template-columns: minmax(94px, .7fr) minmax(0, 1.3fr); }
+  .work-head { align-items: flex-start; }
+  .actions .btn { flex: 1 1 100%; justify-content: center; }
+  .footer { padding-inline: 12px; }
+}
+  </style>
+</head>
+<body data-subvertical="health-providers">
+  <header class="appbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">H</span>
+      <div>
+        <span class="brand-name">Care team handoff</span>
+        <span class="brand-sub">Workforce &amp; operations · pilot workflow</span>
+      </div>
+    </div>
+    <p class="disclosure">Illustrative demo - synthetic data</p>
+    <p class="who">Operator <b>Virtual RN · V-014</b></p>
+  </header>
+
+  <main class="page">
+    <div class="page-intro">
+      <div>
+        <p class="eyebrow">Virtual nursing · Unit Cedar pilot</p>
+        <h1>Admission handoff review</h1>
+        <p class="context-line">Fictional facility: Harborlight Care Center · one incoming administrative handoff</p>
+      </div>
+      <div class="intro-actions">
+        <button class="btn" id="reset-demo" type="button">Reset workflow</button>
+      </div>
+      <p class="role-context"><strong>Buyer and operator are distinct:</strong> Chief Nursing Officer (catalog buyer); virtual RN with bedside RN partner (workflow design assumption). Bedside acknowledgement remains with the bedside RN.</p>
+    </div>
+
+    <div class="workbench">
+      <aside class="queue card" aria-labelledby="queue-heading">
+        <div class="card-head">
+          <h2 class="queue-title" id="queue-heading">Work queue</h2>
+          <span class="queue-count">1 fictional item</span>
+        </div>
+        <ul class="queue-list">
+          <li class="queue-item" aria-current="true">
+            <strong class="mono" data-fixture="handoffId"></strong>
+            <span>Incoming admission · administrative handoff</span>
+            <span>Unit Cedar · pilot</span>
+          </li>
+        </ul>
+        <p class="queue-foot">No patient details are included. Example identifiers and operating times are fictional.</p>
+      </aside>
+
+      <div class="selected-work">
+        <section class="work-card card" aria-labelledby="handoff-heading">
+          <div class="card-head work-head">
+            <div>
+              <p class="eyebrow">Selected handoff · incoming admission</p>
+              <h2 id="handoff-heading">Compare source with draft</h2>
+            </div>
+            <span class="tag" id="state-label">Ready for review</span>
+          </div>
+          <div class="work-body">
+            <div class="handoff-id">
+              <strong>Handoff</strong>
+              <span class="mono" data-fixture="handoffId"></span>
+              <span class="tag">Fictional operating example</span>
+            </div>
+
+            <div id="state-notice" class="notice inline-notice" role="status" aria-live="polite" hidden></div>
+
+            <div class="comparison" aria-label="Source and draft comparison">
+              <section class="compare-pane" aria-labelledby="source-heading">
+                <h3 id="source-heading">Current source</h3>
+                <p class="pane-meta">Fictional administrative intake packet · version <span class="mono" id="source-version"></span></p>
+                <dl class="data-list">
+                  <dt>Packet reference</dt><dd class="mono" data-fixture="handoffId"></dd>
+                  <dt>Receiving unit</dt><dd data-fixture="unit"></dd>
+                  <dt>Arrival window</dt><dd data-fixture="arrivalWindow"></dd>
+                  <dt>Admin handoff</dt><dd data-fixture="sourceTask"></dd>
+                </dl>
+                <blockquote class="source-quote">
+                  <strong>Source excerpt · logistics only</strong>
+                  <span id="source-excerpt"></span>
+                </blockquote>
+              </section>
+
+              <section class="compare-pane" aria-labelledby="draft-heading">
+                <h3 id="draft-heading">Illustrative draft</h3>
+                <p class="pane-meta">Prepared for human review · source version <span class="mono" id="draft-version"></span></p>
+                <dl class="data-list">
+                  <dt>Handoff reference</dt><dd class="mono" data-fixture="handoffId"></dd>
+                  <dt>Receiving unit</dt><dd data-fixture="draftUnit"></dd>
+                  <dt>Arrival window</dt><dd data-fixture="draftArrivalWindow"></dd>
+                  <dt>Next admin step</dt><dd data-fixture="draftTask"></dd>
+                </dl>
+                <p class="path-note">This draft is static synthetic content; no AI, speech, messaging, or clinical content is generated.</p>
+              </section>
+            </div>
+
+            <div class="review-area">
+              <fieldset class="finding-set" id="finding-set">
+                <legend>Review finding · select after comparing the fields above</legend>
+                <label class="finding-choice">
+                  <input type="radio" name="finding" value="match" checked>
+                  <span>Fields match the current source</span>
+                </label>
+                <label class="finding-choice">
+                  <input type="radio" name="finding" value="mismatch">
+                  <span>Source version mismatch · hold for bedside review</span>
+                </label>
+              </fieldset>
+
+              <p class="rationale" id="review-rationale"></p>
+              <label class="attest" id="match-attestation">
+                <input type="checkbox" id="confirm-match">
+                <span>I compared the administrative fields above with the current source. This records a virtual RN review only; bedside acknowledgement is still required.</span>
+              </label>
+              <p class="path-note" id="escalation-owner">If a mismatch is found, the bedside RN partner is the escalation owner; follow-up occurs outside this illustrative file.</p>
+              <div class="actions">
+                <button class="btn btn-primary" id="record-action" type="button" disabled>Record review for handoff</button>
+              </div>
+              <p class="status-line" id="action-status" aria-live="polite">Compare the source and draft, choose a finding, then record it.</p>
+            </div>
+
+            <div class="after-state" id="after-state" hidden>
+              <p class="handoff-responsibility" id="responsibility"></p>
+              <section class="audit-card card" aria-labelledby="audit-heading">
+                <div class="card-head">
+                  <h3 id="audit-heading">Local demo audit</h3>
+                  <span class="card-note">This browser session only · no external record</span>
+                </div>
+                <div class="card-body">
+                  <p class="audit-label">Source/version, review rationale, owner, and local state transition</p>
+                  <ul class="audit-list" id="audit-list"></ul>
+                </div>
+              </section>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer catalog-workloads">
+    <div class="built">
+      <strong>Catalog-associated workloads · not connected</strong>
+      <span class="svc-chip">Azure Communication Services</span>
+      <span class="svc-chip">Azure OpenAI in Azure AI Foundry Models</span>
+      <span class="svc-chip">Azure AI Speech</span>
+      <span class="svc-chip">Azure App Service</span>
+    </div>
+    <p class="footer-note">File-only illustrative mock; none of these services are invoked. All facility, role identifiers, handoff fields, versions, and times are fictional design assumptions for nursing-leadership review.</p>
+  </footer>
+
+  <script>
+    "use strict";
+
+    const DEMO_FIXTURE = Object.freeze({
+      handoffId: "FIC-ADM-2048",
+      unit: "Unit Cedar",
+      arrivalWindow: "14:30–15:00",
+      sourceTask: "Welcome packet with bedside team",
+      draftUnit: "Unit Cedar",
+      draftArrivalWindow: "14:30–15:00",
+      draftTask: "Confirm welcome-packet delivery with bedside partner",
+      sourceExcerpt: "Scheduled arrival window 14:30–15:00; receiving unit Cedar. Administrative welcome packet remains with the bedside team.",
+      sourceVersion: "v03",
+      mismatchSourceVersion: "v04",
+      draftSourceVersion: "v03",
+      sourceTime: "07:18",
+      reviewTime: "07:24",
+      virtualRn: "Virtual RN · V-014",
+      bedsideRn: "Bedside RN · B-027",
+      matchRationale: "Review rationale: destination, arrival window, and administrative handoff fields were compared with source v03.",
+      mismatchRationale: "Review rationale: the draft references source v03 while the current source is v04; hold for bedside review.",
+      initialAudit: {
+        time: "07:18",
+        actor: "Source",
+        detail: "Fictional intake packet v03 available for local review; no patient data."
+      }
+    });
+
+    const STATES = Object.freeze({
+      READY: "ready",
+      WORKING: "working",
+      RESULT: "result",
+      EXCEPTION: "exception"
+    });
+
+    const model = {
+      state: STATES.READY,
+      finding: "match",
+      timer: null,
+      audit: [DEMO_FIXTURE.initialAudit]
+    };
+
+    const elements = {
+      reset: document.getElementById("reset-demo"),
+      confirmation: document.getElementById("confirm-match"),
+      matchAttestation: document.getElementById("match-attestation"),
+      findingSet: document.getElementById("finding-set"),
+      record: document.getElementById("record-action"),
+      actionStatus: document.getElementById("action-status"),
+      stateLabel: document.getElementById("state-label"),
+      stateNotice: document.getElementById("state-notice"),
+      rationale: document.getElementById("review-rationale"),
+      sourceVersion: document.getElementById("source-version"),
+      draftVersion: document.getElementById("draft-version"),
+      sourceExcerpt: document.getElementById("source-excerpt"),
+      afterState: document.getElementById("after-state"),
+      responsibility: document.getElementById("responsibility"),
+      auditList: document.getElementById("audit-list")
+    };
+
+    function setText(target, value) {
+      target.textContent = value;
+    }
+
+    function renderFixture() {
+      document.querySelectorAll("[data-fixture]").forEach((node) => {
+        setText(node, DEMO_FIXTURE[node.dataset.fixture]);
+      });
+      setText(elements.sourceExcerpt, DEMO_FIXTURE.sourceExcerpt);
+      setText(elements.draftVersion, DEMO_FIXTURE.draftSourceVersion);
+      setText(elements.sourceVersion, model.finding === "mismatch"
+        ? DEMO_FIXTURE.mismatchSourceVersion
+        : DEMO_FIXTURE.sourceVersion);
+      elements.sourceVersion.classList.toggle("version-mismatch", model.finding === "mismatch");
+      elements.draftVersion.classList.toggle("version-mismatch", model.finding === "mismatch");
+      setText(elements.rationale, model.finding === "mismatch"
+        ? DEMO_FIXTURE.mismatchRationale
+        : DEMO_FIXTURE.matchRationale);
+    }
+
+    function renderAudit() {
+      elements.auditList.replaceChildren();
+      model.audit.forEach((entry) => {
+        const item = document.createElement("li");
+        const time = document.createElement("time");
+        const detail = document.createElement("span");
+        setText(time, entry.time);
+        setText(detail, `${entry.actor}: ${entry.detail}`);
+        item.append(time, detail);
+        elements.auditList.append(item);
+      });
+    }
+
+    function renderState() {
+      const busy = model.state === STATES.WORKING;
+      const complete = model.state === STATES.RESULT || model.state === STATES.EXCEPTION;
+      const isMismatch = model.finding === "mismatch";
+      elements.confirmation.disabled = busy || complete || isMismatch;
+      elements.findingSet.disabled = busy || complete;
+      elements.matchAttestation.hidden = isMismatch;
+      elements.record.disabled = busy || complete || (!isMismatch && !elements.confirmation.checked);
+      elements.record.textContent = isMismatch ? "Record mismatch & hold" : "Record review for handoff";
+      elements.reset.disabled = false;
+      elements.afterState.hidden = !complete;
+      elements.stateNotice.hidden = !complete && !busy;
+
+      if (busy) {
+        elements.stateLabel.className = "tag tag-warn";
+        setText(elements.stateLabel, "Recording locally…");
+        setText(elements.actionStatus, "Working · saving the selected finding to this page's local demo state.");
+        elements.stateNotice.className = "notice notice-warn inline-notice";
+        setText(elements.stateNotice, "Recording a deterministic, local-only demo state. No message or external record is created.");
+      } else if (model.state === STATES.RESULT) {
+        elements.stateLabel.className = "tag tag-ok";
+        setText(elements.stateLabel, "Reviewed · bedside acknowledgement pending");
+        setText(elements.actionStatus, "Review recorded locally. The bedside RN still needs to acknowledge the handoff.");
+        elements.stateNotice.className = "notice notice-ok inline-notice";
+        setText(elements.stateNotice, "Virtual RN review recorded for handoff. This is not bedside acknowledgement and does not complete or transmit a handoff.");
+      } else if (model.state === STATES.EXCEPTION) {
+        elements.stateLabel.className = "tag tag-stop";
+        setText(elements.stateLabel, "Held · source mismatch");
+        setText(elements.actionStatus, "Handoff held locally. Bedside RN B-027 is the named escalation owner; contact is outside this mock.");
+        elements.stateNotice.className = "notice notice-stop inline-notice";
+        setText(elements.stateNotice, "Do not mark reviewed for handoff: draft source v03 differs from current source v04. Bedside RN B-027 owns reconciliation; no alert was sent.");
+      } else {
+        elements.stateLabel.className = "tag";
+        setText(elements.stateLabel, isMismatch ? "Mismatch selected · not yet recorded" : "Ready for review");
+        setText(elements.actionStatus, isMismatch
+          ? "Mismatch preview selected. Record the hold to add a local audit entry; no external escalation occurs."
+          : "Compare the source and draft, choose a finding, then record it.");
+      }
+
+      if (model.state === STATES.RESULT) {
+        setText(elements.responsibility, "Accountability: Virtual RN V-014 reviewed the administrative draft. Bedside RN B-027 remains responsible for acknowledging the handoff; acknowledgement is not simulated.");
+      } else if (model.state === STATES.EXCEPTION) {
+        setText(elements.responsibility, "Escalation owner: Bedside RN B-027 (fictional partner). Reconcile the packet outside this mock before any handoff; no automatic message or workflow routing is represented.");
+      }
+    }
+
+    function render() {
+      renderFixture();
+      renderAudit();
+      renderState();
+    }
+
+    function finishPath() {
+      model.timer = null;
+      if (model.finding === "mismatch") {
+        model.state = STATES.EXCEPTION;
+        model.audit.push({
+          time: DEMO_FIXTURE.reviewTime,
+          actor: DEMO_FIXTURE.virtualRn,
+          detail: `Recorded source-version mismatch: draft ${DEMO_FIXTURE.draftSourceVersion} vs current ${DEMO_FIXTURE.mismatchSourceVersion}; held for ${DEMO_FIXTURE.bedsideRn}. Local demo entry only; no alert sent.`
+        });
+      } else {
+        model.state = STATES.RESULT;
+        model.audit.push({
+          time: DEMO_FIXTURE.reviewTime,
+          actor: DEMO_FIXTURE.virtualRn,
+            detail: `Reviewed against source ${DEMO_FIXTURE.sourceVersion}; compared destination, arrival window, and administrative handoff fields; awaiting acknowledgement by ${DEMO_FIXTURE.bedsideRn}. Local demo entry only.`
+        });
+      }
+      render();
+    }
+
+    function recordFinding() {
+      if (model.state !== STATES.READY) return;
+      if (model.finding === "match" && !elements.confirmation.checked) return;
+      model.state = STATES.WORKING;
+      render();
+      model.timer = window.setTimeout(finishPath, 420);
+    }
+
+    document.querySelectorAll('input[name="finding"]').forEach((radio) => {
+      radio.addEventListener("change", (event) => {
+        if (model.state !== STATES.READY) return;
+        model.finding = event.currentTarget.value;
+        elements.confirmation.checked = false;
+        render();
+      });
+    });
+
+    elements.confirmation.addEventListener("change", () => {
+      renderState();
+    });
+    elements.record.addEventListener("click", recordFinding);
+    elements.reset.addEventListener("click", () => {
+      if (model.timer !== null) window.clearTimeout(model.timer);
+      model.timer = null;
+      model.state = STATES.READY;
+      model.finding = "match";
+      model.audit = [DEMO_FIXTURE.initialAudit];
+      elements.confirmation.checked = false;
+      document.querySelector('input[name="finding"][value="match"]').checked = true;
+      render();
+      setText(elements.actionStatus, "Workflow reset. Compare the source and draft, then choose a finding.");
+    });
+
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wave 2 cutover review | Analytics consolidation | Illustrative provider demo</title>
+<style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* ----------------------------------------------------- demo-specific layout */
+body { --on-accent: var(--surface); }
+.btn-primary, .btn-primary:hover:not(:disabled), .chip[aria-pressed="true"] { color: var(--on-accent); }
+.workspace { max-width: 1640px; padding: 16px 18px; margin: 0 auto; }
+.heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px 14px; flex-wrap: wrap; margin-bottom: 14px; }
+.heading h1 { margin: 0 0 3px; font-size: clamp(20px, 1.9vw, 25px); line-height: 1.25; }
+.heading p { margin: 0; color: var(--muted); font-size: 13px; }
+.layout { display: grid; grid-template-columns: minmax(230px, 262px) minmax(0, 1fr) minmax(280px, 320px); gap: 14px; align-items: start; }
+
+.filters { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 12px 0; }
+.queue { list-style: none; margin: 0; padding: 10px 12px 12px; display: grid; gap: 8px; }
+.queue button {
+  width: 100%; display: grid; gap: 3px; text-align: left; padding: 10px 11px; font: inherit; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); cursor: pointer;
+}
+.queue button:hover { background: var(--surface-2); }
+.queue button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent-strong); box-shadow: inset 3px 0 0 var(--accent-strong); }
+.q-id { font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
+.q-title { font-size: 14px; font-weight: 600; line-height: 1.3; }
+.q-work { font-size: 12px; color: var(--muted); }
+.queue .tag { justify-self: start; margin-top: 3px; }
+.queue-empty { margin: 0 12px 12px; padding: 12px; font-size: 13px; color: var(--muted); background: var(--surface-2); border-radius: var(--radius); }
+
+.work { min-width: 0; }
+.object-head { padding: 13px 16px; border-bottom: 1px solid var(--line); display: flex; align-items: flex-start; justify-content: space-between; gap: 8px 12px; flex-wrap: wrap; }
+.object-head h2 { margin: 3px 0 3px; font-size: 19px; line-height: 1.25; }
+.object-head p { margin: 0; font-size: 13px; color: var(--muted); }
+.eyebrow { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 12px; font-weight: 600; color: var(--accent-strong); }
+.eyebrow .mono { color: var(--ink-soft); }
+
+.path { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 10px; align-items: stretch; padding: 12px 16px; border-bottom: 1px solid var(--line-soft); background: var(--bg); }
+.path-box { min-width: 0; }
+.path-box h3 { margin: 0 0 5px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.path-box ol { margin: 0; padding-left: 18px; font-size: 13px; overflow-wrap: anywhere; }
+.path-box li { margin-bottom: 2px; }
+.path-arrow { align-self: center; color: var(--accent-strong); }
+
+.recon-block { padding: 12px 16px 6px; }
+.block-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; margin-bottom: 6px; }
+.block-head h3 { margin: 0; font-size: 14.5px; }
+.progress { height: 6px; background: var(--surface-2); border-radius: 3px; overflow: hidden; margin: 4px 0 8px; }
+.progress-bar { height: 100%; width: 0; background: var(--accent); transition: width 1.3s linear; }
+.progress-bar.is-full { width: 100%; }
+
+.recon { width: 100%; border-collapse: collapse; font-size: 13px; }
+.recon th, .recon td { text-align: left; padding: 8px 8px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+.recon thead th { font-size: 12px; font-weight: 600; color: var(--muted); border-bottom: 1px solid var(--line); padding-top: 4px; }
+.recon tbody th { font-weight: 600; overflow-wrap: anywhere; }
+.recon td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.recon tbody tr.is-out { background: var(--stop-bg); }
+.recon tbody tr.is-out th, .recon tbody tr.is-out td { color: #8b1f25; }
+.recon tbody tr.is-out .st-stop { color: #8b1f25; }
+.var-text { display: block; white-space: nowrap; }
+.var-tol { display: block; font-size: 12px; color: var(--muted); }
+.recon tbody tr.is-out .var-tol { color: #8b1f25; }
+.gauge { position: relative; height: 10px; margin-top: 5px; min-width: 90px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 3px; }
+.gauge .band { position: absolute; top: 0; bottom: 0; background: var(--ok-bg); border-left: 1px solid var(--ok); border-right: 1px solid var(--ok); }
+.gauge .zero { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--muted-soft); }
+.gauge .mark { position: absolute; top: -3px; width: 4px; height: 14px; border-radius: 1px; background: var(--ink); transform: translateX(-50%); transition: left .5s ease; }
+.gauge .mark.is-out { background: var(--stop); }
+.recon-empty { margin: 4px 0 8px; padding: 12px; font-size: 13.5px; background: var(--surface-2); border: 1px dashed var(--muted-soft); border-radius: var(--radius); color: var(--ink-soft); }
+.finding { margin: 10px 0 6px; }
+.finding b { display: block; }
+
+.decision { border-top: 1px solid var(--line); padding: 12px 16px 14px; display: grid; gap: 9px; background: var(--surface); }
+.decision .actions { align-items: center; }
+.after { border-top: 1px solid var(--line-soft); padding: 12px 16px 14px; }
+.after h3 { margin: 0 0 8px; font-size: 14px; }
+.after .facts dd { font-size: 13px; overflow-wrap: anywhere; }
+
+.rail { display: grid; gap: 14px; min-width: 0; }
+.ledger { list-style: none; margin: 0; padding: 0; display: grid; }
+.ledger li { padding: 10px 15px; border-bottom: 1px solid var(--line-soft); display: grid; gap: 4px; font-size: 13px; }
+.ledger li:last-child { border-bottom: 0; }
+.ledger .l-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 8px; align-items: flex-start; }
+.ledger .l-name { font-weight: 600; }
+.ledger .l-meta { color: var(--muted); font-size: 12.5px; }
+.ledger .l-deps { display: flex; flex-wrap: wrap; gap: 4px; }
+.ledger .dep { font-family: var(--mono); font-size: 11.5px; padding: 1px 6px; border-radius: 4px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink-soft); }
+.ledger .dep.is-done { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.ledger .dep.is-held { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.ledger .dep.is-done::before { content: "\2713\00a0"; }
+.ledger .dep.is-held::before { content: "!\00a0"; }
+.model { border-top: 1px solid var(--line); padding: 12px 15px; display: grid; gap: 8px; background: var(--bg); border-radius: 0 0 var(--radius) var(--radius); }
+.model h3 { margin: 0; font-size: 13.5px; }
+.model dl { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; margin: 0; font-size: 13px; }
+.model dt { color: var(--muted); }
+.model dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.model p { margin: 0; font-size: 12px; color: var(--muted); }
+.audit { max-height: 360px; overflow-y: auto; }
+.audit li { grid-template-columns: 50px minmax(0, 1fr); }
+.audit time span { display: block; line-height: 1.35; }
+.audit .note { display: block; color: var(--muted); font-style: italic; overflow-wrap: anywhere; }
+
+fieldset.route { border: 1px solid var(--line-soft); border-radius: var(--radius); padding: 8px 12px 10px; margin: 0; display: grid; gap: 6px; }
+fieldset.route legend { font-size: 13px; font-weight: 600; color: var(--muted); padding: 0 4px; }
+fieldset.route label { display: flex; gap: 8px; align-items: center; font-size: 14px; }
+.dlg-body .notice { margin: 0; }
+
+.footer { margin-top: 10px; }
+.claim q { font-style: italic; }
+
+@media (max-width: 1240px) {
+  .layout { grid-template-columns: minmax(220px, 250px) minmax(0, 1fr); }
+  .rail { grid-column: 1 / -1; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+}
+@media (max-width: 880px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .queue { display: flex; overflow-x: auto; padding-bottom: 12px; scroll-snap-type: x proximity; }
+  .queue li { flex: 0 0 210px; scroll-snap-align: start; }
+  .queue button { height: 100%; }
+  .rail { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 640px) {
+  .workspace { padding: 12px; }
+  .heading .btn { order: -1; }
+  .asset { display: flex; flex-direction: column; }
+  .object-head { order: 0; }
+  .decision { order: 1; border-top: 1px solid var(--line); }
+  .path { order: 2; grid-template-columns: minmax(0, 1fr); border-top: 1px solid var(--line-soft); }
+  .path-arrow { transform: rotate(90deg); justify-self: start; }
+  .recon-block { order: 3; }
+  .after { order: 4; }
+  .object-head, .path, .recon-block, .decision, .after { padding-left: 13px; padding-right: 13px; }
+  .recon, .recon tbody { display: block; }
+  .recon thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .recon tbody tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 12px; padding: 10px 8px; border-bottom: 1px solid var(--line-soft); }
+  .recon tbody th, .recon tbody td { display: block; padding: 0; border: 0; }
+  .recon tbody th { grid-column: 1 / -1; }
+  .recon tbody td::before { content: attr(data-label); display: block; font-size: 11.5px; font-weight: 600; color: var(--muted); }
+  .recon tbody tr.is-out td::before { color: #8b1f25; }
+  .recon td.num { white-space: normal; }
+  .appbar .who { width: 100%; }
+}
+</style>
+</head>
+<body data-subvertical="health-providers">
+<header class="appbar">
+  <div class="brand">
+    <svg class="brand-mark" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M3 4h7v7H3zM14 4h7v7h-7zM3 13h7v7H3zM14 13h7v7h-7z" opacity=".35"/><path fill="currentColor" d="M14 13h7v7h-7z"/></svg>
+    <div><span class="brand-name">Analytics consolidation workbench</span><span class="brand-sub">Contoso Health (fictional) · Migration wave review</span></div>
+  </div>
+  <p class="disclosure"><svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 7v5M8 4.2v.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Illustrative demo - synthetic data</p>
+  <p class="who">Signed in as <b>Dana Whitfield</b> · Chief Data Officer</p>
+</header>
+
+<main class="workspace" id="main">
+  <div class="heading">
+    <div>
+      <h1>Wave 2 cutover review: operations and finance analytics</h1>
+      <p>Parallel run 1–28 Sep 2026 · Incumbent renewal notices due 15 Dec 2026 · All records, people, and figures are sample data</p>
+    </div>
+    <button class="btn" type="button" id="reset">Reset demo</button>
+  </div>
+
+  <div class="layout">
+    <aside class="card" aria-labelledby="queue-title">
+      <div class="card-head"><h2 id="queue-title">Wave 2 assets</h2><span class="card-note" id="queue-count"></span></div>
+      <div class="filters" role="group" aria-label="Filter assets by status">
+        <button class="chip" type="button" data-filter="all" aria-pressed="true">All</button>
+        <button class="chip" type="button" data-filter="needs" aria-pressed="false">Needs decision</button>
+        <button class="chip" type="button" data-filter="held" aria-pressed="false">Held</button>
+        <button class="chip" type="button" data-filter="approved" aria-pressed="false">Approved</button>
+      </div>
+      <ul class="queue" id="queue" aria-label="Assets in wave 2"></ul>
+      <p class="queue-empty" id="queue-empty" hidden></p>
+    </aside>
+
+    <section class="work" aria-labelledby="asset-title">
+      <article class="card asset">
+        <div class="object-head">
+          <div>
+            <div class="eyebrow"><span class="mono" id="asset-id"></span><span id="asset-workload"></span></div>
+            <h2 id="asset-title"></h2>
+            <p id="asset-context"></p>
+          </div>
+          <span class="tag" id="asset-status"></span>
+        </div>
+
+        <div class="path" aria-label="Migration path">
+          <div class="path-box"><h3>Incumbent (retiring)</h3><ol id="path-from"></ol></div>
+          <svg class="path-arrow" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div class="path-box"><h3>Target on Microsoft Fabric</h3><ol id="path-to"></ol></div>
+        </div>
+
+        <div class="recon-block">
+          <div class="block-head"><h3 id="recon-title">Parallel-run reconciliation</h3><span class="card-note" id="recon-note"></span></div>
+          <div class="progress" id="progress" hidden><div class="progress-bar" id="progress-bar"></div></div>
+          <table class="recon" id="recon" aria-labelledby="recon-title">
+            <thead><tr><th scope="col">Check</th><th scope="col">Incumbent</th><th scope="col">Fabric target</th><th scope="col">Variance vs tolerance</th><th scope="col">Result</th></tr></thead>
+            <tbody id="recon-body"></tbody>
+          </table>
+          <p class="recon-empty" id="recon-empty" hidden></p>
+          <div class="notice notice-warn finding" id="finding" hidden></div>
+        </div>
+
+        <div class="decision">
+          <div class="notice" id="decision-notice"></div>
+          <div class="actions">
+            <button class="btn btn-primary" type="button" id="primary"></button>
+            <button class="btn" type="button" id="extend" hidden>Extend parallel run 14 days</button>
+            <button class="btn" type="button" id="escalate" hidden>Escalate…</button>
+            <button class="btn" type="button" id="undo" hidden></button>
+          </div>
+          <p class="status-line" id="status" role="status" aria-live="polite" tabindex="-1"></p>
+        </div>
+
+        <div class="after">
+          <h3>After cutover</h3>
+          <dl class="facts" id="after"></dl>
+        </div>
+      </article>
+    </section>
+
+    <aside class="rail" aria-label="Decommission ledger and decision trail">
+      <section class="card" aria-labelledby="ledger-title">
+        <div class="card-head"><h2 id="ledger-title">Decommission ledger</h2><span class="card-note">Incumbent contracts in this wave</span></div>
+        <ul class="ledger" id="ledger"></ul>
+        <div class="model">
+          <h3>Wave 2 cost model (sample assumptions)</h3>
+          <dl id="model"></dl>
+          <p>Fictional figures for modelling total cost and migration ROI. Not a quote, forecast, or measured saving. Retiring a contract is a separate procurement decision outside this screen.</p>
+        </div>
+      </section>
+      <section class="card" aria-labelledby="audit-title">
+        <div class="card-head"><h2 id="audit-title">Decision trail</h2><span class="card-note">This demo session only</span></div>
+        <div class="card-body"><ol class="audit" id="audit" tabindex="0" aria-label="Decision trail entries, newest first"></ol></div>
+      </section>
+    </aside>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="built"><span>Catalog workloads:</span><span class="svc-chip">Fabric (Analytics Migration / New Analytics)</span><span class="svc-chip">Fabric (Power BI)</span><span class="svc-chip">Fabric (Real-Time Intelligence)</span><span class="svc-chip">Databricks (Analytics Migration / New)</span></div>
+  <span class="claim">Catalog value: <q>Standardizing on a unified analytics platform displaces high-cost third-party tools, reduces licensing and integration spend, and broadens self-service analytics; improves time-to-insight across the enterprise.</q> Every number on this screen is <b>fictional sample data</b>, not a measured outcome.</span>
+</footer>
+
+<dialog id="approve-dlg" aria-labelledby="approve-title">
+  <form id="approve-form" novalidate>
+    <div class="dlg-head"><div><h2 id="approve-title"></h2><span class="dlg-sub" id="approve-sub"></span></div><button class="btn" type="button" data-close aria-label="Close approval review">Close</button></div>
+    <div class="dlg-body">
+      <dl class="meta-grid" id="approve-facts"></dl>
+      <p class="rule"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 7v5M8 4.2v.1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span>Approval schedules a simulated cutover. Users move to the Fabric version in the next change window; the incumbent stays read-only for the rollback period. You can undo this approval in the demo.</span></p>
+      <label class="attest"><input type="checkbox" id="attest"><span>I reviewed the reconciliation evidence and consumer sign-off, and I am accountable for this cutover decision.</span></label>
+      <div class="field"><label for="approve-note">Sign-off note (optional)</label><textarea id="approve-note" maxlength="300" placeholder="Context for the decision trail. Do not enter real data."></textarea></div>
+      <p class="dlg-error" id="approve-error" role="alert"></p>
+    </div>
+    <div class="dlg-foot"><button class="btn" type="button" data-close>Cancel</button><button class="btn btn-primary" type="submit">Approve cutover</button></div>
+  </form>
+</dialog>
+
+<dialog id="escalate-dlg" aria-labelledby="escalate-title">
+  <form id="escalate-form" novalidate>
+    <div class="dlg-head"><div><h2 id="escalate-title"></h2><span class="dlg-sub">The incumbent stays primary while the escalation is open.</span></div><button class="btn" type="button" data-close aria-label="Close escalation">Close</button></div>
+    <div class="dlg-body">
+      <div class="notice notice-warn" id="escalate-evidence"></div>
+      <fieldset class="route">
+        <legend>Route to</legend>
+        <label><input type="radio" name="route" value="Priya Raman, VP Enterprise Architecture" checked> Priya Raman · VP Enterprise Architecture</label>
+        <label><input type="radio" name="route" value="Marcus Lee, VP Analytics"> Marcus Lee · VP Analytics</label>
+      </fieldset>
+      <div class="field"><label for="escalate-note">Decision you need (required)</label><textarea id="escalate-note" maxlength="300" placeholder="For example: approve the duplicate-handling fix and a 14-day re-run. Do not enter real data."></textarea></div>
+      <p class="dlg-error" id="escalate-error" role="alert"></p>
+    </div>
+    <div class="dlg-foot"><button class="btn" type="button" data-close>Cancel</button><button class="btn btn-primary" type="submit">Send escalation (simulated)</button></div>
+  </form>
+</dialog>
+<script>
+"use strict";
+// All values below are fictional sample data for a sales demonstration.
+const FIXTURES = {
+  user: { name: "Dana Whitfield", role: "Chief Data Officer" },
+  today: "29 Sep",
+  clockStart: 10 * 60 + 5,
+  migrationEffort: 310000,
+  assets: [
+    {
+      id: "W2-A01", title: "Bed census and patient flow", workload: "Fabric (Power BI)", status: "parallel", outcome: "pass",
+      context: "Operational report · 6 facilities · consumer sign-off recorded by VP Analytics",
+      from: ["Palantir pipeline ops_census_v3", "Legacy BI tool A dashboard"],
+      to: ["Microsoft Fabric lakehouse (Delta tables in OneLake)", "Power BI semantic model in Direct Lake mode", "Power BI report: Bed census and patient flow"],
+      run: "28-day parallel run, 1–28 Sep 2026",
+      checks: [
+        { name: "Encounter rows, fact_encounter_daily", inc: "1,284,511", fab: "1,284,511", variance: "0 rows", tol: "exact", pass: true },
+        { name: "Midnight census, 28-day mean", inc: "1,146.2", fab: "1,146.2", variance: "0.00%", tol: "±0.5%", gauge: [0, 0.5], pass: true },
+        { name: "Mean length of stay (days)", inc: "4.71", fab: "4.70", variance: "−0.21%", tol: "±0.5%", gauge: [-0.21, 0.5], pass: true },
+        { name: "Refresh complete by 06:00", inc: "05:12 avg", fab: "04:38 avg", variance: "34 min earlier", tol: "by 06:00", pass: true },
+        { name: "Facility row-level security roles", inc: "6 roles", fab: "6 mapped", variance: "none", tol: "exact", pass: true }
+      ],
+      after: [
+        ["Consumers", "212 viewers, 14 report authors (sample)"],
+        ["Self-service", "Semantic model proposed for Certified endorsement and marked discoverable in the OneLake catalog; analysts request Build permission to author their own reports."],
+        ["Rollback", "Incumbent dashboard read-only for 30 days (sample plan)"]
+      ]
+    },
+    {
+      id: "W2-A02", title: "ED arrivals live board", workload: "Fabric (Real-Time Intelligence)", status: "parallel", outcome: "fail",
+      context: "Real-time operational board · 6 ED charge-nurse stations",
+      from: ["Palantir operational app ed_live", "Custom duplicate-removal step"],
+      to: ["Eventstream: ADT arrival events (synthetic feed)", "Eventhouse with KQL database", "Real-Time Dashboard: ED arrivals"],
+      run: "28-day parallel run, 1–28 Sep 2026",
+      checks: [
+        { name: "Arrival events, 28 days", inc: "41,902", fab: "43,118", variance: "+2.90%", tol: "±0.5%", gauge: [2.9, 0.5], pass: false },
+        { name: "Duplicate registration messages", inc: "removed upstream", fab: "1,216 retained", variance: "+1,216", tol: "0 retained", pass: false },
+        { name: "Median arrival-to-triage (min)", inc: "11.0", fab: "10.6", variance: "−0.4 min", tol: "±0.5 min", gauge: [-0.4, 0.5], pass: true },
+        { name: "Event latency, p95", inc: "94 s", fab: "22 s", variance: "72 s faster", tol: "≤ 120 s", pass: true },
+        { name: "Board tiles rebuilt", inc: "18 tiles", fab: "18 tiles", variance: "none", tol: "exact", pass: true }
+      ],
+      finding: {
+        title: "Probable cause, needs engineering confirmation",
+        text: "The extra 1,216 events match duplicate registration messages in the synthetic ADT feed. The incumbent app removes them in a custom step that was not carried into the Eventstream. Duplicate IDs were confirmed on 3 of 28 sampled days; the other days are not yet checked.",
+        next: "Proposed fix: add duplicate handling to the Eventstream, then re-run the comparison. Do not approve on partial evidence."
+      },
+      after: [
+        ["Consumers", "ED charge nurses and house supervisors (sample)"],
+        ["Self-service", "KQL queryset shared with the ED operations analyst group for ad hoc questions (proposed)."],
+        ["Rollback", "Incumbent app stays primary until a cutover is approved"]
+      ]
+    },
+    {
+      id: "W2-A03", title: "Service line contribution margin", workload: "Fabric (Analytics Migration / New Analytics)", status: "ready", outcome: "pass", reconciled: true,
+      context: "Finance report · owner VP Finance · consumer sign-off recorded",
+      from: ["Legacy BI tool B workbook", "Monthly spreadsheet extracts"],
+      to: ["Microsoft Fabric lakehouse (finance)", "Power BI semantic model in Direct Lake mode", "Power BI report: Service line margin"],
+      run: "28-day parallel run, 1–28 Sep 2026",
+      checks: [
+        { name: "Net revenue, FY26 year to date", inc: "$412.6M", fab: "$412.6M", variance: "$0K", tol: "exact to $1K", pass: true },
+        { name: "Contribution margin, 14 service lines", inc: "14 lines", fab: "14 lines", variance: "max 0.04%", tol: "±0.1%", gauge: [0.04, 0.1], pass: true },
+        { name: "Cost allocation rules", inc: "212 rules", fab: "212 rules", variance: "none", tol: "exact", pass: true },
+        { name: "Refresh complete by 07:00", inc: "06:41 avg", fab: "05:55 avg", variance: "46 min earlier", tol: "by 07:00", pass: true },
+        { name: "Department row-level security roles", inc: "31 roles", fab: "31 mapped", variance: "none", tol: "exact", pass: true }
+      ],
+      after: [
+        ["Consumers", "VP Finance and 38 finance viewers (sample)"],
+        ["Self-service", "Certified service-line semantic model so analysts build reports without new spreadsheet extracts (proposed)."],
+        ["Rollback", "Incumbent workbook read-only through one month-end close (sample plan)"]
+      ]
+    },
+    {
+      id: "W2-A04", title: "OR supply spend pipeline", workload: "Databricks (Analytics Migration / New)", status: "approved", outcome: "pass", reconciled: true,
+      context: "Data engineering pipeline · perioperative supply analytics",
+      from: ["Palantir pipeline supply_spend_v2"],
+      to: ["Azure Databricks jobs governed by Unity Catalog", "Mirrored Azure Databricks catalog in Fabric", "Power BI report: OR supply spend"],
+      run: "28-day parallel run, 18 Aug–14 Sep 2026",
+      approvedAt: "22 Sep 09:14",
+      checks: [
+        { name: "Supply line items, 28 days", inc: "2,806,440", fab: "2,806,440", variance: "0 rows", tol: "exact", pass: true },
+        { name: "OR spend per case, mean", inc: "$1,932", fab: "$1,931", variance: "−0.05%", tol: "±0.5%", gauge: [-0.05, 0.5], pass: true },
+        { name: "Job complete by 04:00", inc: "03:20 avg", fab: "02:05 avg", variance: "75 min earlier", tol: "by 04:00", pass: true },
+        { name: "Curated tables visible in OneLake", inc: "n/a", fab: "9 of 9", variance: "none", tol: "all 9", pass: true },
+        { name: "Access groups mapped", inc: "4 groups", fab: "4 groups", variance: "none", tol: "exact", pass: true }
+      ],
+      after: [
+        ["Consumers", "Perioperative supply analysts, 22 viewers (sample)"],
+        ["Self-service", "The mirrored catalog gives Fabric users a read-only copy of the curated tables in OneLake for their own reports."],
+        ["Rollback", "Incumbent pipeline paused, not deleted, for 30 days (sample plan)"]
+      ]
+    },
+    {
+      id: "W2-A05", title: "Nurse staffing and overtime", workload: "Fabric (Power BI)", status: "running", outcome: "pass",
+      context: "Workforce report · nursing leadership",
+      from: ["Legacy BI tool B dashboard"],
+      to: ["Microsoft Fabric lakehouse (workforce)", "Power BI semantic model in Direct Lake mode"],
+      run: "Parallel run day 9 of 14, closes 3 Oct 2026",
+      pending: "No comparison data yet. Reconciliation opens when the parallel run closes on 3 Oct 2026 (day 9 of 14). Nothing on this asset needs a decision today.",
+      checks: [],
+      after: [
+        ["Consumers", "Nursing leadership, 64 viewers (sample)"],
+        ["Self-service", "Planned: certified staffing semantic model (proposed)"],
+        ["Rollback", "Not yet scheduled"]
+      ]
+    }
+  ],
+  ledger: [
+    { id: "L1", name: "Palantir operations workspace", meta: "Renewal notice 15 Dec 2026", annual: 1480000, assets: ["W2-A01", "W2-A02", "W2-A04"] },
+    { id: "L2", name: "Legacy BI tool A operations server", meta: "Renewal notice 15 Dec 2026", annual: 212000, assets: ["W2-A01"] },
+    { id: "L3", name: "Legacy BI tool B finance and workforce server", meta: "Renewal notice 31 Jan 2027", annual: 96000, assets: ["W2-A03", "W2-A05"] }
+  ],
+  audit: [
+    { d: "22 Sep", t: "09:14", actor: "Dana Whitfield", human: true, text: "Approved cutover for W2-A04 OR supply spend pipeline; 5 of 5 checks within tolerance." },
+    { d: "28 Sep", t: "23:59", actor: "Reconciliation job", text: "Parallel run window closed for W2-A01, W2-A02, and W2-A03." },
+    { d: "29 Sep", t: "07:40", actor: "Reconciliation job", text: "W2-A03 service line margin: 5 of 5 checks within tolerance." },
+    { d: "29 Sep", t: "08:05", actor: "Marcus Lee, VP Analytics", human: true, text: "Consumer sign-off recorded for W2-A01 and W2-A03." }
+  ]
+};
+
+const STATUS = {
+  running: { label: "Parallel run in progress", tone: "" },
+  parallel: { label: "Awaiting reconciliation", tone: "warn" },
+  reconciling: { label: "Reconciling", tone: "" },
+  ready: { label: "Ready for sign-off", tone: "ok" },
+  blocked: { label: "Outside tolerance", tone: "stop" },
+  extended: { label: "Parallel run extended", tone: "warn" },
+  escalated: { label: "Escalated", tone: "warn" },
+  approved: { label: "Cutover approved", tone: "ok" }
+};
+const FILTERS = {
+  all: () => true,
+  needs: (a) => ["parallel", "ready", "blocked"].includes(a.status),
+  held: (a) => ["blocked", "extended", "escalated"].includes(a.status),
+  approved: (a) => a.status === "approved"
+};
+const FILTER_EMPTY = {
+  needs: "No assets need a decision right now.",
+  held: "No assets are held. Exceptions appear here when a reconciliation falls outside tolerance.",
+  approved: "No assets approved in this view."
+};
+const RECONCILE_MS = 1400;
+const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+const $ = (id) => document.getElementById(id);
+
+let state;
+let timer = null;
+
+function freshState() {
+  const assets = FIXTURES.assets.map((a) => ({ ...a, reconciled: Boolean(a.reconciled), prev: null, escalation: null, approvedBy: a.status === "approved" ? FIXTURES.user.name : null }));
+  return { assets, selected: "W2-A01", filter: "all", audit: FIXTURES.audit.map((e) => ({ ...e })), minutes: FIXTURES.clockStart };
+}
+
+function asset(id) { return state.assets.find((a) => a.id === id); }
+function current() { return asset(state.selected); }
+function tick() {
+  state.minutes += 2;
+  const h = String(Math.floor(state.minutes / 60)).padStart(2, "0");
+  const m = String(state.minutes % 60).padStart(2, "0");
+  return h + ":" + m;
+}
+function log(actor, text, opts = {}) {
+  state.audit.push({ d: FIXTURES.today, t: tick(), actor, human: Boolean(opts.human), text, note: opts.note || "" });
+}
+function announce(msg) { $("status").textContent = msg; }
+function el(tag, cls, text) {
+  const node = document.createElement(tag);
+  if (cls) node.className = cls;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+function tagFor(status) {
+  const s = STATUS[status];
+  const t = el("span", "tag" + (s.tone ? " tag-" + s.tone : ""), s.label);
+  return t;
+}
+
+function renderQueue() {
+  const list = $("queue");
+  list.replaceChildren();
+  const visible = state.assets.filter(FILTERS[state.filter]);
+  visible.forEach((a) => {
+    const li = el("li");
+    const b = el("button");
+    b.type = "button";
+    b.dataset.id = a.id;
+    b.setAttribute("aria-pressed", String(a.id === state.selected));
+    b.append(el("span", "q-id", a.id), el("span", "q-title", a.title), el("span", "q-work", a.workload), tagFor(a.status));
+    li.append(b);
+    list.append(li);
+  });
+  list.hidden = visible.length === 0;
+  $("queue-empty").hidden = visible.length !== 0;
+  $("queue-empty").textContent = FILTER_EMPTY[state.filter] || "";
+  const approved = state.assets.filter(FILTERS.approved).length;
+  $("queue-count").textContent = approved + " of " + state.assets.length + " cut over";
+  document.querySelectorAll("[data-filter]").forEach((c) => c.setAttribute("aria-pressed", String(c.dataset.filter === state.filter)));
+}
+
+function renderChecks(a) {
+  const body = $("recon-body");
+  body.replaceChildren();
+  const showResults = a.reconciled;
+  a.checks.forEach((c) => {
+    const tr = el("tr");
+    if (showResults && !c.pass) tr.className = "is-out";
+    const th = el("th", "", c.name);
+    th.scope = "row";
+    const inc = el("td", "num", c.inc); inc.dataset.label = "Incumbent";
+    const fab = el("td", "num", showResults ? c.fab : "Not compared"); fab.dataset.label = "Fabric target";
+    const v = el("td"); v.dataset.label = "Variance vs tolerance";
+    if (showResults) {
+      v.append(el("span", "var-text", c.variance), el("span", "var-tol", "Tolerance " + c.tol));
+      if (c.gauge) {
+        const [val, tol] = c.gauge;
+        const range = Math.max(tol * 3, Math.abs(val) * 1.25);
+        const g = el("div", "gauge");
+        g.setAttribute("aria-hidden", "true");
+        const band = el("span", "band");
+        band.style.left = (50 - (tol / range) * 50) + "%";
+        band.style.width = ((tol / range) * 100) + "%";
+        const mark = el("span", "mark" + (c.pass ? "" : " is-out"));
+        mark.style.left = Math.min(98, Math.max(2, 50 + (val / range) * 50)) + "%";
+        g.append(band, el("span", "zero"), mark);
+        v.append(g);
+      }
+    } else {
+      v.append(el("span", "var-text", "Pending"), el("span", "var-tol", "Tolerance " + c.tol));
+    }
+    const r = el("td"); r.dataset.label = "Result";
+    if (showResults) r.append(el("span", "st " + (c.pass ? "st-ok" : "st-stop"), c.pass ? "✓ Within" : "✕ Outside"));
+    else r.append(el("span", "st st-idle", "Not run"));
+    tr.append(th, inc, fab, v, r);
+    body.append(tr);
+  });
+}
+
+function renderAsset() {
+  const a = current();
+  $("asset-id").textContent = a.id;
+  $("asset-workload").textContent = a.workload;
+  $("asset-title").textContent = a.title;
+  $("asset-context").textContent = a.context;
+  const status = $("asset-status");
+  status.className = "tag" + (STATUS[a.status].tone ? " tag-" + STATUS[a.status].tone : "");
+  status.textContent = STATUS[a.status].label;
+  $("path-from").replaceChildren(...a.from.map((t) => el("li", "", t)));
+  $("path-to").replaceChildren(...a.to.map((t) => el("li", "", t)));
+
+  const hasChecks = a.checks.length > 0;
+  $("recon").hidden = !hasChecks;
+  $("recon-empty").hidden = hasChecks;
+  $("recon-empty").textContent = a.pending || "";
+  const passed = a.checks.filter((c) => c.pass).length;
+  $("recon-note").textContent = a.reconciled ? a.run + " · " + passed + " of " + a.checks.length + " within tolerance" : a.run;
+  renderChecks(a);
+  $("progress").hidden = a.status !== "reconciling";
+
+  const finding = $("finding");
+  finding.replaceChildren();
+  finding.hidden = !(a.reconciled && a.finding);
+  if (a.reconciled && a.finding) {
+    const span = el("span");
+    span.append(el("b", "", a.finding.title), document.createTextNode(a.finding.text), el("span", "notice-note", a.finding.next));
+    finding.append(span);
+  }
+
+  const facts = $("after");
+  facts.replaceChildren();
+  a.after.forEach(([k, v]) => { const wrap = el("div"); wrap.append(el("dt", "", k), el("dd", "", v)); facts.append(wrap); });
+  const lines = FIXTURES.ledger.filter((l) => l.assets.includes(a.id)).map((l) => l.name);
+  const wrap = el("div"); wrap.append(el("dt", "", "Contracts affected"), el("dd", "", lines.join("; ") || "None")); facts.append(wrap);
+
+  renderDecision(a);
+}
+
+function renderDecision(a) {
+  const n = $("decision-notice");
+  const primary = $("primary");
+  const extend = $("extend");
+  const escalate = $("escalate");
+  const undo = $("undo");
+  primary.hidden = false; primary.disabled = false;
+  extend.hidden = true; escalate.hidden = true; undo.hidden = true;
+  let tone = "", text = "", note = "";
+  switch (a.status) {
+    case "running":
+      primary.textContent = "Run reconciliation"; primary.disabled = true;
+      text = "Parallel run still open."; note = "Reconciliation is available after the run closes on 3 Oct 2026 (sample).";
+      break;
+    case "parallel":
+      primary.textContent = "Run reconciliation";
+      text = "Parallel run closed. Compare incumbent and Fabric output before any cutover decision.";
+      note = "The comparison is read-only and uses the recorded parallel-run output (sample).";
+      break;
+    case "reconciling":
+      primary.textContent = "Reconciling…"; primary.disabled = true;
+      text = "Comparing 28 days of incumbent and Fabric output…";
+      break;
+    case "ready":
+      tone = "ok"; primary.textContent = "Review and approve cutover…";
+      text = "All " + a.checks.length + " checks are within tolerance. Cutover needs your sign-off.";
+      note = "Nothing changes for users until the scheduled change window (simulated).";
+      break;
+    case "blocked":
+      tone = "stop"; primary.textContent = "Approve cutover"; primary.disabled = true;
+      text = a.checks.filter((c) => !c.pass).length + " of " + a.checks.length + " checks are outside tolerance, so approval is unavailable.";
+      note = "Extend the parallel run after a fix, or escalate for an architecture decision. There is no override on this screen.";
+      extend.hidden = false; escalate.hidden = false;
+      break;
+    case "extended":
+      tone = "warn"; primary.textContent = "Approve cutover"; primary.disabled = true;
+      text = "Parallel run extended 14 days to 12 Oct 2026 (simulated). The incumbent stays primary.";
+      note = "Palantir renewal notice is due 15 Dec 2026, so a second miss would need escalation.";
+      escalate.hidden = false; undo.hidden = false; undo.textContent = "Undo extension";
+      break;
+    case "escalated":
+      tone = "warn"; primary.textContent = "Approve cutover"; primary.disabled = true;
+      text = "Escalated to " + a.escalation.route + " (simulated). The incumbent stays primary until they respond.";
+      note = "Your request: " + a.escalation.note;
+      undo.hidden = false; undo.textContent = "Withdraw escalation";
+      break;
+    case "approved":
+      tone = "ok"; primary.hidden = true;
+      text = "Cutover approved by " + a.approvedBy + " on " + (a.approvedAt || FIXTURES.today) + " (simulated).";
+      note = "Incumbent kept read-only for the rollback period. Users move in the next change window.";
+      undo.hidden = false; undo.textContent = "Undo approval";
+      break;
+  }
+  n.className = "notice" + (tone ? " notice-" + tone : "");
+  n.replaceChildren();
+  const span = el("span", "", text);
+  if (note) span.append(el("span", "notice-note", note));
+  n.append(span);
+}
+
+function renderLedger() {
+  const list = $("ledger");
+  list.replaceChildren();
+  let eligible = 0, held = 0, total = 0;
+  FIXTURES.ledger.forEach((l) => {
+    total += l.annual;
+    const deps = l.assets.map(asset);
+    const done = deps.filter((d) => d.status === "approved").length;
+    const blocked = deps.filter((d) => ["blocked", "extended", "escalated"].includes(d.status));
+    const li = el("li");
+    const top = el("div", "l-top");
+    top.append(el("span", "l-name", l.name));
+    let tag;
+    if (done === deps.length) { tag = el("span", "tag tag-ok", "Retire-eligible at renewal"); eligible += l.annual; }
+    else if (blocked.length) { tag = el("span", "tag tag-stop", "Held by " + blocked.map((b) => b.id).join(", ")); held += l.annual; }
+    else tag = el("span", "tag", done + " of " + deps.length + " cut over");
+    top.append(tag);
+    const depRow = el("div", "l-deps");
+    depRow.setAttribute("aria-label", "Dependent assets");
+    deps.forEach((d) => {
+      const cls = d.status === "approved" ? " is-done" : (blocked.includes(d) ? " is-held" : "");
+      const chip = el("span", "dep" + cls, d.id);
+      chip.title = d.title + ": " + STATUS[d.status].label;
+      depRow.append(chip);
+    });
+    li.append(top, el("span", "l-meta", l.meta + " · sample annual " + money.format(l.annual)), depRow);
+    list.append(li);
+  });
+  const model = $("model");
+  model.replaceChildren();
+  [["Incumbent annual spend in wave", total], ["Retire-eligible at renewal", eligible], ["Held by exceptions", held], ["One-time migration effort", FIXTURES.migrationEffort]]
+    .forEach(([k, v]) => model.append(el("dt", "", k), el("dd", "", money.format(v))));
+}
+
+function renderAudit() {
+  const list = $("audit");
+  list.replaceChildren();
+  state.audit.slice().reverse().forEach((e) => {
+    const li = el("li");
+    const time = el("time");
+    time.append(el("span", "", e.d), el("span", "", e.t));
+    const body = el("div");
+    body.append(el("span", "actor " + (e.human ? "is-human" : "is-system"), e.actor), document.createTextNode(" " + e.text));
+    if (e.note) body.append(el("span", "note", "“" + e.note + "”"));
+    li.append(time, body);
+    list.append(li);
+  });
+}
+
+function render() { renderQueue(); renderAsset(); renderLedger(); renderAudit(); }
+
+function keepFocus(fallback) {
+  const active = document.activeElement;
+  if (!active || active === document.body || active.hidden || active.disabled || active.closest("[hidden]")) (fallback || $("status")).focus();
+}
+
+function select(id) {
+  state.selected = id;
+  render();
+  announce("Showing " + id + " " + current().title + ": " + STATUS[current().status].label + ".");
+}
+
+function reconcile() {
+  const a = current();
+  if (a.status !== "parallel") return;
+  a.status = "reconciling";
+  render();
+  announce("Reconciling " + a.id + ". Comparing 28 days of output.");
+  const bar = $("progress-bar");
+  bar.classList.remove("is-full");
+  void bar.offsetWidth;
+  bar.classList.add("is-full");
+  const id = a.id;
+  timer = setTimeout(() => {
+    timer = null;
+    const target = asset(id);
+    target.reconciled = true;
+    const failed = target.checks.filter((c) => !c.pass).length;
+    target.status = failed ? "blocked" : "ready";
+    log("Reconciliation job", id + " " + target.title + ": " + (target.checks.length - failed) + " of " + target.checks.length + " checks within tolerance.");
+    render();
+    announce(failed
+      ? "Reconciliation complete for " + id + ": " + failed + " checks outside tolerance. Approval is unavailable."
+      : "Reconciliation complete for " + id + ": all checks within tolerance. Ready for your sign-off.");
+    keepFocus(state.selected === id && !failed ? $("primary") : null);
+  }, RECONCILE_MS);
+}
+
+let returnFocus = null;
+function openDialog(dlg, trigger) {
+  returnFocus = trigger;
+  if (typeof dlg.showModal === "function") dlg.showModal(); else dlg.setAttribute("open", "");
+}
+function closeDialog(dlg) {
+  if (typeof dlg.close === "function") dlg.close(); else dlg.removeAttribute("open");
+}
+
+function openApprove() {
+  const a = current();
+  if (a.status !== "ready") return;
+  $("approve-title").textContent = "Approve cutover: " + a.id + " " + a.title;
+  $("approve-sub").textContent = a.workload + " · signer " + FIXTURES.user.name + ", " + FIXTURES.user.role;
+  const facts = $("approve-facts");
+  facts.replaceChildren();
+  const lines = FIXTURES.ledger.filter((l) => l.assets.includes(a.id)).map((l) => l.name).join("; ");
+  [["Reconciliation", a.checks.filter((c) => c.pass).length + " of " + a.checks.length + " within tolerance"], ["Evidence window", a.run], ["Consumers", a.after[0][1]], ["Contracts affected", lines]]
+    .forEach(([k, v]) => { const d = el("div"); d.append(el("dt", "", k), el("dd", "", v)); facts.append(d); });
+  $("attest").checked = false;
+  $("approve-note").value = "";
+  $("approve-error").textContent = "";
+  openDialog($("approve-dlg"), $("primary"));
+}
+
+function openEscalate() {
+  const a = current();
+  $("escalate-title").textContent = "Escalate " + a.id + " " + a.title;
+  const ev = $("escalate-evidence");
+  ev.replaceChildren();
+  const failed = a.checks.filter((c) => !c.pass);
+  const span = el("span", "", failed.length + " checks outside tolerance: " + failed.map((c) => c.name + " (" + c.variance + ", tolerance " + c.tol + ")").join("; ") + ".");
+  if (a.finding) span.append(el("span", "notice-note", a.finding.title + ". Holds: Palantir operations workspace renewal."));
+  ev.append(span);
+  $("escalate-note").value = "";
+  $("escalate-error").textContent = "";
+  document.querySelector('input[name="route"][value^="Priya"]').checked = true;
+  openDialog($("escalate-dlg"), $("escalate"));
+}
+
+function approve(e) {
+  e.preventDefault();
+  const a = current();
+  if (!$("attest").checked) {
+    $("approve-error").textContent = "Confirm the accountability statement to approve.";
+    $("attest").focus();
+    return;
+  }
+  const note = $("approve-note").value.trim();
+  a.status = "approved";
+  a.approvedBy = FIXTURES.user.name;
+  a.approvedAt = FIXTURES.today + " " + String(Math.floor((state.minutes + 2) / 60)).padStart(2, "0") + ":" + String((state.minutes + 2) % 60).padStart(2, "0");
+  log(FIXTURES.user.name, "Approved cutover for " + a.id + " " + a.title + " (simulated).", { human: true, note });
+  const freed = FIXTURES.ledger.filter((l) => l.assets.includes(a.id) && l.assets.every((id) => asset(id).status === "approved"));
+  freed.forEach((l) => log("Ledger", l.name + " is now retire-eligible at renewal (sample " + money.format(l.annual) + " a year)."));
+  closeDialog($("approve-dlg"));
+  render();
+  announce("Cutover approved for " + a.id + "." + (freed.length ? " " + freed.map((l) => l.name).join(", ") + " is now retire-eligible at renewal." : ""));
+  $("undo").focus();
+}
+
+function escalateSubmit(e) {
+  e.preventDefault();
+  const a = current();
+  const note = $("escalate-note").value.trim();
+  if (!note) {
+    $("escalate-error").textContent = "Describe the decision you need before sending.";
+    $("escalate-note").focus();
+    return;
+  }
+  const route = document.querySelector('input[name="route"]:checked').value;
+  a.prev = a.status;
+  a.status = "escalated";
+  a.escalation = { route, note };
+  log(FIXTURES.user.name, "Escalated " + a.id + " to " + route + " (simulated).", { human: true, note });
+  closeDialog($("escalate-dlg"));
+  render();
+  announce("Escalation sent to " + route + " (simulated). " + a.id + " stays on the incumbent.");
+  $("undo").focus();
+}
+
+function extend() {
+  const a = current();
+  if (a.status !== "blocked") return;
+  a.prev = "blocked";
+  a.status = "extended";
+  log(FIXTURES.user.name, "Extended parallel run for " + a.id + " by 14 days pending duplicate-handling fix (simulated).", { human: true });
+  render();
+  announce("Parallel run for " + a.id + " extended to 12 Oct 2026 (simulated).");
+  $("undo").focus();
+}
+
+function undo() {
+  const a = current();
+  let msg = "";
+  if (a.status === "approved") {
+    a.status = "ready"; a.approvedBy = null; a.approvedAt = null;
+    log(FIXTURES.user.name, "Withdrew cutover approval for " + a.id + ".", { human: true });
+    msg = "Approval withdrawn. " + a.id + " is ready for sign-off again.";
+  } else if (a.status === "extended") {
+    a.status = "blocked";
+    log(FIXTURES.user.name, "Removed parallel-run extension for " + a.id + ".", { human: true });
+    msg = "Extension removed. " + a.id + " is outside tolerance.";
+  } else if (a.status === "escalated") {
+    a.status = a.prev || "blocked"; a.escalation = null;
+    log(FIXTURES.user.name, "Withdrew escalation for " + a.id + ".", { human: true });
+    msg = "Escalation withdrawn. " + a.id + " is " + STATUS[a.status].label.toLowerCase() + ".";
+  } else return;
+  render();
+  announce(msg);
+  keepFocus($("primary").hidden || $("primary").disabled ? null : $("primary"));
+}
+
+function reset() {
+  if (timer) { clearTimeout(timer); timer = null; }
+  ["approve-dlg", "escalate-dlg"].forEach((id) => { if ($(id).open) closeDialog($(id)); });
+  state = freshState();
+  render();
+  announce("Demo reset to the start of the Wave 2 review.");
+}
+
+$("queue").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-id]");
+  if (b) select(b.dataset.id);
+});
+document.querySelector(".filters").addEventListener("click", (e) => {
+  const c = e.target.closest("[data-filter]");
+  if (!c) return;
+  state.filter = c.dataset.filter;
+  renderQueue();
+  const count = state.assets.filter(FILTERS[state.filter]).length;
+  announce(count ? count + " assets shown." : FILTER_EMPTY[state.filter]);
+});
+$("primary").addEventListener("click", () => {
+  const a = current();
+  if (a.status === "parallel") reconcile();
+  else if (a.status === "ready") openApprove();
+});
+$("extend").addEventListener("click", extend);
+$("escalate").addEventListener("click", openEscalate);
+$("undo").addEventListener("click", undo);
+$("reset").addEventListener("click", reset);
+$("approve-form").addEventListener("submit", approve);
+$("escalate-form").addEventListener("submit", escalateSubmit);
+document.querySelectorAll("dialog").forEach((dlg) => {
+  dlg.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", () => closeDialog(dlg)));
+  dlg.addEventListener("close", () => {
+    const target = returnFocus && !returnFocus.hidden && !returnFocus.disabled ? returnFocus : $("status");
+    const active = document.activeElement;
+    if (!active || active === document.body || dlg.contains(active)) target.focus();
+    returnFocus = null;
+  });
+});
+
+state = freshState();
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,605 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Agent platform review | HLS catalog demo</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* Federated review workspace: the registry, execution trace and decision share one surface. */
+body { --on-accent: var(--surface); }
+.btn-primary, .chip[aria-pressed="true"] { background: var(--accent-strong); border-color: var(--accent-strong); color: var(--on-accent); }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); }
+.page { max-width: 1560px; margin: auto; padding: 18px 22px 28px; }
+.heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; margin-bottom: 14px; }
+.heading h1 { margin: 0; font-size: clamp(22px, 2.3vw, 30px); line-height: 1.2; }
+.heading p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+.heading .btn { flex: none; }
+.workspace { display: grid; grid-template-columns: minmax(220px, 280px) minmax(0, 1fr); align-items: start; gap: 14px; }
+.registry { min-width: 0; grid-column: 1; grid-row: 1; }
+.registry .card-body { padding: 0; }
+.agent-choice { display: block; width: 100%; text-align: left; border: 0; border-bottom: 1px solid var(--line); border-left: 4px solid transparent; background: var(--surface); color: var(--ink); padding: 14px; cursor: pointer; font: inherit; }
+.agent-choice:last-child { border-bottom: 0; }
+.agent-choice:hover { background: var(--bg); }
+.agent-choice[aria-current="true"] { border-left-color: var(--accent-strong); background: var(--accent-soft); }
+.agent-choice strong, .agent-choice small { display: block; }
+.agent-choice strong { font-size: 14px; }
+.agent-choice small { margin-top: 4px; color: var(--muted); font-size: 12px; }
+.agent-choice .tag { margin-top: 8px; }
+.detail { min-width: 0; display: grid; gap: 14px; grid-column: 2; grid-row: 1; }
+.object { border-top: 3px solid var(--accent-strong); }
+.object .card-body { display: grid; gap: 14px; }
+.object-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.object-heading h2 { margin: 0; font-size: clamp(19px, 2vw, 24px); line-height: 1.2; }
+.object-heading p { margin: 3px 0 0; font-size: 13px; color: var(--muted); }
+.object-heading .tag { margin-top: 3px; }
+.object-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 0; }
+.object-facts div { min-width: 0; background: var(--bg); border: 1px solid var(--line-soft); padding: 8px 11px; border-radius: var(--radius); }
+.object-facts dt { font-size: 12px; color: var(--muted); }
+.object-facts dd { margin: 2px 0 0; font-weight: 600; font-size: 13px; overflow-wrap: anywhere; }
+.decision-strip { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--accent-line); border-radius: var(--radius); background: var(--accent-soft); }
+.decision-strip p { margin: 0; font-size: 13px; }
+.decision-strip strong { display: block; font-size: 14px; }
+.decision-strip .actions { flex: none; }
+.decision-strip .btn { min-height: 40px; }
+.review-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(260px, .85fr); align-items: start; gap: 14px; }
+.trace, .evidence-panel { min-width: 0; }
+.trace-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 0; }
+.trace-list li { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 9px; padding: 9px 0; border-bottom: 1px solid var(--line-soft); }
+.trace-list li:last-child { border-bottom: 0; }
+.step-no { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-strong); font: 600 12px var(--mono); }
+.trace-list strong { display: block; font-size: 13px; }
+.trace-list p { margin: 2px 0 0; color: var(--ink-soft); font-size: 12.5px; }
+.trace-list small { display: block; color: var(--muted); font-size: 11.5px; margin-top: 3px; }
+.evidence-panel .card-body { display: grid; gap: 12px; }
+.evidence-panel h3 { font-size: 13px; margin: 0 0 3px; }
+.evidence-panel p { font-size: 12.5px; margin: 0; color: var(--ink-soft); }
+.signal { padding-bottom: 11px; border-bottom: 1px solid var(--line-soft); }
+.signal:last-child { padding-bottom: 0; border: 0; }
+.signal .tag { margin-bottom: 5px; }
+.record .card-body { display: grid; gap: 9px; }
+.record p { margin: 0; font-size: 13px; }
+.audit li { grid-template-columns: 68px minmax(0, 1fr); }
+.audit li span { overflow-wrap: anywhere; }
+.footer { justify-content: space-between; }
+.footer .built { max-width: 100%; }
+.svc-chip { white-space: normal; }
+.dlg-body .notice { display: block; }
+.dlg-body .field textarea { width: 100%; }
+@media (max-width: 1000px) {
+  .review-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 700px) {
+  .page { padding: 14px 12px 24px; }
+  .heading { flex-wrap: wrap; }
+  .workspace { display: flex; flex-direction: column; }
+  .workspace > *, .detail > * { width: 100%; }
+  .detail { display: contents; }
+  .object { order: 0; }
+  .registry { order: 1; }
+  .review-grid { order: 2; }
+  .record { order: 3; }
+  .registry .card-body { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .agent-choice { border-bottom: 0; }
+  .agent-choice + .agent-choice { border-left: 1px solid var(--line); }
+  .decision-strip { align-items: stretch; flex-direction: column; }
+  .decision-strip .actions { flex: auto; }
+}
+@media (max-width: 430px) {
+  .object .card-body { gap: 9px; }
+  .object-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
+  .object-facts div { padding: 6px 8px; }
+  .object-facts div:last-child { grid-column: 1 / -1; }
+  .object-heading { flex-wrap: wrap; }
+  .decision-strip .btn { flex: 1 1 100%; justify-content: center; }
+  .registry .card-body { grid-template-columns: 1fr; }
+  .agent-choice + .agent-choice { border-left: 4px solid transparent; border-top: 1px solid var(--line); }
+  .agent-choice[aria-current="true"] { border-left-color: var(--accent-strong); }
+}
+  </style>
+</head>
+<body data-subvertical="pharma-life-sciences">
+  <header class="appbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">◆</span>
+      <span class="brand-name">Agent platform <span class="brand-sub">Federated governance / architecture workshop</span></span>
+    </div>
+    <p class="disclosure">Illustrative demo - synthetic data</p>
+    <p class="who">Workspace: <b>Chief AI Officer / Chief Digital Officer</b></p>
+  </header>
+  <main class="page">
+    <div class="heading">
+      <div>
+        <h1>Agent registration review</h1>
+        <p>Fictional Helio Vale Research | Pilot requests from business units | Sample registry snapshot: 29 Sep 2026</p>
+      </div>
+      <button id="reset" class="btn" type="button">Reset demo</button>
+    </div>
+    <div class="workspace">
+      <div class="detail">
+        <section class="card object" aria-labelledby="agent-title">
+          <div class="card-body">
+            <div class="object-heading">
+              <div>
+                <h2 id="agent-title"></h2>
+                <p id="agent-subtitle"></p>
+              </div>
+              <span id="agent-status" class="tag"></span>
+            </div>
+            <dl class="object-facts">
+              <div><dt>Business-unit owner</dt><dd id="owner"></dd></div>
+              <div><dt>Lifecycle request</dt><dd id="scope"></dd></div>
+              <div><dt>Sample spend envelope</dt><dd id="spend"></dd></div>
+            </dl>
+            <div id="decision-note" class="notice" role="status"></div>
+            <div class="decision-strip">
+              <p><strong id="next-heading"></strong><span id="next-detail"></span></p>
+              <div class="actions">
+                <button id="advance" class="btn btn-primary" type="button">Review pilot scope</button>
+                <button id="escalate" class="btn" type="button">Escalate for review</button>
+                <button id="undo" class="btn" type="button" hidden>Undo decision</button>
+              </div>
+            </div>
+          </div>
+        </section>
+        <div class="review-grid">
+          <section class="card trace" aria-labelledby="trace-title">
+            <div class="card-head"><h2 id="trace-title">Sample execution trace</h2><span class="card-note">Illustrative events; not live telemetry</span></div>
+            <div class="card-body">
+              <ol id="trace-list" class="trace-list"></ol>
+            </div>
+          </section>
+          <section class="card evidence-panel" aria-labelledby="evidence-title">
+            <div class="card-head"><h2 id="evidence-title">Governance evidence</h2><span class="card-note">Inspect before deciding</span></div>
+            <div class="card-body" id="evidence-list"></div>
+          </section>
+        </div>
+        <section class="card record" aria-labelledby="record-title">
+          <div class="card-head"><h2 id="record-title">Decision record</h2><span class="card-note">Local simulation only</span></div>
+          <div class="card-body">
+            <p id="record-empty">No human decision recorded. Business units retain ownership; central review sets the pilot gate.</p>
+            <ol id="audit-list" class="audit" hidden></ol>
+          </div>
+        </section>
+      </div>
+      <nav class="card registry" aria-label="Sample agent requests">
+        <div class="card-head"><h2>Review queue</h2><span class="card-note">2 sample requests</span></div>
+        <div class="card-body" id="queue"></div>
+      </nav>
+    </div>
+  </main>
+  <footer class="footer">
+    <span>Illustrative platform mapping from the catalog, not a connected integration:</span>
+    <span class="built"><span class="svc-chip">Azure OpenAI in Azure AI Foundry Models</span><span class="svc-chip">Microsoft Copilot Studio</span><span class="svc-chip">Azure AI Bot Service</span><span class="svc-chip">Azure Monitor</span><span class="svc-chip">Microsoft Defender for Cloud</span></span>
+  </footer>
+  <dialog id="review-dialog" aria-labelledby="dialog-title">
+    <form id="review-form" novalidate>
+      <div class="dlg-head"><div><h2 id="dialog-title"></h2><span class="dlg-sub" id="dialog-subtitle"></span></div></div>
+      <div class="dlg-body">
+        <p id="dialog-warning" class="notice"></p>
+        <div class="field"><label for="rationale">Human rationale (required)</label><textarea id="rationale" maxlength="400" required></textarea></div>
+        <label class="attest"><input id="attest" type="checkbox" required><span>I reviewed the sample trace and evidence. This records a reversible demo decision; it does not publish or deploy an agent.</span></label>
+        <p id="dialog-error" class="dlg-error" role="alert"></p>
+      </div>
+      <div class="dlg-foot"><button id="cancel" class="btn" type="button">Cancel</button><button id="confirm" class="btn btn-primary" type="submit"></button></div>
+    </form>
+  </dialog>
+  <script>
+    "use strict";
+    const fixture = {
+      reviewer: "Platform review (sample human role)",
+      agents: [
+        {
+          id: "SIM-AG-014", name: "Assay knowledge navigator", unit: "Discovery Informatics",
+          purpose: "Search and summarize internal assay notes for research staff; no clinical use.",
+          owner: "Discovery Informatics lead", scope: "Limited internal pilot",
+          spend: "Fictional cap: 240 units / month",
+          ready: true,
+          message: "Sample trace and owner attestation are present. Human review is still required before the pilot moves to the next review stage.",
+          trace: [
+            ["Intake", "Business unit submitted a limited pilot request.", "Source: sample registry entry SIM-AG-014, 28 Sep 2026"],
+            ["Agent handoff", "Navigator passed a sample lookup to a notes summarizer; no external action taken.", "Source: fictional trace T-014, 28 Sep 2026"],
+            ["Observed result", "Sample answer referenced an approved internal assay index; a researcher must check the source.", "Source: fictional trace T-014, 28 Sep 2026"]
+          ],
+          evidence: [
+            ["Owner attestation", "Present", "Discovery Informatics lead accepts ownership and review of pilot outputs.", "Sample registry entry SIM-AG-014, 28 Sep 2026"],
+            ["Trace visibility", "Present", "Illustrative handoff and source references available for inspection.", "Fictional trace T-014, 28 Sep 2026"],
+            ["Risk review", "Needs human sign-off", "Pilot boundary: internal research notes only; no production release.", "Sample review packet RP-014, 29 Sep 2026"]
+          ]
+        },
+        {
+          id: "SIM-AG-021", name: "Partner inquiry assistant", unit: "Alliance Operations",
+          purpose: "Draft answers to partner workflow questions; never send without human approval.",
+          owner: "Alliance Operations lead", scope: "Pilot request on hold",
+          spend: "Fictional cap: 120 units / month",
+          ready: false,
+          message: "Evidence gap: the sample trace has no approved source reference for one draft. Do not advance; route to Risk & Compliance Lead.",
+          trace: [
+            ["Intake", "Business unit requested a partner-facing answer pilot.", "Source: sample registry entry SIM-AG-021, 28 Sep 2026"],
+            ["Agent handoff", "Answer drafter used a retrieved excerpt with no recorded approved-source reference.", "Source: fictional trace T-021, 28 Sep 2026"],
+            ["Gate", "Draft held for a person; no partner message sent.", "Source: fictional trace T-021, 28 Sep 2026"]
+          ],
+          evidence: [
+            ["Owner attestation", "Present", "Alliance Operations lead remains accountable for draft review.", "Sample registry entry SIM-AG-021, 28 Sep 2026"],
+            ["Trace visibility", "Incomplete", "Approved source for one draft cannot be confirmed from this sample.", "Fictional trace T-021, 28 Sep 2026"],
+            ["Risk review", "Escalate", "Risk & Compliance Lead must check source provenance before a new pilot review.", "Sample review packet RP-021, 29 Sep 2026"]
+          ]
+        }
+      ]
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const state = { selected: 0, decisions: fixture.agents.map(() => null), action: null };
+    const dialog = $("review-dialog");
+    const make = (tag, text, className) => {
+      const node = document.createElement(tag);
+      node.textContent = text;
+      if (className) node.className = className;
+      return node;
+    };
+    const agent = () => fixture.agents[state.selected];
+    const status = (index) => state.decisions[index]?.type === "advance" ? "Pilot review recorded"
+      : state.decisions[index]?.type === "escalate" ? "Escalation recorded"
+      : fixture.agents[index].ready ? "Awaiting review" : "Evidence gap";
+
+    function render() {
+      const current = agent();
+      const decision = state.decisions[state.selected];
+      $("queue").replaceChildren(...fixture.agents.map((item, index) => {
+        const button = make("button", "", "agent-choice");
+        button.type = "button";
+        button.setAttribute("aria-current", String(state.selected === index));
+        button.append(make("strong", item.name), make("small", item.unit + " | " + item.id),
+          make("span", status(index), "tag"));
+        button.addEventListener("click", () => {
+          state.selected = index;
+          render();
+        });
+        return button;
+      }));
+      $("agent-title").textContent = current.name;
+      $("agent-subtitle").textContent = current.id + " | " + current.purpose;
+      $("agent-status").textContent = status(state.selected);
+      $("agent-status").className = "tag " + (decision?.type === "advance" ? "tag-ok"
+        : decision?.type === "escalate" || !current.ready ? "tag-warn" : "");
+      $("owner").textContent = current.owner;
+      $("scope").textContent = current.scope;
+      $("spend").textContent = current.spend;
+      $("decision-note").textContent = decision
+        ? decision.type === "advance"
+          ? "Pilot review recorded for the next human gate. No agent was deployed or published."
+          : "Escalation routed to Risk & Compliance Lead in this local simulation; pilot remains on hold."
+        : current.message;
+      $("decision-note").className = "notice " + (decision?.type === "advance" ? "notice-ok"
+        : !current.ready || decision?.type === "escalate" ? "notice-warn" : "");
+      $("next-heading").textContent = decision ? "Human decision recorded" : current.ready ? "Next: review pilot scope" : "Next: resolve missing source";
+      $("next-detail").textContent = decision ? "Undo to reconsider, or reset to replay both requests."
+        : current.ready ? "Advance only to the next review gate, not production." : "Escalate for source verification before another review.";
+      $("advance").hidden = !!decision || !current.ready;
+      $("escalate").hidden = !!decision;
+      $("undo").hidden = !decision;
+      $("trace-list").replaceChildren(...current.trace.map(([title, description, source], index) => {
+        const item = document.createElement("li");
+        const text = document.createElement("div");
+        text.append(make("strong", title), make("p", description), make("small", source));
+        item.append(make("span", String(index + 1), "step-no"), text);
+        return item;
+      }));
+      $("evidence-list").replaceChildren(...current.evidence.map(([title, label, description, source]) => {
+        const section = make("div", "", "signal");
+        section.append(make("span", label, "tag " + (label === "Present" ? "tag-ok" : "tag-warn")),
+          make("h3", title), make("p", description), make("p", "Source: " + source));
+        return section;
+      }));
+      $("record-empty").hidden = !!decision;
+      $("audit-list").hidden = !decision;
+      $("audit-list").replaceChildren();
+      if (decision) {
+        const row = document.createElement("li");
+        const text = document.createElement("span");
+        text.append(make("span", fixture.reviewer + ": ", "actor is-human"),
+          document.createTextNode((decision.type === "advance" ? "Pilot review recorded" : "Escalated to Risk & Compliance Lead")
+            + " | Rationale: " + decision.reason));
+        row.append(make("time", "Sample"), text);
+        $("audit-list").append(row);
+      }
+    }
+
+    function openReview(type) {
+      if (state.decisions[state.selected] || (type === "advance" && !agent().ready)) return;
+      state.action = type;
+      $("dialog-title").textContent = type === "advance" ? "Record pilot review" : "Escalate evidence gap";
+      $("dialog-subtitle").textContent = agent().name + " | " + agent().id;
+      $("dialog-warning").textContent = type === "advance"
+        ? "This advances only the fictional pilot review stage. Business-unit owner remains accountable; no production access is granted."
+        : "Missing approved-source reference. Keep the fictional pilot on hold and route the evidence packet to Risk & Compliance Lead.";
+      $("rationale").value = type === "advance"
+        ? "Limited internal pilot only; owner and trace inspected. Require separate production review."
+        : "Approved-source reference missing from draft trace; request provenance review before reconsideration.";
+      $("attest").checked = false;
+      $("dialog-error").textContent = "";
+      $("confirm").textContent = type === "advance" ? "Record pilot review" : "Record escalation";
+      dialog.showModal();
+    }
+
+    $("advance").addEventListener("click", () => openReview("advance"));
+    $("escalate").addEventListener("click", () => openReview("escalate"));
+    $("cancel").addEventListener("click", () => dialog.close());
+    dialog.addEventListener("close", () => { state.action = null; });
+    $("review-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const reason = $("rationale").value.trim();
+      if (!reason || !$("attest").checked) {
+        $("dialog-error").textContent = "Enter a rationale and confirm your review before recording.";
+        (reason ? $("attest") : $("rationale")).focus();
+        return;
+      }
+      if (!state.action) return;
+      state.decisions[state.selected] = { type: state.action, reason };
+      dialog.close();
+      render();
+      $("undo").focus();
+    });
+    $("undo").addEventListener("click", () => {
+      state.decisions[state.selected] = null;
+      render();
+      (agent().ready ? $("advance") : $("escalate")).focus();
+    });
+    $("reset").addEventListener("click", () => {
+      state.selected = 0;
+      state.decisions.fill(null);
+      render();
+      $("advance").focus();
+    });
+    render();
+  </script>
+</body>
+</html>

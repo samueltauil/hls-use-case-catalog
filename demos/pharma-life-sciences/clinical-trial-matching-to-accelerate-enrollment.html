@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Trial screening review | Aster Vale Research (fictional)</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+main { max-width: 1440px; margin: 0 auto; padding: 20px 22px 32px; }
+h1 { font-size: clamp(20px, 2vw, 27px); line-height: 1.2; margin: 0 0 4px; }
+p { margin: 0; }
+.context { color: var(--muted); font-size: 13px; }
+.intro { margin-bottom: 15px; }
+.review-bar {
+  background: var(--surface); border: 1px solid var(--accent-line); border-left: 4px solid var(--accent-strong);
+  border-radius: var(--radius); padding: 12px 15px; margin-bottom: 15px;
+  display: flex; gap: 12px 20px; justify-content: space-between; align-items: center;
+}
+.review-bar strong { display: block; font-size: 15px; }
+.review-bar p { font-size: 13px; color: var(--ink-soft); }
+.review-bar .actions { flex: none; }
+.btn-primary { background: var(--accent-strong); border-color: var(--accent-strong); color: var(--surface); }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.workspace { display: grid; grid-template-columns: minmax(240px, 320px) minmax(0, 1fr); gap: 15px; align-items: start; }
+.queue { display: grid; gap: 1px; background: var(--line); }
+.candidate {
+  width: 100%; min-width: 0; border: 0; text-align: left; background: var(--surface); color: var(--ink);
+  font: inherit; padding: 14px 15px; cursor: pointer; display: grid; gap: 4px;
+}
+.candidate:hover { background: var(--surface-2); }
+.candidate[aria-current="true"] { background: var(--accent-soft); box-shadow: inset 4px 0 var(--accent-strong); }
+.candidate strong { font-size: 14px; }
+.candidate small { font-size: 12.5px; color: var(--muted); }
+.candidate .tag { width: max-content; margin-top: 2px; }
+.detail-head { padding: 15px 18px; border-bottom: 1px solid var(--line); }
+.detail-head h2 { font-size: 19px; margin: 0 0 3px; }
+.detail-head p { font-size: 13px; color: var(--muted); }
+.detail-body { padding: 15px 18px 20px; display: grid; gap: 17px; }
+.detail-body h3 { font-size: 14px; margin: 0 0 8px; }
+.study-line { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 13px; color: var(--ink-soft); }
+.criteria { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.criterion { border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; }
+.criterion-top { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.criterion strong { font-size: 13.5px; }
+.criterion p { margin-top: 5px; font-size: 13px; }
+.source { color: var(--muted); font-size: 12px !important; }
+.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(210px, .7fr); gap: 15px; }
+.audit-block { border-left: 1px solid var(--line); padding-left: 15px; }
+.audit li { grid-template-columns: 42px minmax(0, 1fr); }
+.outcome { padding: 11px 12px; border-radius: var(--radius); background: var(--accent-soft); border: 1px solid var(--accent-line); font-size: 13px; }
+.outcome strong { display: block; }
+.footer { margin-top: 10px; }
+@media (max-width: 850px) {
+  .workspace { grid-template-columns: 1fr; }
+  .queue { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .candidate[aria-current="true"] { box-shadow: inset 0 4px var(--accent-strong); }
+}
+@media (max-width: 700px) {
+  main { padding: 14px 12px 24px; }
+  .review-bar { align-items: stretch; flex-direction: column; }
+  .queue { grid-template-columns: 1fr; }
+  .candidate { padding: 10px 12px; }
+  .split { grid-template-columns: 1fr; }
+  .audit-block { border-left: 0; border-top: 1px solid var(--line); padding: 12px 0 0; }
+  .review-bar .actions { flex: auto; }
+  .review-bar .btn { min-height: 44px; }
+}
+  </style>
+</head>
+<body data-subvertical="pharma-life-sciences">
+  <header class="appbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">◆</span>
+      <span class="brand-name">Aster Vale Research <span class="brand-sub">Study screening workbench · fictional organization</span></span>
+    </div>
+    <p class="disclosure">Illustrative demo - synthetic data</p>
+    <p class="who">Reviewing as <b>VP Clinical Operations</b></p>
+  </header>
+  <main>
+    <div class="intro">
+      <h1>Candidate screening review</h1>
+      <p class="context">Fictional protocol AV-TRIAL-07 · Site Cedar · sample screening date 14 Sep 2026 · no eligibility or enrollment decisions are made here.</p>
+    </div>
+    <section class="review-bar" aria-label="Next review action">
+      <div>
+        <strong id="next-title">SYN-C01 · ready for evidence review</strong>
+        <p id="next-description">Inspect source excerpts before routing to the site investigator. This is not an eligibility finding.</p>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" type="button" id="route">Route for site review</button>
+        <button class="btn" type="button" id="escalate" hidden>Escalate evidence gap</button>
+        <button class="btn" type="button" id="reset" hidden>Reset demo</button>
+      </div>
+    </section>
+    <p id="status" class="status-line" role="status" aria-live="polite">Select a candidate to compare the protocol criteria with sample evidence.</p>
+    <div class="workspace">
+      <section class="card" aria-labelledby="queue-title">
+        <div class="card-head"><h2 id="queue-title">Screening queue</h2><span class="card-note">Fictional records · not ranked by clinical eligibility</span></div>
+        <div id="queue" class="queue"></div>
+      </section>
+      <article class="card" aria-labelledby="detail-title">
+        <div class="detail-head">
+          <h2 id="detail-title"></h2>
+          <p id="detail-subtitle"></p>
+        </div>
+        <div class="detail-body">
+          <div class="study-line"><span>Protocol revision: <b>sample v2 · 01 Sep 2026</b></span><span>Decision owner: <b>Site investigator</b></span><span>Data use: <b id="permission"></b></span></div>
+          <div id="outcome" class="outcome" hidden></div>
+          <div class="split">
+            <section aria-labelledby="criteria-title">
+              <h3 id="criteria-title">Criterion-by-criterion evidence</h3>
+              <ul id="criteria" class="criteria"></ul>
+            </section>
+            <section class="audit-block" aria-labelledby="audit-title">
+              <h3 id="audit-title">Review &amp; audit trail</h3>
+              <p class="context">Matching suggestions are unapproved. A clinician must verify source records and decide whether to screen or contact anyone.</p>
+              <ol id="audit" class="audit" style="margin-top:12px"></ol>
+            </section>
+          </div>
+        </div>
+      </article>
+    </div>
+  </main>
+  <footer class="footer">
+    <span>Conceptual catalog workload mapping:</span>
+    <span class="built"><span class="svc-chip">Azure OpenAI in Azure AI Foundry Models</span><span class="svc-chip">Azure AI Search</span><span class="svc-chip">Azure Machine Learning</span><span class="svc-chip">Azure Cosmos DB</span></span>
+    <span class="claim">No real patient data or live service connection.</span>
+  </footer>
+  <dialog id="confirm" aria-labelledby="dialog-title">
+    <div class="dlg-head"><div><h2 id="dialog-title"></h2><span class="dlg-sub" id="dialog-subtitle"></span></div></div>
+    <div class="dlg-body">
+      <p id="dialog-context"></p>
+      <label class="attest"><input id="attest" type="checkbox"><span id="attest-label"></span></label>
+      <p id="dialog-error" class="dlg-error" role="alert"></p>
+    </div>
+    <div class="dlg-foot">
+      <button class="btn" type="button" id="cancel">Cancel</button>
+      <button class="btn btn-primary" type="button" id="confirm-action">Confirm</button>
+    </div>
+  </dialog>
+  <script>
+    const fixture = {
+      study: "AV-TRIAL-07",
+      candidates: [
+        {
+          id: "SYN-C01", label: "Evidence ready for review", permission: "Sample screening permission recorded",
+          summary: "Sample severity evidence and history are available. Site clinician still verifies eligibility.",
+          needsEscalation: false,
+          criteria: [
+            { name: "Inclusion · sample severity threshold", finding: "Sample index 18; protocol example asks for 12 or above.", source: "Fictional screening summary · 12 Sep 2026", state: "Documented" },
+            { name: "Inclusion · sample area threshold", finding: "Sample area 14%; protocol example asks for 10% or above.", source: "Fictional site assessment · 12 Sep 2026", state: "Documented" },
+            { name: "Exclusion · recent prior treatment", finding: "Sample treatment history reports no recent biologic therapy; site must verify.", source: "Fictional treatment log · 10 Sep 2026", state: "Needs clinician check" }
+          ]
+        },
+        {
+          id: "SYN-C02", label: "Evidence gap · do not route", permission: "Screening permission not verified",
+          summary: "Permission and washout evidence are missing. Pause matching review and escalate.",
+          needsEscalation: true,
+          criteria: [
+            { name: "Inclusion · sample severity threshold", finding: "Sample index 13; protocol example asks for 12 or above.", source: "Fictional screening summary · 11 Sep 2026", state: "Documented" },
+            { name: "Exclusion · prior treatment washout", finding: "Last treatment date absent; washout cannot be checked.", source: "Fictional treatment log · 11 Sep 2026", state: "Unresolved" },
+            { name: "Governance · screening permission", finding: "No permission entry in the sample ledger. No outreach is authorized.", source: "Fictional permission ledger · 14 Sep 2026", state: "Unresolved" }
+          ]
+        },
+        {
+          id: "SYN-C03", label: "Evidence gap · do not route", permission: "Sample screening permission recorded",
+          summary: "Sample measurements are below the fictional protocol example; site review is needed before any conclusion.",
+          needsEscalation: true,
+          criteria: [
+            { name: "Inclusion · sample severity threshold", finding: "Sample index 9; protocol example asks for 12 or above.", source: "Fictional screening summary · 12 Sep 2026", state: "Does not appear met" },
+            { name: "Inclusion · sample area threshold", finding: "Sample area 7%; protocol example asks for 10% or above.", source: "Fictional site assessment · 12 Sep 2026", state: "Does not appear met" }
+          ]
+        }
+      ]
+    };
+    const $ = (id) => document.getElementById(id);
+    const state = { selected: 0, action: null, busy: false, outcomes: {}, audit: {} };
+    const queue = $("queue");
+    const criteria = $("criteria");
+    const dialog = $("confirm");
+
+    function element(tag, className, text) {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text !== undefined) node.textContent = text;
+      return node;
+    }
+    function render() {
+      const c = fixture.candidates[state.selected];
+      const outcome = state.outcomes[c.id];
+      queue.replaceChildren();
+      fixture.candidates.forEach((candidate, index) => {
+        const button = element("button", "candidate");
+        button.type = "button";
+        button.setAttribute("aria-current", String(index === state.selected));
+        button.append(element("strong", "", candidate.id), element("small", "", candidate.label),
+          element("span", candidate.needsEscalation ? "tag tag-warn" : "tag tag-ok",
+            state.outcomes[candidate.id] || (candidate.needsEscalation ? "Needs follow-up" : "Review packet")));
+        button.addEventListener("click", () => {
+          if (state.busy) return;
+          state.selected = index;
+          $("status").textContent = candidate.id + " selected. Review its sample evidence and next action.";
+          render();
+          queue.children[index].focus();
+        });
+        button.disabled = state.busy;
+        queue.append(button);
+      });
+      $("detail-title").textContent = c.id + " · screening packet";
+      $("detail-subtitle").textContent = c.summary;
+      $("permission").textContent = c.permission;
+      $("next-title").textContent = c.id + (outcome ? " · " + outcome : c.needsEscalation ? " · evidence gap" : " · ready for evidence review");
+      $("next-description").textContent = outcome
+        ? "Simulated handoff recorded. No outreach, enrollment, or eligibility determination occurred."
+        : c.needsEscalation ? "Do not route as a match. Escalate the missing or conflicting evidence for human review."
+          : "Inspect source excerpts before routing to the site investigator. This is not an eligibility finding.";
+      $("route").hidden = Boolean(outcome) || c.needsEscalation;
+      $("escalate").hidden = Boolean(outcome) || !c.needsEscalation;
+      $("reset").hidden = !Object.keys(state.outcomes).length;
+      $("route").disabled = state.busy;
+      $("escalate").disabled = state.busy;
+      $("reset").disabled = state.busy;
+      const outcomeBox = $("outcome");
+      outcomeBox.hidden = !outcome;
+      outcomeBox.replaceChildren();
+      if (outcome) {
+        outcomeBox.append(element("strong", "", outcome),
+          document.createTextNode(outcome === "Escalated to site investigator"
+            ? " Evidence remains unresolved; no candidate contact authorized."
+            : " Packet sent to fictional site investigator queue for independent review; not an eligibility decision."));
+      }
+      criteria.replaceChildren();
+      c.criteria.forEach((item) => {
+        const li = element("li", "criterion");
+        const head = element("div", "criterion-top");
+        head.append(element("strong", "", item.name),
+          element("span", item.state === "Documented" ? "tag tag-ok" : "tag tag-warn", item.state));
+        li.append(head, element("p", "", item.finding), element("p", "source", "Source: " + item.source));
+        criteria.append(li);
+      });
+      const audit = $("audit");
+      audit.replaceChildren();
+      const entries = [
+        ["09:10", "System · sample criteria comparison prepared; no clinical decision."],
+        ["09:12", "VP Clinical Operations · packet opened for evidence review."],
+        ...(state.audit[c.id] ? [["09:14", state.audit[c.id]]] : [])
+      ];
+      entries.forEach(([time, text]) => {
+        const li = element("li");
+        li.append(element("time", "", time), element("span", "", text));
+        audit.append(li);
+      });
+    }
+    function openAction(action) {
+      const c = fixture.candidates[state.selected];
+      if (state.busy || state.outcomes[c.id] || (action === "route" && c.needsEscalation) || (action === "escalate" && !c.needsEscalation)) return;
+      state.action = action;
+      $("dialog-title").textContent = action === "route" ? "Route packet for site review" : "Escalate evidence gap";
+      $("dialog-subtitle").textContent = c.id + " · fictional protocol " + fixture.study;
+      $("dialog-context").textContent = action === "route"
+        ? "The site investigator will verify source records and screening permission before any eligibility or contact decision."
+        : "Send the unresolved items to the site investigator and site data steward. Do not contact the candidate.";
+      $("attest-label").textContent = action === "route"
+        ? "I reviewed the sample source excerpts and understand this is not an eligibility decision."
+        : "I reviewed the unresolved evidence and will keep screening and outreach on hold.";
+      $("attest").checked = false;
+      $("dialog-error").textContent = "";
+      dialog.showModal();
+      $("attest").focus();
+    }
+    $("route").addEventListener("click", () => openAction("route"));
+    $("escalate").addEventListener("click", () => openAction("escalate"));
+    $("cancel").addEventListener("click", () => dialog.close());
+    dialog.addEventListener("close", () => { state.action = null; $("dialog-error").textContent = ""; });
+    $("confirm-action").addEventListener("click", () => {
+      if (!$("attest").checked) {
+        $("dialog-error").textContent = "Confirm your review before submitting the simulated handoff.";
+        $("attest").focus();
+        return;
+      }
+      const c = fixture.candidates[state.selected];
+      const action = state.action;
+      if (!action || state.busy || state.outcomes[c.id]) return;
+      dialog.close();
+      state.busy = true;
+      $("status").textContent = "Recording simulated " + (action === "route" ? "site review handoff" : "escalation") + " for " + c.id + "…";
+      render();
+      window.setTimeout(() => {
+        state.outcomes[c.id] = action === "route" ? "Routed for site review" : "Escalated to site investigator";
+        state.audit[c.id] = "VP Clinical Operations · " + state.outcomes[c.id] + " (simulation; reversible by reset).";
+        state.busy = false;
+        $("status").textContent = c.id + " · " + state.outcomes[c.id] + ". No candidate contacted. Reset demo to replay.";
+        render();
+      }, 450);
+    });
+    $("reset").addEventListener("click", () => {
+      if (state.busy) return;
+      state.selected = 0;
+      state.outcomes = {};
+      state.audit = {};
+      state.action = null;
+      $("status").textContent = "Demo reset. No simulated handoffs remain.";
+      render();
+    });
+    render();
+  </script>
+</body>
+</html>

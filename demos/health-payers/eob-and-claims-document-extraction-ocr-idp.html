@@ -1,0 +1,737 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#faf9f8">
+  <title>EOB and claims intake workbench — illustrative demo</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+  </style>
+  <style>
+    body[data-subvertical="health-payers"] {
+      --on-accent: #fff;
+      --page-width: 1540px;
+    }
+
+    .btn-primary { color: var(--on-accent); }
+    .appbar { min-height: 60px; }
+    .brand-mark { font-size: 19px; line-height: 1; }
+    .shell { width: min(var(--page-width), calc(100% - 36px)); margin-inline: auto; }
+    .context-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 16px 0 8px; color: var(--muted); font-size: 12.5px;
+    }
+    .context-row p { margin: 0; }
+    .context-row strong { color: var(--ink-soft); font-weight: 600; }
+    .page-heading {
+      display: flex; align-items: flex-end; justify-content: space-between; gap: 12px;
+      padding: 4px 0 14px; border-bottom: 1px solid var(--line);
+    }
+    .page-heading h1 { margin: 0; font-size: clamp(22px, 2.2vw, 28px); line-height: 1.2; letter-spacing: -.025em; }
+    .page-heading p { margin: 5px 0 0; color: var(--muted); font-size: 13.5px; }
+    .case-strip {
+      display: grid; grid-template-columns: minmax(170px, 1fr) repeat(2, minmax(120px, .65fr));
+      gap: 12px; align-items: center; padding: 11px 14px; margin: 14px 0;
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    }
+    .case-primary { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .case-mark {
+      display: grid; place-items: center; width: 34px; height: 34px; flex: none;
+      border-radius: 6px; background: var(--accent-soft); color: var(--accent-strong); font-weight: 700;
+    }
+    .case-primary small, .case-meta small { display: block; color: var(--muted); font-size: 11.5px; }
+    .case-primary strong, .case-meta strong { display: block; font-size: 13px; font-weight: 650; }
+    .case-primary strong { overflow-wrap: anywhere; }
+    .case-meta { border-left: 1px solid var(--line-soft); padding-left: 13px; }
+
+    .workbench { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+    .source-card, .review-card { min-width: 0; }
+    .source-card .card-body, .review-card .card-body { padding: 13px 15px 15px; }
+    .document-paper {
+      min-height: 272px; padding: 17px 18px 16px; border: 1px solid var(--line);
+      border-radius: 5px; background:
+        linear-gradient(90deg, transparent 0 27px, var(--line-soft) 27px 28px, transparent 28px),
+        var(--bg);
+      box-shadow: var(--shadow-1);
+    }
+    .paper-heading {
+      margin: 0 0 13px; padding-bottom: 9px; border-bottom: 1px solid var(--line);
+      color: var(--ink-soft); font: 700 11px/1.4 var(--mono); letter-spacing: .06em;
+    }
+    .paper-lines { display: grid; gap: 5px; margin: 0; padding-left: 24px; }
+    .paper-line {
+      margin: 0; padding: 3px 5px; min-width: 0; overflow-wrap: anywhere;
+      border-radius: 3px; color: var(--ink-soft); font: 12.5px/1.55 var(--mono);
+    }
+    .paper-line--brand { font-weight: 700; }
+    .paper-line--uncertain {
+      background: var(--warn-bg); border-left: 3px solid var(--warn);
+      color: var(--ink); font-weight: 700;
+    }
+    .paper-foot {
+      margin: 15px 0 0; padding: 9px 10px; border-top: 1px dashed var(--line);
+      color: var(--muted); font-size: 12px;
+    }
+    .source-caption {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+      gap: 8px; margin-top: 10px; color: var(--muted); font-size: 12px;
+    }
+    .field-list {
+      display: grid; grid-template-columns: minmax(105px, .85fr) minmax(0, 1.15fr);
+      margin: 0; border-top: 1px solid var(--line-soft);
+    }
+    .field-list dt, .field-list dd {
+      margin: 0; padding: 8px 0; border-bottom: 1px solid var(--line-soft);
+      font-size: 12.5px; min-width: 0;
+    }
+    .field-list dt { color: var(--muted); }
+    .field-list dd { font-weight: 600; overflow-wrap: anywhere; }
+    .field-list dd .tag { margin-left: 5px; vertical-align: 1px; }
+    .review-callout {
+      margin: 12px 0 0; padding: 10px 11px; border: 1px solid #e6d08a;
+      border-left: 3px solid var(--warn); border-radius: var(--radius);
+      background: var(--warn-bg); color: #6b4508; font-size: 12.5px;
+    }
+    .review-callout strong { display: block; margin-bottom: 2px; color: #583a08; }
+    .review-callout p { margin: 0; }
+    .review-callout p + p { margin-top: 4px; }
+    .choice-set { margin: 12px 0 0; padding: 0; border: 0; }
+    .choice-set legend { padding: 0; margin-bottom: 7px; font-size: 13px; font-weight: 650; }
+    .choice-help { margin: 0 0 8px; color: var(--muted); font-size: 12px; }
+    .choice-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .choice {
+      display: flex; align-items: flex-start; gap: 8px; min-width: 0; min-height: 48px;
+      padding: 8px 9px; border: 1px solid var(--line); border-radius: var(--radius);
+      background: var(--surface); cursor: pointer;
+    }
+    .choice:has(input:checked) { border-color: var(--accent-strong); background: var(--accent-soft); }
+    .choice input { width: 17px; height: 17px; margin: 2px 0 0; flex: none; accent-color: var(--accent-strong); }
+    .choice span { display: block; min-width: 0; }
+    .choice strong { display: block; font: 600 13px/1.3 var(--mono); }
+    .choice small { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; line-height: 1.3; }
+    .action-area { display: grid; gap: 8px; margin-top: 12px; }
+    .action-area .btn { justify-content: center; width: 100%; }
+    .action-hint { margin: 0; min-height: 18px; color: var(--muted); font-size: 11.5px; }
+    .secondary-action { justify-self: start; }
+    .outcome { margin-top: 12px; }
+    .outcome p { margin: 0; }
+    .outcome p + p { margin-top: 5px; }
+    .audit-trail { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line-soft); }
+    .audit-trail h3 { margin: 0 0 5px; font-size: 12px; }
+    .audit-trail p { margin: 0; color: var(--ink-soft); font-size: 12px; }
+    .scope-note {
+      margin: 14px 0 0; padding: 10px 12px; border-left: 3px solid var(--accent);
+      background: var(--accent-soft); color: var(--accent-strong); font-size: 12.5px;
+    }
+    .scope-note strong { color: var(--accent-strong); }
+    .footer { margin-top: 18px; }
+    .workload-label { color: var(--muted); font-weight: 600; }
+    .footer .claim { max-width: 62ch; }
+    .sr-only { position: absolute; }
+
+    @media (max-width: 760px) {
+      .shell { width: min(100% - 24px, 650px); }
+      .workbench { grid-template-columns: minmax(0, 1fr); }
+      .case-strip { grid-template-columns: minmax(0, 1fr) repeat(2, minmax(90px, .6fr)); }
+      .context-row { padding-top: 12px; }
+    }
+    @media (max-width: 480px) {
+      .shell { width: calc(100% - 20px); }
+      .context-row { align-items: flex-start; }
+      .context-row .btn { min-height: 36px; padding: 6px 9px; font-size: 12px; }
+      .page-heading { align-items: flex-start; }
+      .page-heading p { max-width: 34ch; }
+      .page-heading > .tag { white-space: normal; }
+      .case-strip { grid-template-columns: minmax(0, 1fr) minmax(96px, .7fr); }
+      .case-primary { grid-column: 1 / -1; }
+      .case-meta:last-child { grid-column: 2; }
+      .case-meta { padding-left: 10px; }
+      .document-paper { min-height: 0; padding: 14px 11px; }
+      .paper-lines { padding-left: 17px; }
+      .paper-line { font-size: 11.5px; }
+      .field-list { grid-template-columns: minmax(95px, .8fr) minmax(0, 1.2fr); }
+      .choice-list { grid-template-columns: minmax(0, 1fr); }
+      .footer { padding: 11px 12px; }
+      .built { align-items: flex-start; }
+    }
+  </style>
+</head>
+<body data-subvertical="health-payers">
+  <header class="appbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">●</span>
+      <div>
+        <span class="brand-name">Harborlight intake</span>
+        <span class="brand-sub">Fictional payer operations workspace</span>
+      </div>
+    </div>
+    <p class="disclosure"><span aria-hidden="true">◆</span> Illustrative demo - synthetic data</p>
+    <p class="who">Working as <b>Jordan Lee · Intake processor</b></p>
+  </header>
+
+  <main class="shell">
+    <div class="context-row">
+      <p><strong>Claims, Payment &amp; Core Administration</strong> <span aria-hidden="true">/</span> EOB intake</p>
+      <button class="btn" id="reset-button" type="button">Reset scenario</button>
+    </div>
+
+    <section class="page-heading" aria-labelledby="page-title">
+      <div>
+        <h1 id="page-title">Document intake workbench</h1>
+        <p>Check the source against extracted claim fields before preparing the intake packet.</p>
+      </div>
+      <span class="tag tag-warn" id="work-status">Human review needed</span>
+    </section>
+
+    <section class="case-strip" aria-label="Current synthetic work item">
+      <div class="case-primary">
+        <span class="case-mark" aria-hidden="true">E</span>
+        <div>
+          <small>Current item · EOB</small>
+          <strong class="mono" id="case-id"></strong>
+        </div>
+      </div>
+      <div class="case-meta">
+        <small>Received</small>
+        <strong id="received-date"></strong>
+      </div>
+      <div class="case-meta">
+        <small>Queue status</small>
+        <strong id="queue-state">Needs field review</strong>
+      </div>
+    </section>
+
+    <div class="workbench">
+      <section class="card source-card" aria-labelledby="source-title">
+        <div class="card-head">
+          <h2 id="source-title">Source document</h2>
+          <span class="card-note" id="source-kind"></span>
+        </div>
+        <div class="card-body">
+          <div class="document-paper" role="group" aria-label="Fictional EOB document excerpt">
+            <p class="paper-heading" id="paper-heading"></p>
+            <div class="paper-lines" id="paper-lines"></div>
+            <p class="paper-foot" id="paper-foot"></p>
+          </div>
+          <div class="source-caption">
+            <span>Fictional scan excerpt · values are sample operational data</span>
+            <span class="tag">Source preserved for review</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="card review-card" aria-labelledby="review-title">
+        <div class="card-head">
+          <h2 id="review-title">Extracted fields</h2>
+          <span class="card-note">Review before intake handoff</span>
+        </div>
+        <div class="card-body">
+          <dl class="field-list" id="field-list" aria-label="Extracted values and review status"></dl>
+
+          <div class="review-callout" id="review-callout">
+            <strong>Allowed amount needs your review</strong>
+            <p>The source mark is smudged. Two readings fit; no value is accepted automatically.</p>
+            <p id="evidence-summary"></p>
+          </div>
+
+          <fieldset class="choice-set" id="choice-set">
+            <legend>Which reading does the source support?</legend>
+            <p class="choice-help">Compare the highlighted source line. Your selection and rationale are recorded as a human review decision.</p>
+            <div class="choice-list" id="choice-list"></div>
+          </fieldset>
+
+          <div class="action-area" id="decision-actions">
+            <button class="btn btn-primary" id="confirm-button" type="button" disabled>Confirm value and prepare intake packet</button>
+            <p class="action-hint" id="action-hint">Choose the supported reading to enable confirmation.</p>
+            <button class="btn-link secondary-action" id="escalate-button" type="button">Escalate without choosing a value</button>
+          </div>
+
+          <div class="outcome notice notice-ok" id="result-panel" role="status" hidden>
+            <div>
+              <p><strong>Intake packet prepared for downstream workflow.</strong></p>
+              <p id="result-detail"></p>
+              <p class="notice-note">This is a local simulation. No claim was adjudicated, covered, or paid.</p>
+            </div>
+          </div>
+          <div class="outcome notice notice-stop" id="exception-panel" role="status" hidden>
+            <div>
+              <p><strong>Held for a second human review.</strong></p>
+              <p>The amount remains unresolved. Rationale: the scan does not support a safe reading.</p>
+              <p class="notice-note">Escalation is shown in this local demo only; nothing was transmitted.</p>
+            </div>
+          </div>
+          <div class="outcome notice" id="working-panel" role="status" hidden>
+            <p>Preparing the sample intake packet…</p>
+          </div>
+          <div class="audit-trail" id="audit-trail" hidden>
+            <h3>Review record</h3>
+            <p id="audit-detail"></p>
+          </div>
+          <p class="status-line sr-only" id="live-status" aria-live="polite" aria-atomic="true"></p>
+        </div>
+      </section>
+    </div>
+
+    <p class="scope-note"><strong>Human decision boundary:</strong> this workbench structures sample intake data only. A processor reviews uncertain extraction; coverage and payment decisions remain outside this simulation.</p>
+  </main>
+
+  <footer class="footer">
+    <div class="built" aria-label="Catalog workload mapping">
+      <span class="workload-label">Catalog workloads:</span>
+      <span class="svc-chip">Azure AI Vision</span>
+      <span class="svc-chip">Azure OpenAI in Azure AI Foundry Models</span>
+      <span class="svc-chip">Azure Functions</span>
+      <span class="svc-chip">Azure Storage</span>
+    </div>
+    <div class="claim"><b>PoV signals to measure:</b> manual data-entry effort down, intake cycle time faster, extraction error rate down, straight-through processing up.</div>
+  </footer>
+
+  <script>
+    "use strict";
+
+    // All scenario content is invented and local. No fixture is a real person,
+    // payer, claim, or result; candidate values are intentionally ambiguous.
+    const DEMO_FIXTURES = {
+      organization: "Harborlight Payer Lab (fictional)",
+      operator: "Jordan Lee · Intake processor (fictional)",
+      caseId: "SYN-CLM-2048",
+      received: "29 Sep 2026",
+      documentType: "Explanation of benefits",
+      documentHeading: "REMITTANCE EXPLANATION · SAMPLE COPY",
+      sourceLines: [
+        { text: "HARBORLIGHT PAYER LAB (FICTIONAL)", kind: "brand" },
+        { text: "TRAINING COPY · NOT A REAL BENEFIT STATEMENT", kind: "plain" },
+        { text: "Claim reference: SYN-CLM-2048", kind: "plain" },
+        { text: "Member token: SYN-MBR-042", kind: "plain" },
+        { text: "Service date: 18 Sep 2026", kind: "plain" },
+        { text: "Submitted amount: $684.20", kind: "plain" },
+        { text: "Allowed amount: $5?4.20", kind: "uncertain" }
+      ],
+      sourceFoot: "Scan note: a fold obscures the second digit in the allowed amount. This is a synthetic source excerpt.",
+      fields: [
+        { label: "Document type", value: "Explanation of benefits", state: "Readable", confidence: "clear" },
+        { label: "Claim reference", value: "SYN-CLM-2048", state: "Readable", confidence: "clear" },
+        { label: "Member token", value: "SYN-MBR-042", state: "Readable", confidence: "clear" },
+        { label: "Service date", value: "18 Sep 2026", state: "Readable", confidence: "clear" },
+        { label: "Submitted amount", value: "$684.20", state: "Readable", confidence: "clear" },
+        { label: "Allowed amount", value: "Needs human review", state: "Ambiguous", confidence: "review" }
+      ],
+      evidence: "Source excerpt: “Allowed amount: $5?4.20” — the marked character cannot be read with confidence.",
+      choices: [
+        { value: "$534.20", rationale: "The visible stroke resembles a 3." },
+        { value: "$584.20", rationale: "The visible stroke resembles an 8." }
+      ],
+      escalationReason: "The scan does not support a safe reading; no candidate value was selected."
+    };
+
+    const TRANSITIONS = {
+      ready: ["working", "exception", "reset"],
+      working: ["result", "reset"],
+      result: ["reset"],
+      exception: ["reset"],
+      reset: ["working", "exception", "reset"]
+    };
+    let state = "ready";
+    let selectedChoice = null;
+    let pendingTimer = 0;
+
+    const $ = (id) => document.getElementById(id);
+    const caseId = $("case-id");
+    const receivedDate = $("received-date");
+    const sourceKind = $("source-kind");
+    const paperHeading = $("paper-heading");
+    const paperLines = $("paper-lines");
+    const paperFoot = $("paper-foot");
+    const fieldList = $("field-list");
+    const choiceList = $("choice-list");
+    const liveStatus = $("live-status");
+
+    function makeText(tag, className, text) {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      node.textContent = text;
+      return node;
+    }
+
+    function renderFixtures() {
+      caseId.textContent = DEMO_FIXTURES.caseId;
+      receivedDate.textContent = DEMO_FIXTURES.received;
+      sourceKind.textContent = DEMO_FIXTURES.documentType + " · synthetic";
+      paperHeading.textContent = DEMO_FIXTURES.documentHeading;
+      paperFoot.textContent = DEMO_FIXTURES.sourceFoot;
+      $("evidence-summary").textContent = DEMO_FIXTURES.evidence;
+
+      for (const line of DEMO_FIXTURES.sourceLines) {
+        const p = makeText("p", "paper-line", line.text);
+        if (line.kind === "brand") p.classList.add("paper-line--brand");
+        if (line.kind === "uncertain") p.classList.add("paper-line--uncertain");
+        paperLines.append(p);
+      }
+
+      for (const field of DEMO_FIXTURES.fields) {
+        const term = makeText("dt", "", field.label);
+        const detail = document.createElement("dd");
+        detail.append(makeText("span", "", field.value));
+        const badge = makeText("span", field.confidence === "review" ? "tag tag-warn" : "tag tag-ok", field.state);
+        detail.append(badge);
+        fieldList.append(term, detail);
+      }
+
+      DEMO_FIXTURES.choices.forEach((choice, index) => {
+        const label = document.createElement("label");
+        label.className = "choice";
+        const input = document.createElement("input");
+        input.type = "radio";
+        input.name = "allowed-amount";
+        input.value = choice.value;
+        input.id = "amount-choice-" + index;
+        input.addEventListener("change", () => {
+          if (!input.checked || !isEditable()) return;
+          selectedChoice = choice;
+          $("confirm-button").disabled = false;
+          $("action-hint").textContent = "Rationale to record: " + choice.rationale;
+          liveStatus.textContent = "Selected " + choice.value + ". " + choice.rationale + " Confirm when ready.";
+        });
+        const words = document.createElement("span");
+        words.append(
+          makeText("strong", "", choice.value),
+          makeText("small", "", choice.rationale)
+        );
+        label.append(input, words);
+        choiceList.append(label);
+      });
+    }
+
+    function isEditable() {
+      return state === "ready" || state === "reset";
+    }
+
+    function transition(next) {
+      if (!TRANSITIONS[state].includes(next)) return false;
+      state = next;
+      renderState();
+      return true;
+    }
+
+    function renderState() {
+      const editable = isEditable();
+      const status = $("work-status");
+      const confirmButton = $("confirm-button");
+      const escalateButton = $("escalate-button");
+      const choices = choiceList.querySelectorAll("input");
+
+      $("queue-state").textContent = state === "result" ? "Packet prepared · sample" :
+        state === "exception" ? "Held for second review" : "Needs field review";
+      status.className = "tag " + (state === "result" ? "tag-ok" : state === "exception" ? "tag-stop" : "tag-warn");
+      status.textContent = state === "result" ? "Review recorded" :
+        state === "exception" ? "Escalated for review" :
+        state === "working" ? "Preparing sample" :
+        state === "reset" ? "Ready to review" : "Human review needed";
+
+      confirmButton.disabled = !editable || !selectedChoice;
+      escalateButton.disabled = !editable;
+      choices.forEach((input) => { input.disabled = !editable; });
+      $("choice-set").disabled = !editable;
+      $("review-callout").hidden = state === "result" || state === "exception";
+      $("decision-actions").hidden = !editable;
+      $("working-panel").hidden = state !== "working";
+      $("result-panel").hidden = state !== "result";
+      $("exception-panel").hidden = state !== "exception";
+      $("audit-trail").hidden = state !== "result" && state !== "exception";
+
+      if (state === "result") {
+        $("result-detail").textContent = "Allowed amount " + selectedChoice.value + " was selected by " +
+          DEMO_FIXTURES.operator + ". Recorded rationale: " + selectedChoice.rationale;
+        $("audit-detail").textContent = "Human review by " + DEMO_FIXTURES.operator +
+          " · " + selectedChoice.value + " · " + selectedChoice.rationale;
+      } else if (state === "exception") {
+        $("audit-detail").textContent = "Escalated by " + DEMO_FIXTURES.operator + " · " + DEMO_FIXTURES.escalationReason;
+      }
+      if (state === "reset") {
+        $("action-hint").textContent = "Scenario reset. Choose the supported reading or escalate for a second review.";
+      }
+    }
+
+    $("confirm-button").addEventListener("click", () => {
+      if (!selectedChoice || !isEditable() || !transition("working")) return;
+      liveStatus.textContent = "Preparing the sample intake packet. No data leaves this page.";
+      window.clearTimeout(pendingTimer);
+      pendingTimer = window.setTimeout(() => {
+        if (state === "working") {
+          transition("result");
+          liveStatus.textContent = "Intake packet prepared for the downstream workflow. Human review recorded.";
+        }
+      }, 360);
+    });
+
+    $("escalate-button").addEventListener("click", () => {
+      if (!isEditable()) return;
+      window.clearTimeout(pendingTimer);
+      selectedChoice = null;
+      choiceList.querySelectorAll("input").forEach((input) => { input.checked = false; });
+      transition("exception");
+      liveStatus.textContent = "Amount held and escalated for a second human review. No value was selected.";
+    });
+
+    $("reset-button").addEventListener("click", () => {
+      window.clearTimeout(pendingTimer);
+      selectedChoice = null;
+      choiceList.querySelectorAll("input").forEach((input) => { input.checked = false; });
+      transition("reset");
+      $("confirm-button").disabled = true;
+      $("action-hint").textContent = "Scenario reset. Choose the supported reading to enable confirmation.";
+      liveStatus.textContent = "Scenario reset. The synthetic source and review decision are ready to replay.";
+    });
+
+    renderFixtures();
+    renderState();
+  </script>
+</body>
+</html>

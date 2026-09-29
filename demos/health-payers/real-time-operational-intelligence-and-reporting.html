@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Operations signal review | Real-Time Operational Intelligence and Reporting</title>
+<style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+body { --on-accent: var(--surface); }
+button { touch-action: manipulation; }
+.workspace { max-width: 1800px; margin: auto; padding: 16px 18px 32px; }
+.intro { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 8px 20px; margin-bottom: 14px; }
+.intro h1 { font-size: clamp(19px, 2vw, 25px); line-height: 1.2; margin: 0 0 3px; }
+.intro p { margin: 0; color: var(--muted); font-size: 13px; }
+.workspace-grid { display: grid; grid-template-columns: minmax(215px, 260px) minmax(0, 1fr) minmax(255px, 300px); align-items: start; gap: 12px; }
+.workspace-grid > nav { grid-column: 1; grid-row: 1; }
+.workspace-grid > section { grid-column: 2; grid-row: 1; }
+.decision { grid-column: 3; grid-row: 1; }
+.signal-list { display: grid; }
+.signal {
+  display: grid; width: 100%; gap: 5px; text-align: left; padding: 12px 15px;
+  background: var(--surface); color: var(--ink); font: inherit; border: 0;
+  border-bottom: 1px solid var(--line-soft); cursor: pointer; min-height: 82px;
+}
+.signal:last-child { border-bottom: 0; }
+.signal:hover { background: var(--surface-2); }
+.signal[aria-current="true"] { background: var(--accent-soft); box-shadow: inset 3px 0 var(--accent); }
+.signal-title { font-weight: 600; font-size: 13.5px; }
+.signal-meta { color: var(--muted); font-size: 12px; }
+.signal-top { display: flex; justify-content: space-between; align-items: start; gap: 5px; }
+.detail-title { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 6px 14px; }
+.detail-title h2 { font-size: 18px; line-height: 1.25; margin: 0; }
+.detail-title p { color: var(--muted); font-size: 12.5px; margin: 3px 0 0; }
+.signal-figure { font-size: 24px; font-weight: 650; letter-spacing: -.03em; line-height: 1.2; }
+.chart-head { display: flex; gap: 5px 12px; flex-wrap: wrap; align-items: baseline; justify-content: space-between; }
+.chart-head p { margin: 0; color: var(--muted); font-size: 12px; }
+.trend { display: flex; align-items: end; gap: 8px; min-height: 120px; margin: 13px 0 5px; padding-top: 14px; border-bottom: 1px solid var(--line); }
+.period { display: grid; grid-template-rows: 18px 1fr; gap: 4px; justify-items: center; align-items: end; flex: 1; height: 110px; min-width: 0; font-size: 11px; color: var(--muted); }
+.bar-track { display: flex; align-items: end; width: min(100%, 54px); height: 82px; background: var(--surface-2); }
+.bar { display: block; width: 100%; background: var(--accent-line); min-height: 3px; }
+.period:last-child .bar { background: var(--accent); }
+.axis { display: flex; gap: 8px; margin-bottom: 12px; }
+.axis span { flex: 1; min-width: 0; text-align: center; font-size: 11px; color: var(--muted); }
+.divider { border-top: 1px solid var(--line-soft); margin: 16px -15px 13px; }
+.section-title { font-size: 14px; font-weight: 600; margin: 0 0 7px; }
+.row-note { font-size: 12.5px; color: var(--muted); margin: 0 0 9px; }
+.record-list { display: grid; gap: 7px; margin: 10px 0; }
+.record { display: grid; grid-template-columns: minmax(80px, 1fr) minmax(0, 2fr); gap: 5px 10px; border: 1px solid var(--line-soft); background: var(--bg); padding: 8px 10px; border-radius: var(--radius); font-size: 12.5px; }
+.record strong { font-weight: 600; }
+.record small { grid-column: 1 / -1; color: var(--muted); }
+.review-body { display: grid; gap: 12px; }
+.review-body p { margin: 0; font-size: 13px; }
+.review-body .btn { justify-content: center; width: 100%; }
+.review-heading { margin: 0; font-size: 17px; }
+.step { color: var(--muted); font-size: 12px; font-weight: 600; }
+.source-list { margin: 0; padding-left: 18px; font-size: 12.5px; }
+.source-list li { margin: 4px 0; }
+.mini-audit { margin-top: 10px; border-top: 1px solid var(--line-soft); padding-top: 11px; }
+.mini-audit h3 { margin: 0 0 6px; font-size: 13px; }
+.key { font-weight: 600; color: var(--accent-strong); }
+.dialog-summary { margin: 0; font-size: 13.5px; }
+.footer { max-width: 1800px; margin: auto; }
+@media (max-width: 1080px) {
+  .workspace-grid { grid-template-columns: minmax(215px, 260px) minmax(0, 1fr); }
+  .decision { grid-column: 2; grid-row: 2; }
+}
+@media (max-width: 700px) {
+  .workspace { padding: 12px 12px 24px; }
+  .workspace-grid { grid-template-columns: minmax(0, 1fr); }
+  .workspace-grid > nav, .workspace-grid > section, .decision { grid-column: 1; grid-row: auto; }
+  .signal-list { grid-template-columns: minmax(0, 1fr); }
+  .signal { min-height: 45px; padding: 7px 12px; }
+  .signal-meta { display: none; }
+  .intro { margin-bottom: 10px; }
+}
+</style>
+</head>
+<body data-subvertical="health-payers">
+<header class="appbar">
+  <div class="brand"><span class="brand-mark" aria-hidden="true">◆</span><span class="brand-name">Operations signal review<span class="brand-sub">Health payer · claims, service &amp; finance</span></span></div>
+  <p class="disclosure">Illustrative demo - synthetic data</p>
+  <p class="who">Signed in as <b>Chief Operating Officer</b> · <span id="organization"></span></p>
+</header>
+<main class="workspace">
+  <div class="intro"><div><h1>Morning operations review</h1><p id="reporting-window"></p></div><span class="tag">Working list · sample signals</span></div>
+  <div class="workspace-grid">
+    <nav class="card" aria-label="Operational signals"><div class="card-head"><h2>Signals to review</h2><span class="card-note">Select a workstream</span></div><div class="signal-list" id="signal-list"></div></nav>
+    <aside class="card decision" aria-labelledby="decision-heading"><div class="card-head"><h2 id="decision-heading">Response workspace</h2><span class="card-note">Human review required</span></div>
+      <div class="card-body review-body">
+        <span class="step" id="step-label"></span>
+        <h3 class="review-heading" id="action-heading"></h3>
+        <p id="action-explanation"></p>
+        <button class="btn btn-primary" type="button" id="next-action"></button>
+        <p class="status-line" id="status" role="status" aria-live="polite"></p>
+        <div class="rule">No coverage, payment, or clinical decision is made here. A named human reviews every proposed operational response.</div>
+        <div class="mini-audit"><h3>Review trail · sample</h3><ol class="audit" id="audit-list"></ol></div>
+        <button class="btn" type="button" id="reset">Reset &amp; replay</button>
+      </div>
+    </aside>
+    <section class="card" aria-labelledby="signal-heading">
+      <div class="card-head detail-title"><div><h2 id="signal-heading"></h2><p id="signal-subtitle"></p></div><span class="tag" id="quality-tag"></span></div>
+      <div class="card-body">
+        <div class="chart-head"><div><span class="step">Sample trend</span><div class="signal-figure" id="signal-value"></div></div><p id="trend-unit"></p></div>
+        <div class="trend" id="trend" role="img"></div><div class="axis" id="axis" aria-hidden="true"></div>
+        <p class="row-note" id="trend-caption"></p>
+        <div class="divider"></div>
+        <h3 class="section-title">Underlying records &amp; data trust</h3>
+        <p class="row-note" id="evidence-prompt">Inspect the sample records before recording a response.</p>
+        <div id="evidence" hidden>
+          <div class="record-list" id="record-list"></div>
+          <div class="notice" id="quality-notice"></div>
+          <details><summary class="key">View source trail and freshness</summary><ul class="source-list" id="source-list"></ul></details>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+<footer class="footer"><div class="built">Catalog-mapped products · <span class="svc-chip">Microsoft Fabric</span><span class="svc-chip">Power BI</span><span class="svc-chip">Azure Databricks</span><span class="svc-chip">Microsoft Purview</span><span class="svc-chip">Azure Machine Learning</span></div><span class="claim">Illustrative workflow only · products are not connected to this file.</span></footer>
+<dialog id="review-dialog" aria-labelledby="dialog-heading">
+  <form method="dialog" id="review-form">
+    <div class="dlg-head"><div><h2 id="dialog-heading"></h2><span class="dlg-sub" id="dialog-identity"></span></div><button class="btn" type="button" id="close-dialog" aria-label="Close review">Close</button></div>
+    <div class="dlg-body"><p class="dialog-summary" id="dialog-summary"></p><div class="evidence" id="dialog-basis"></div>
+      <div class="field"><label for="review-note">Review rationale (synthetic notes only)</label><textarea id="review-note" maxlength="240"></textarea></div>
+      <p class="dlg-error" id="dialog-error" role="alert"></p>
+      <div class="rule">Simulation only. This records a reversible local review state, not an operational instruction or coverage determination.</div>
+    </div>
+    <div class="dlg-foot"><button class="btn" type="button" id="cancel-dialog">Cancel</button><button class="btn btn-primary" type="submit" id="confirm-action"></button></div>
+  </form>
+</dialog>
+<script>
+(() => {
+  "use strict";
+  const SAMPLE_FIXTURES = {
+    organization: "Fictional Northstar Health Plan",
+    reportingWindow: "Sample reporting window · 29 Sep 2026, 09:00 ET · no live data",
+    queuedAt: "09:00",
+    reviewedAt: "09:01",
+    signals: [
+      {
+        id: "claims", title: "Claims queue pressure", area: "Claims operations", marker: "Needs review",
+        value: "1,246", unit: "claims pending · sample", periods: ["Mon", "Tue", "Wed", "Thu", "Fri"], values: [735, 812, 896, 1010, 1246],
+        caption: "Sample pending claims by business day; not a performance outcome.",
+        subtitle: "Illustrative workstream · claims volume across sampled queues",
+        quality: "Reconciled sample extract · current for this fictional review",
+        basis: "Sample claims extract and service staffing snapshot both dated 29 Sep 2026, 08:45 ET. Review capacity with VP Operations before proposing a staffing response.",
+        note: "Review claims queue capacity with VP Operations at the next ops huddle; validate the sample extract first.",
+        records: [
+          { id: "SYN-Q-A", description: "Intake queue · 524 pending", source: "Claims sample extract · 08:45 ET" },
+          { id: "SYN-Q-B", description: "Adjustment queue · 422 pending", source: "Claims sample extract · 08:45 ET" },
+          { id: "SYN-Q-C", description: "Review queue · 300 pending", source: "Claims sample extract · 08:45 ET" }
+        ],
+        sources: ["Claims sample extract · 29 Sep 2026, 08:45 ET", "Staffing snapshot · 29 Sep 2026, 08:45 ET", "Fictional review set · SYN-OPS-01"]
+      },
+      {
+        id: "service", title: "Service contact load", area: "Member service", marker: "Monitor",
+        value: "286", unit: "open contacts · sample", periods: ["Mon", "Tue", "Wed", "Thu", "Fri"], values: [213, 226, 241, 259, 286],
+        caption: "Sample open contacts by business day; not a measured customer outcome.",
+        subtitle: "Illustrative workstream · service and staffing",
+        quality: "Reconciled sample extract · current for this fictional review",
+        basis: "Sample service contact extract and staffing snapshot both dated 29 Sep 2026, 08:45 ET. Review routing with VP Operations before changing plans.",
+        note: "Ask VP Operations to review the service contact mix and staffing assumptions at the ops huddle.",
+        records: [
+          { id: "SYN-S-A", description: "General inquiries · 128 open", source: "Service sample extract · 08:45 ET" },
+          { id: "SYN-S-B", description: "Claims inquiries · 98 open", source: "Service sample extract · 08:45 ET" },
+          { id: "SYN-S-C", description: "Other inquiries · 60 open", source: "Service sample extract · 08:45 ET" }
+        ],
+        sources: ["Service sample extract · 29 Sep 2026, 08:45 ET", "Staffing snapshot · 29 Sep 2026, 08:45 ET", "Fictional review set · SYN-OPS-02"]
+      },
+      {
+        id: "finance", title: "Cost view delayed", area: "Finance & medical management", marker: "Data exception",
+        value: "Unavailable", unit: "current cost view · sample", periods: ["Mon", "Tue", "Wed", "Thu", "Fri"], values: [66, 68, 65, 64, 0],
+        caption: "Earlier sample index values only; Friday is unavailable, not zero.",
+        subtitle: "Illustrative exception · stale medical management input",
+        quality: "Blocked: latest input missing · do not use earlier values to act",
+        basis: "Medical management sample input last dated 26 Sep 2026, 17:00 ET. Current cost view cannot be reconciled. Escalate to the Chief Data Officer and VP Finance before interpreting the trend.",
+        note: "Request a refreshed medical management sample input and reconciliation from the Chief Data Officer and VP Finance.",
+        records: [
+          { id: "SYN-F-A", description: "Prior sample cost index · 64", source: "Finance sample extract · 26 Sep, 17:00 ET" },
+          { id: "SYN-F-B", description: "Current medical management input · missing", source: "Expected 29 Sep, 08:45 ET" }
+        ],
+        sources: ["Finance sample extract · 26 Sep 2026, 17:00 ET", "Medical management input · expected 29 Sep 2026, 08:45 ET; not received", "Fictional review set · SYN-OPS-03"]
+      }
+    ]
+  };
+  const $ = (id) => document.getElementById(id);
+  const state = { id: "claims", phase: "ready", note: "", timer: null };
+  const current = () => SAMPLE_FIXTURES.signals.find((signal) => signal.id === state.id);
+  const exception = () => state.id === "finance";
+  function node(tag, className, value) {
+    const el = document.createElement(tag);
+    if (className) el.className = className;
+    if (value !== undefined) el.textContent = value;
+    return el;
+  }
+  function renderList() {
+    const list = $("signal-list");
+    list.replaceChildren();
+    for (const item of SAMPLE_FIXTURES.signals) {
+      const button = node("button", "signal");
+      button.type = "button";
+      button.setAttribute("aria-current", String(item.id === state.id));
+      const top = node("span", "signal-top");
+      top.append(node("span", "signal-title", item.title), node("span", "tag" + (item.id === "finance" ? " tag-warn" : ""), item.marker));
+      button.append(top, node("span", "signal-meta", item.area));
+      button.addEventListener("click", () => select(item.id));
+      list.append(button);
+    }
+  }
+  function renderTrend(item) {
+    const trend = $("trend");
+    const axis = $("axis");
+    trend.replaceChildren();
+    axis.replaceChildren();
+    trend.setAttribute("aria-label", item.title + ": " + item.periods.map((label, i) => label + " " + (item.id === "finance" && i === 4 ? "unavailable" : item.values[i])).join(", "));
+    const max = Math.max(...item.values);
+    item.values.forEach((value, i) => {
+      const period = node("span", "period");
+      period.append(node("span", "", item.id === "finance" && i === 4 ? "N/A" : String(value)));
+      const track = node("span", "bar-track");
+      if (value) {
+        const bar = node("span", "bar");
+        bar.style.height = Math.round(value / max * 100) + "%";
+        track.append(bar);
+      }
+      period.append(track);
+      trend.append(period);
+      axis.append(node("span", "", item.periods[i]));
+    });
+  }
+  function renderEvidence(item) {
+    $("record-list").replaceChildren();
+    $("source-list").replaceChildren();
+    for (const record of item.records) {
+      const row = node("div", "record");
+      row.append(node("strong", "mono", record.id), node("span", "", record.description), node("small", "", record.source));
+      $("record-list").append(row);
+    }
+    for (const source of item.sources) $("source-list").append(node("li", "", source));
+    $("quality-notice").className = "notice " + (exception() ? "notice-warn" : "notice-ok");
+    $("quality-notice").textContent = item.quality;
+  }
+  function renderAudit() {
+    const list = $("audit-list");
+    list.replaceChildren();
+    const initial = node("li");
+    initial.append(node("time", "", SAMPLE_FIXTURES.queuedAt), node("span", "", "Sample signal queued for COO review"));
+    list.append(initial);
+    if (state.phase === "result") {
+      const recorded = node("li");
+      recorded.append(node("time", "", SAMPLE_FIXTURES.reviewedAt), node("span", "actor is-human", (exception() ? "Escalated by COO · " : "Reviewed by COO · ") + state.note));
+      list.append(recorded);
+    }
+  }
+  function render() {
+    const item = current();
+    renderList();
+    $("signal-heading").textContent = item.title;
+    $("signal-subtitle").textContent = item.subtitle;
+    $("signal-value").textContent = item.value;
+    $("trend-unit").textContent = item.unit;
+    $("trend-caption").textContent = item.caption;
+    $("quality-tag").textContent = exception() ? "Data exception" : "Sample extract";
+    $("quality-tag").className = "tag " + (exception() ? "tag-warn" : "tag-ok");
+    renderTrend(item);
+    renderEvidence(item);
+    const inspected = state.phase === "review" || state.phase === "result";
+    $("evidence").hidden = !inspected;
+    $("evidence-prompt").hidden = inspected;
+    $("step-label").textContent = item.title + " · " + (state.phase === "working" ? "inspecting sample records" : inspected ? "evidence inspected" : "step 1: inspect evidence");
+    const button = $("next-action");
+    button.hidden = state.phase === "result";
+    button.disabled = state.phase === "working";
+    if (state.phase === "result") {
+      $("action-heading").textContent = exception() ? "Data owner escalation recorded" : "Ops huddle review recorded";
+      $("action-explanation").textContent = "Local simulation only. Reset to replay or select another signal.";
+      $("status").textContent = exception() ? "Escalated for data reconciliation; no cost decision made." : "Reviewed response recorded; no downstream action taken.";
+    } else if (state.phase === "review") {
+      $("action-heading").textContent = exception() ? "Hold and escalate" : "Review an ops response";
+      $("action-explanation").textContent = exception() ? "The input is stale. Escalate for reconciliation instead of acting on the cost view." : "The extract is current for this sample. Record a human-reviewed discussion item, not an automatic intervention.";
+      button.textContent = exception() ? "Review escalation" : "Review response";
+      $("status").textContent = "Source trail available below the records.";
+    } else {
+      $("action-heading").textContent = exception() ? "Check missing input" : "Inspect the signal";
+      $("action-explanation").textContent = exception() ? "The current cost view is unavailable. Inspect the stale source before escalation." : "Inspect the record breakdown and source freshness before proposing a response.";
+      button.textContent = state.phase === "working" ? "Inspecting…" : "Inspect underlying records";
+      $("status").textContent = state.phase === "working" ? "Loading local sample evidence…" : "No response recorded.";
+    }
+    renderAudit();
+  }
+  function select(id) {
+    clearTimeout(state.timer);
+    state.id = id;
+    state.phase = "ready";
+    state.note = "";
+    render();
+  }
+  function next() {
+    if (state.phase === "ready") {
+      state.phase = "working";
+      render();
+      state.timer = setTimeout(() => { state.phase = "review"; render(); }, 350);
+    } else if (state.phase === "review") {
+      const item = current();
+      $("dialog-heading").textContent = exception() ? "Review data owner escalation" : "Review ops huddle item";
+      $("dialog-summary").textContent = exception() ? "Send a simulated request to the Chief Data Officer and VP Finance for source reconciliation." : "Record a simulated discussion item for VP Operations. No staffing or payment change is executed.";
+      $("dialog-basis").textContent = item.basis;
+      $("review-note").value = item.note;
+      $("dialog-error").textContent = "";
+      $("confirm-action").textContent = exception() ? "Record escalation" : "Record reviewed response";
+      $("review-dialog").showModal();
+    }
+  }
+  $("next-action").addEventListener("click", next);
+  function reset() { if ($("review-dialog").open) $("review-dialog").close(); select("claims"); }
+  $("reset").addEventListener("click", reset);
+  $("reset").addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") { event.preventDefault(); reset(); }
+  });
+  $("close-dialog").addEventListener("click", () => $("review-dialog").close());
+  $("cancel-dialog").addEventListener("click", () => $("review-dialog").close());
+  $("review-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    const note = $("review-note").value.trim();
+    if (!note) { $("dialog-error").textContent = "Enter a review rationale before recording."; $("review-note").focus(); return; }
+    state.note = note;
+    state.phase = "result";
+    $("review-dialog").close();
+    render();
+    $("reset").focus();
+  });
+  $("organization").textContent = SAMPLE_FIXTURES.organization;
+  $("reporting-window").textContent = SAMPLE_FIXTURES.reportingWindow;
+  $("dialog-identity").textContent = "Chief Operating Officer · " + SAMPLE_FIXTURES.organization;
+  render();
+})();
+</script>
+</body>
+</html>

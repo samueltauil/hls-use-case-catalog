@@ -1,0 +1,1401 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Reliability workbench — illustrative demo</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* ------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* ------------------------------------------------------- workbench tokens */
+body {
+  --page-width: 1540px;
+  --page-gutter: clamp(12px, 2.2vw, 30px);
+  --panel-inset: clamp(14px, 1.8vw, 22px);
+  --on-accent: #fff;
+}
+
+/* ----------------------------------------------------------- demo layout */
+main {
+  width: min(var(--page-width), 100%);
+  margin-inline: auto;
+  padding: 22px var(--page-gutter) 28px;
+}
+
+.page-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 17px;
+}
+
+.eyebrow {
+  margin: 0 0 3px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: .025em;
+}
+
+.page-heading h1 {
+  margin: 0;
+  font-size: clamp(22px, 2.3vw, 29px);
+  line-height: 1.2;
+  letter-spacing: -.025em;
+}
+
+.context-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.context-line span + span::before {
+  content: "·";
+  margin-right: 14px;
+  color: var(--muted-soft);
+}
+
+.page-tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fictional-label {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.workbench {
+  display: grid;
+  grid-template-columns: minmax(230px, 275px) minmax(0, 1fr);
+  min-height: 475px;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-1);
+}
+
+.queue {
+  min-width: 0;
+  padding: var(--panel-inset) 0;
+  border-right: 1px solid var(--line);
+  background: #fcfbfa;
+}
+
+.queue-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 var(--panel-inset) 12px;
+}
+
+.queue-heading h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.queue-count {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.queue-list {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.queue-row { min-width: 0; }
+
+.queue-item {
+  display: grid;
+  width: 100%;
+  gap: 5px;
+  padding: 12px var(--panel-inset);
+  border: 0;
+  border-left: 3px solid transparent;
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.queue-item:hover:not(:disabled) { background: var(--surface-2); }
+.queue-item:disabled { cursor: default; }
+.queue-item[aria-pressed="true"] {
+  border-left-color: var(--accent-strong);
+  background: var(--accent-soft);
+}
+
+.queue-item-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.queue-item strong {
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.queue-item-id {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+.queue-item-state {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.asset-stage { min-width: 0; }
+
+.asset-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 18px var(--panel-inset);
+  border-bottom: 1px solid var(--line);
+}
+
+.asset-title-block { min-width: 0; }
+
+.asset-kicker {
+  margin: 0 0 3px;
+  color: var(--muted);
+  font-size: 11.5px;
+  font-weight: 650;
+  letter-spacing: .035em;
+  text-transform: uppercase;
+}
+
+.asset-head h2 {
+  margin: 0;
+  font-size: clamp(18px, 2vw, 22px);
+  line-height: 1.25;
+  letter-spacing: -.015em;
+  overflow-wrap: anywhere;
+}
+
+.asset-subtitle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 12px;
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.asset-head-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.btn-primary {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+  color: var(--on-accent);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.asset-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(265px, .85fr);
+}
+
+.telemetry {
+  min-width: 0;
+  padding: var(--panel-inset);
+  border-right: 1px solid var(--line);
+}
+
+.section-label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11.5px;
+  font-weight: 650;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+}
+
+.telemetry-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 5px 12px;
+  margin-bottom: 5px;
+}
+
+.telemetry-title h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.telemetry-unit {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.sample-flag {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.chart-wrap {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.chart-wrap svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.chart-grid {
+  fill: none;
+  stroke: var(--line-soft);
+  stroke-width: 1;
+}
+
+.chart-axis-label {
+  fill: var(--muted);
+  font: 12px var(--font);
+}
+
+.chart-line {
+  fill: none;
+  stroke: var(--accent-strong);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.chart-point {
+  fill: var(--surface);
+  stroke: var(--accent-strong);
+  stroke-width: 2.5;
+}
+
+.reading-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 8px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.reading-strip div { min-width: 0; }
+.reading-strip dt { color: var(--muted); font-size: 11px; }
+.reading-strip dd { margin: 1px 0 0; font-size: 13px; font-weight: 600; overflow-wrap: anywhere; }
+
+.evidence-panel {
+  min-width: 0;
+  padding: var(--panel-inset);
+}
+
+.evidence-panel > .section-label { margin-bottom: 12px; }
+
+.evidence-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.evidence-list div {
+  display: grid;
+  grid-template-columns: 94px minmax(0, 1fr);
+  gap: 10px;
+  align-items: baseline;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.evidence-list dt {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.evidence-list dd {
+  margin: 0;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.evidence-note {
+  margin: 14px 0 0;
+  padding-left: 11px;
+  border-left: 2px solid var(--accent-line);
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+.review-area {
+  padding: 0 var(--panel-inset) var(--panel-inset);
+}
+
+.review-divider {
+  height: 1px;
+  margin: 0 calc(var(--panel-inset) * -1) 15px;
+  border: 0;
+  background: var(--line);
+}
+
+.decision-content {
+  min-width: 0;
+}
+
+.decision-heading {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 14px;
+  margin-bottom: 7px;
+}
+
+.decision-heading h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.decision-copy {
+  margin: 0 0 10px;
+  color: var(--ink-soft);
+  font-size: 13.5px;
+}
+
+.decision-support {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px 18px;
+  margin: 0 0 13px;
+}
+
+.decision-support div { min-width: 0; }
+.decision-support dt { color: var(--muted); font-size: 11.5px; }
+.decision-support dd { margin: 2px 0 0; font-size: 13px; overflow-wrap: anywhere; }
+
+.decision-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px 16px;
+}
+
+.decision-actions .btn-link { min-height: 32px; }
+
+.guardrail {
+  margin: 12px 0 0;
+  padding: 9px 11px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--ink-soft);
+  font-size: 12.5px;
+}
+
+.guardrail strong { color: var(--ink); }
+
+.status-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 0 0 13px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+}
+
+.status-row[data-tone="ok"] { border-color: #a7d9a7; background: var(--ok-bg); color: #0b5c0b; }
+.status-row[data-tone="warn"] { border-color: #e6d08a; background: var(--warn-bg); color: #7a4e08; }
+.status-row[data-tone="stop"] { border-color: #e5b4b7; background: var(--stop-bg); color: #8b1f25; }
+
+.status-row p { margin: 0; font-size: 13px; }
+.status-symbol { flex: none; font-weight: 700; }
+
+.workbench-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 18px;
+  padding: 11px var(--panel-inset);
+  border-top: 1px solid var(--line);
+  background: #fcfbfa;
+}
+
+.workbench-footer .status-line { min-width: 0; }
+.workbench-footer .btn-link { flex: none; }
+
+.stack-footer {
+  margin-top: 13px;
+  padding: 0 2px;
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+.stack-footer p { margin: 0 0 5px; }
+
+.stack-names {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 7px;
+}
+
+.stack-names span {
+  padding: 2px 7px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--ink-soft);
+}
+
+.footer {
+  position: relative;
+}
+
+@media (max-width: 1000px) {
+  .asset-grid { grid-template-columns: minmax(0, 1.15fr) minmax(235px, .85fr); }
+  .evidence-list div { grid-template-columns: 82px minmax(0, 1fr); gap: 7px; }
+}
+
+@media (max-width: 820px) {
+  .workbench { grid-template-columns: minmax(0, 1fr); }
+  .asset-stage { order: 1; }
+  .queue {
+    order: 2;
+    border-right: 0;
+    border-top: 1px solid var(--line);
+  }
+  .queue-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .queue-item { height: 100%; border-left: 0; border-top: 3px solid transparent; }
+  .queue-item[aria-pressed="true"] { border-top-color: var(--accent-strong); }
+  .asset-grid { grid-template-columns: minmax(0, 1.15fr) minmax(235px, .85fr); }
+}
+
+@media (max-width: 650px) {
+  main { padding-top: 15px; }
+  .page-heading { align-items: flex-start; }
+  .page-tools { align-items: flex-end; flex-direction: column-reverse; gap: 7px; }
+  .asset-head { align-items: flex-start; }
+  .asset-head-actions { width: 100%; }
+  .asset-head-actions .btn { flex: 1; justify-content: center; }
+  .asset-grid { grid-template-columns: minmax(0, 1fr); }
+  .telemetry { border-right: 0; border-bottom: 1px solid var(--line); }
+  .evidence-list div { grid-template-columns: 102px minmax(0, 1fr); }
+  .decision-support { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .decision-actions { align-items: flex-start; flex-direction: column; }
+  .decision-actions .btn { width: 100%; justify-content: center; }
+  .queue-list { grid-template-columns: minmax(0, 1fr); }
+  .queue-item { border-top: 0; border-left: 3px solid transparent; }
+  .queue-item[aria-pressed="true"] { border-left-color: var(--accent-strong); }
+  .workbench-footer { align-items: flex-start; }
+  .workbench-footer .btn-link { padding-block: 5px; }
+}
+
+@media (max-width: 390px) {
+  .appbar { gap: 7px 10px; }
+  .who { flex-basis: 100%; }
+  .disclosure { font-size: 11px; }
+  .page-heading { gap: 6px; }
+  .page-tools { max-width: 122px; }
+  .fictional-label { text-align: right; }
+  .reading-strip { gap: 5px; }
+  .reading-strip dt { font-size: 10.5px; }
+  .reading-strip dd { font-size: 12px; }
+}
+  </style>
+  <!-- State model, established before the interface markup:
+       ready -> working (Review signal) -> result (usable sample trend) or
+       exception (incomplete sample telemetry). From result, a human may
+       create an unscheduled draft or escalate for telemetry assessment.
+       Exception may only escalate. reset returns every path to ready and
+       cancels any pending deterministic review. -->
+</head>
+<body data-subvertical="medtech">
+  <header class="appbar">
+    <div class="brand" aria-label="Reliability operations">
+      <svg class="brand-mark" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 18V6h3.4l4.6 6.1L16.6 6H20v12h-3V10.7l-5 6.2-5-6.2V18z" fill="currentColor"></path>
+      </svg>
+      <div>
+        <span class="brand-name">Reliability operations</span>
+        <span class="brand-sub">Manufacturing &amp; installed equipment</span>
+      </div>
+    </div>
+    <p class="who"><b id="userName">Reliability Engineering Lead</b><span id="userRole"></span></p>
+    <p class="disclosure"><span aria-hidden="true">●</span> Illustrative demo - synthetic data</p>
+  </header>
+
+  <main>
+    <div class="page-heading">
+      <div>
+        <p class="eyebrow">Equipment signals / review queue</p>
+        <h1>Reliability workbench</h1>
+        <p class="context-line">
+          <span id="plantContext">Fictional manufacturing site</span>
+          <span id="shiftContext">Shift context</span>
+          <span>Sample telemetry only</span>
+        </p>
+      </div>
+      <div class="page-tools">
+        <span class="fictional-label">Fictional workspace</span>
+        <button class="btn" id="resetButton" type="button">Reset demo</button>
+      </div>
+    </div>
+
+    <div class="workbench">
+      <section class="asset-stage" aria-labelledby="assetTitle">
+        <header class="asset-head">
+          <div class="asset-title-block">
+            <p class="asset-kicker">Selected equipment · synthetic record</p>
+            <h2 id="assetTitle">Loading sample equipment…</h2>
+            <p class="asset-subtitle">
+              <span id="assetId" class="mono"></span>
+              <span id="assetArea"></span>
+              <span id="assetType"></span>
+            </p>
+          </div>
+          <div class="asset-head-actions">
+            <span id="assetTag" class="tag">Sample signal</span>
+            <button class="btn btn-primary" id="reviewButton" type="button">Review signal</button>
+          </div>
+        </header>
+
+        <div class="asset-grid">
+          <section class="telemetry" aria-labelledby="telemetryHeading">
+            <div class="telemetry-title">
+              <h3 id="telemetryHeading">Vibration history</h3>
+              <span class="telemetry-unit" id="telemetryUnit">Illustrative sample readings</span>
+            </div>
+            <p class="sample-flag" id="sampleFlag">Synthetic operational data · not an outcome</p>
+            <div class="chart-wrap">
+              <svg id="telemetryChart" viewBox="0 0 640 250" role="img" aria-labelledby="chartTitle chartDescription">
+                <title id="chartTitle">Illustrative vibration readings</title>
+                <desc id="chartDescription">Synthetic telemetry, for demonstration only.</desc>
+              </svg>
+            </div>
+            <dl class="reading-strip" id="readingStrip"></dl>
+          </section>
+
+          <section class="evidence-panel" aria-labelledby="evidenceHeading">
+            <p class="section-label" id="evidenceHeading">Evidence in this sample</p>
+            <dl class="evidence-list" id="evidenceList"></dl>
+            <p class="evidence-note" id="assetNote"></p>
+          </section>
+        </div>
+
+        <section class="review-area" aria-labelledby="reviewHeading">
+          <hr class="review-divider">
+          <div class="decision-content" id="decisionContent"></div>
+        </section>
+
+        <div class="workbench-footer">
+          <p class="status-line" id="liveStatus" role="status" aria-live="polite">Select a sample signal, then review its telemetry.</p>
+          <button class="btn-link" id="resetLink" type="button">Start over</button>
+        </div>
+      </section>
+
+      <aside class="queue" aria-labelledby="queueHeading">
+        <div class="queue-heading">
+          <h2 id="queueHeading">Signals for review</h2>
+          <span class="queue-count" id="queueCount">Sample equipment</span>
+        </div>
+        <ul class="queue-list" id="queueList"></ul>
+      </aside>
+    </div>
+
+    <div class="stack-footer" aria-label="Catalog workload references">
+      <p>Catalog workload names · shown as references, not live connections</p>
+      <div class="stack-names" id="workloadNames"></div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <span>For workflow illustration only; no live equipment is connected.</span>
+    <span class="claim">Review cues are synthetic. <b>A qualified person remains responsible for maintenance decisions.</b></span>
+  </footer>
+
+  <script>
+    "use strict";
+
+    const DEMO_FIXTURES = {
+      context: {
+        plant: "Aster Vale Instruments · North cell",
+        shift: "Shift A · 29 Sep 2026",
+        user: "Lena Voss",
+        role: " · Reliability Engineering Lead (fictional)",
+        disclosure: "Illustrative demo - synthetic data",
+        products: [
+          "Azure Machine Learning",
+          "Microsoft Fabric",
+          "Azure IoT",
+          "Azure OpenAI in Azure AI Foundry Models"
+        ],
+        reviewDelayMs: 520,
+        draftId: "WO-SYN-0427",
+        assessmentId: "TA-SYN-018"
+      },
+      assets: [
+        {
+          key: "press-014",
+          title: "Servo press",
+          assetId: "AST-SYN-014",
+          area: "North cell · bay 2",
+          type: "Press drive",
+          queueState: "Review cue · sample trend",
+          signal: "Review candidate",
+          telemetryLabel: "RMS vibration · fictional sample",
+          unit: "mm/s",
+          samples: [
+            { time: "07:45", value: 2.8 },
+            { time: "07:55", value: 3.1 },
+            { time: "08:05", value: 3.8 },
+            { time: "08:15", value: 4.4 },
+            { time: "08:25", value: 5.1 }
+          ],
+          facts: [
+            { label: "Recent reading", value: "5.1 mm/s · sample" },
+            { label: "Inspection note", value: "Routine visual check · 18 Sep · sample" },
+            { label: "Data window", value: "07:45–08:25 · sample" }
+          ],
+          note: "The displayed sample readings move upward across this window. This is a review cue, not a failure date or a remaining-life estimate.",
+          route: "result",
+          result: {
+            title: "Candidate surfaced for human review",
+            copy: "The illustrative trend is rising across the displayed sample window. Compare the evidence with a physical inspection before planning maintenance.",
+            source: "Synthetic vibration stream · 29 Sep 2026",
+            rationale: "Rising movement across the shown samples; no failure date is generated.",
+            escalation: "Reliability Engineering Lead or Plant Operations Manager",
+            action: "Create draft work order"
+          }
+        },
+        {
+          key: "conveyor-007",
+          title: "Transfer conveyor",
+          assetId: "AST-SYN-007",
+          area: "North cell · bay 4",
+          type: "Conveyor drive",
+          queueState: "Telemetry incomplete · sample",
+          signal: "Telemetry incomplete",
+          telemetryLabel: "RMS vibration · fictional sample",
+          unit: "mm/s",
+          samples: [
+            { time: "07:45", value: 2.7 },
+            { time: "07:55", value: 2.9 },
+            { time: "08:05", value: null },
+            { time: "08:15", value: 3.0 },
+            { time: "08:25", value: null }
+          ],
+          facts: [
+            { label: "Recent reading", value: "3.0 mm/s · sample" },
+            { label: "Missing windows", value: "2 intervals · sample" },
+            { label: "Data window", value: "07:45–08:25 · sample" }
+          ],
+          note: "Two sample intervals are missing. There is not enough evidence here for a recommendation; do not use this sample to plan work.",
+          route: "exception",
+          exception: {
+            title: "Review paused: telemetry is incomplete",
+            copy: "No recommendation was generated. Two sample collection intervals are missing, so this screen cannot support a maintenance decision.",
+            source: "Synthetic vibration stream · 29 Sep 2026",
+            rationale: "Missing sample windows prevent a useful trend review.",
+            escalation: "Request a telemetry assessment from the Reliability Engineering Lead."
+          }
+        }
+      ]
+    };
+
+    const WORKFLOW = {
+      states: ["ready", "working", "result", "exception", "draft", "escalated", "reset"],
+      transitions: {
+        ready: ["working", "reset"],
+        working: ["result", "exception", "reset"],
+        result: ["draft", "escalated", "reset"],
+        exception: ["escalated", "reset"],
+        draft: ["reset"],
+        escalated: ["reset"],
+        reset: ["ready"]
+      }
+    };
+
+    const elements = {
+      userName: document.getElementById("userName"),
+      userRole: document.getElementById("userRole"),
+      plantContext: document.getElementById("plantContext"),
+      shiftContext: document.getElementById("shiftContext"),
+      assetTitle: document.getElementById("assetTitle"),
+      assetId: document.getElementById("assetId"),
+      assetArea: document.getElementById("assetArea"),
+      assetType: document.getElementById("assetType"),
+      assetTag: document.getElementById("assetTag"),
+      telemetryUnit: document.getElementById("telemetryUnit"),
+      sampleFlag: document.getElementById("sampleFlag"),
+      chart: document.getElementById("telemetryChart"),
+      chartTitle: document.getElementById("chartTitle"),
+      chartDescription: document.getElementById("chartDescription"),
+      readingStrip: document.getElementById("readingStrip"),
+      evidenceList: document.getElementById("evidenceList"),
+      assetNote: document.getElementById("assetNote"),
+      queueList: document.getElementById("queueList"),
+      queueCount: document.getElementById("queueCount"),
+      reviewButton: document.getElementById("reviewButton"),
+      resetButton: document.getElementById("resetButton"),
+      resetLink: document.getElementById("resetLink"),
+      liveStatus: document.getElementById("liveStatus"),
+      decisionContent: document.getElementById("decisionContent"),
+      workloadNames: document.getElementById("workloadNames"),
+      stage: document.querySelector(".asset-stage")
+    };
+
+    const SVG_NS = "http://www.w3.org/2000/svg";
+    let selectedAsset = DEMO_FIXTURES.assets[0];
+    let state = "ready";
+    let pendingReview = null;
+
+    function node(tagName, className, text) {
+      const element = document.createElement(tagName);
+      if (className) element.className = className;
+      if (text !== undefined) element.textContent = text;
+      return element;
+    }
+
+    function svgNode(tagName, attributes) {
+      const element = document.createElementNS(SVG_NS, tagName);
+      for (const [key, value] of Object.entries(attributes)) element.setAttribute(key, String(value));
+      return element;
+    }
+
+    function announce(message) {
+      elements.liveStatus.textContent = message;
+    }
+
+    function canTransition(nextState) {
+      return WORKFLOW.transitions[state].includes(nextState);
+    }
+
+    function transition(nextState) {
+      if (!WORKFLOW.states.includes(nextState) || !canTransition(nextState)) return false;
+      state = nextState;
+      render();
+      return true;
+    }
+
+    function renderQueue() {
+      const rows = DEMO_FIXTURES.assets.map((asset) => {
+        const item = node("button", "queue-item");
+        item.type = "button";
+        item.dataset.assetKey = asset.key;
+        item.setAttribute("aria-pressed", String(asset.key === selectedAsset.key));
+        item.disabled = state !== "ready";
+
+        const top = node("span", "queue-item-top");
+        top.append(node("strong", "", asset.title));
+        const tag = node("span", asset.route === "exception" ? "tag tag-warn" : "tag", asset.signal);
+        top.append(tag);
+        item.append(top);
+        item.append(node("span", "queue-item-id", asset.assetId));
+        item.append(node("span", "queue-item-state", asset.queueState));
+
+        const row = node("li", "queue-row");
+        row.append(item);
+        return row;
+      });
+      elements.queueList.replaceChildren(...rows);
+      elements.queueCount.textContent = `${DEMO_FIXTURES.assets.length} fictional signals`;
+    }
+
+    function renderFacts() {
+      const rows = selectedAsset.facts.map((fact) => {
+        const wrapper = document.createElement("div");
+        wrapper.append(node("dt", "", fact.label));
+        wrapper.append(node("dd", "", fact.value));
+        return wrapper;
+      });
+      elements.readingStrip.replaceChildren(...rows);
+
+      const evidenceRows = [
+        { label: "Signal source", value: selectedAsset.telemetryLabel },
+        { label: "Window", value: selectedAsset.facts.find((fact) => fact.label === "Data window").value },
+        { label: "Review cue", value: selectedAsset.signal }
+      ].map((fact) => {
+        const wrapper = document.createElement("div");
+        wrapper.append(node("dt", "", fact.label));
+        wrapper.append(node("dd", "", fact.value));
+        return wrapper;
+      });
+      elements.evidenceList.replaceChildren(...evidenceRows);
+    }
+
+    function renderChart() {
+      const samples = selectedAsset.samples;
+      const plot = { left: 56, right: 620, top: 20, bottom: 190 };
+      const values = samples.map((sample) => sample.value).filter((value) => value !== null);
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      const spread = Math.max(max - min, 0.4);
+      const lower = Math.max(0, min - spread * 0.22);
+      const upper = max + spread * 0.22;
+      const xFor = (index) => plot.left + (plot.right - plot.left) * index / Math.max(1, samples.length - 1);
+      const yFor = (value) => plot.bottom - ((value - lower) / (upper - lower)) * (plot.bottom - plot.top);
+      const drawing = [];
+
+      for (let index = 0; index < 4; index += 1) {
+        const y = plot.top + (plot.bottom - plot.top) * index / 3;
+        const value = upper - (upper - lower) * index / 3;
+        drawing.push(svgNode("path", { class: "chart-grid", d: `M${plot.left} ${y}H${plot.right}` }));
+        const label = svgNode("text", { class: "chart-axis-label", x: 4, y: y + 4 });
+        label.textContent = value.toFixed(1);
+        drawing.push(label);
+      }
+
+      let currentSegment = [];
+      const segments = [];
+      samples.forEach((sample, index) => {
+        if (sample.value === null) {
+          if (currentSegment.length) segments.push(currentSegment);
+          currentSegment = [];
+          return;
+        }
+        const point = { x: xFor(index), y: yFor(sample.value), sample, index };
+        currentSegment.push(point);
+      });
+      if (currentSegment.length) segments.push(currentSegment);
+
+      segments.forEach((segment) => {
+        if (segment.length > 1) {
+          const path = segment.map((point, index) => `${index === 0 ? "M" : "L"}${point.x} ${point.y}`).join(" ");
+          drawing.push(svgNode("path", { class: "chart-line", d: path }));
+        }
+        segment.forEach((point) => {
+          drawing.push(svgNode("circle", {
+            class: "chart-point",
+            cx: point.x,
+            cy: point.y,
+            r: 5
+          }));
+        });
+      });
+
+      samples.forEach((sample, index) => {
+        const label = svgNode("text", {
+          class: "chart-axis-label",
+          x: xFor(index),
+          y: 220,
+          "text-anchor": "middle"
+        });
+        label.textContent = sample.time;
+        drawing.push(label);
+      });
+
+      const axisTitle = svgNode("text", {
+        class: "chart-axis-label",
+        x: 4,
+        y: 244
+      });
+      axisTitle.textContent = `Sample reading (${selectedAsset.unit}) · time`;
+      drawing.push(axisTitle);
+
+      elements.chartTitle.textContent = `${selectedAsset.title}: sample vibration history`;
+      const missing = samples.filter((sample) => sample.value === null).length;
+      elements.chartDescription.textContent = missing
+        ? `Fictional sample vibration readings over time with ${missing} missing sample intervals.`
+        : "Fictional sample vibration readings over time. The line is an illustrative operational signal, not an outcome.";
+      elements.chart.replaceChildren(elements.chartTitle, elements.chartDescription, ...drawing);
+      elements.telemetryUnit.textContent = `Illustrative sample readings · ${selectedAsset.unit}`;
+      elements.sampleFlag.textContent = "Synthetic operational data · not an outcome";
+    }
+
+    function decisionHeader(title, statusText, statusClass) {
+      const header = node("div", "decision-heading");
+      const heading = node("h3", "", title);
+      heading.id = "reviewHeading";
+      header.append(heading);
+      const tag = node("span", statusClass, statusText);
+      header.append(tag);
+      return header;
+    }
+
+    function makeSupport(items) {
+      const list = node("dl", "decision-support");
+      items.forEach((item) => {
+        const wrapper = document.createElement("div");
+        wrapper.append(node("dt", "", item.label));
+        wrapper.append(node("dd", "", item.value));
+        list.append(wrapper);
+      });
+      return list;
+    }
+
+    function actionButton(label, id, primary) {
+      const button = node("button", primary ? "btn btn-primary" : "btn");
+      button.type = "button";
+      button.id = id;
+      button.textContent = label;
+      return button;
+    }
+
+    function escalationLink(label) {
+      const button = node("button", "btn-link", label);
+      button.type = "button";
+      button.id = "escalateButton";
+      return button;
+    }
+
+    function makeGuardrail(text) {
+      const guardrail = node("p", "guardrail");
+      guardrail.append(node("strong", "", "Human review required. "));
+      guardrail.append(document.createTextNode(text));
+      return guardrail;
+    }
+
+    function renderDecision() {
+      const content = document.createDocumentFragment();
+
+      if (state === "ready" || state === "reset") {
+        content.append(decisionHeader("Review the signal before planning work", "Human decision", "tag"));
+        content.append(node("p", "decision-copy", "Inspect the sample evidence, then review this signal. The screen will not schedule or dispatch maintenance."));
+        content.append(makeSupport([
+          { label: "Evidence source", value: selectedAsset.telemetryLabel },
+          { label: "Review owner", value: "Reliability Engineering Lead" }
+        ]));
+        content.append(makeGuardrail("A review cue is not a diagnosis of equipment failure. Confirm the evidence and use the appropriate site process."));
+      } else if (state === "working") {
+        content.append(decisionHeader("Reviewing sample telemetry", "In progress", "tag"));
+        content.append(node("p", "decision-copy", "Comparing the fixed fictional sample readings…"));
+      } else if (state === "result") {
+        const result = selectedAsset.result;
+        content.append(decisionHeader(result.title, "Review required", "tag tag-warn"));
+        content.append(node("p", "decision-copy", result.copy));
+        content.append(makeSupport([
+          { label: "Evidence source", value: result.source },
+          { label: "Rationale", value: result.rationale },
+          { label: "Escalate to", value: result.escalation },
+          { label: "Decision boundary", value: "Create an unscheduled draft only; no work is dispatched." }
+        ]));
+        const actions = node("div", "decision-actions");
+        actions.append(actionButton(result.action, "draftButton", true));
+        actions.append(escalationLink("Escalate for telemetry assessment"));
+        content.append(actions);
+        content.append(makeGuardrail("A qualified person must inspect and approve any maintenance plan. This demo does not schedule work or predict a failure date."));
+      } else if (state === "exception") {
+        const exception = selectedAsset.exception;
+        const notice = node("div", "status-row");
+        notice.dataset.tone = "warn";
+        notice.append(node("span", "status-symbol", "!"));
+        notice.append(node("p", "", exception.copy));
+        content.append(notice);
+        content.append(decisionHeader(exception.title, "No recommendation", "tag tag-warn"));
+        content.append(makeSupport([
+          { label: "Evidence source", value: exception.source },
+          { label: "Why paused", value: exception.rationale },
+          { label: "Escalation route", value: exception.escalation }
+        ]));
+        const actions = node("div", "decision-actions");
+        actions.append(actionButton("Request telemetry assessment", "escalateButton", true));
+        content.append(actions);
+        content.append(makeGuardrail("Do not plan maintenance from incomplete sample telemetry. An equipment owner must review the assessment."));
+      } else if (state === "draft") {
+        const notice = node("div", "status-row");
+        notice.dataset.tone = "ok";
+        notice.append(node("span", "status-symbol", "✓"));
+        notice.append(node("p", "", `Draft ${DEMO_FIXTURES.context.draftId} recorded. It is not scheduled.`));
+        content.append(notice);
+        content.append(decisionHeader("Draft work order created", "Unscheduled", "tag tag-ok"));
+        content.append(node("p", "decision-copy", "The reliability lead chose to create a draft after reviewing the synthetic trend. A technician still needs to inspect and approve it before any maintenance is planned."));
+        content.append(makeSupport([
+          { label: "Draft reference", value: DEMO_FIXTURES.context.draftId },
+          { label: "Recorded by", value: `${DEMO_FIXTURES.context.user} · Reliability Engineering Lead` },
+          { label: "Rationale", value: selectedAsset.result.rationale },
+          { label: "Next owner", value: "Technician review · scheduling approval required" }
+        ]));
+        content.append(makeGuardrail("No schedule, service dispatch, or equipment change was made."));
+      } else if (state === "escalated") {
+        const exceptionPath = selectedAsset.route === "exception";
+        const detail = exceptionPath ? selectedAsset.exception : selectedAsset.result;
+        const notice = node("div", "status-row");
+        notice.dataset.tone = "warn";
+        notice.append(node("span", "status-symbol", "↗"));
+        notice.append(node("p", "", `Assessment ${DEMO_FIXTURES.context.assessmentId} added to the fictional review queue.`));
+        content.append(notice);
+        content.append(decisionHeader("Telemetry assessment requested", "Escalated", "tag tag-warn"));
+        content.append(node("p", "decision-copy", "The sample has been handed to the named reliability owner for review. No maintenance recommendation or equipment action was made."));
+        content.append(makeSupport([
+          { label: "Assessment", value: DEMO_FIXTURES.context.assessmentId },
+          { label: "Escalated to", value: detail.escalation },
+          { label: "Rationale", value: detail.rationale },
+          { label: "Next step", value: "Human review of the sample telemetry" }
+        ]));
+        content.append(makeGuardrail("Escalation records a review request in this demo only; it does not contact a person or a live system."));
+      }
+
+      elements.decisionContent.replaceChildren(content);
+      elements.reviewButton.disabled = state !== "ready";
+      elements.reviewButton.textContent = state === "working" ? "Reviewing…" : "Review signal";
+      elements.stage.setAttribute("aria-busy", String(state === "working"));
+    }
+
+    function render() {
+      elements.userName.textContent = DEMO_FIXTURES.context.user;
+      elements.userRole.textContent = DEMO_FIXTURES.context.role;
+      elements.plantContext.textContent = DEMO_FIXTURES.context.plant;
+      elements.shiftContext.textContent = DEMO_FIXTURES.context.shift;
+      elements.assetTitle.textContent = selectedAsset.title;
+      elements.assetId.textContent = selectedAsset.assetId;
+      elements.assetArea.textContent = selectedAsset.area;
+      elements.assetType.textContent = selectedAsset.type;
+      elements.assetTag.textContent = selectedAsset.signal;
+      elements.assetTag.className = selectedAsset.route === "exception" ? "tag tag-warn" : "tag";
+      renderQueue();
+      renderFacts();
+      renderChart();
+      renderDecision();
+      renderWorkloads();
+
+      const status = {
+        ready: "Select a sample signal, then review its telemetry.",
+        reset: "Demo reset. Select a sample signal to begin.",
+        working: "Reviewing the fixed synthetic telemetry sample…",
+        result: "A review candidate is ready. No maintenance has been scheduled.",
+        exception: "Review paused. No recommendation was generated from incomplete sample telemetry.",
+        draft: `Draft ${DEMO_FIXTURES.context.draftId} created; it is not scheduled. Technician review remains required.`,
+        escalated: `Assessment ${DEMO_FIXTURES.context.assessmentId} added to the fictional review queue.`
+      };
+      announce(status[state]);
+    }
+
+    function renderWorkloads() {
+      const chips = DEMO_FIXTURES.context.products.map((product) => node("span", "", product));
+      elements.workloadNames.replaceChildren(...chips);
+    }
+
+    function startReview() {
+      if (state !== "ready" || !canTransition("working")) return;
+      transition("working");
+      pendingReview = window.setTimeout(() => {
+        pendingReview = null;
+        transition(selectedAsset.route === "exception" ? "exception" : "result");
+      }, DEMO_FIXTURES.context.reviewDelayMs);
+    }
+
+    function createDraft() {
+      if (state !== "result" || !canTransition("draft")) return;
+      transition("draft");
+    }
+
+    function requestAssessment() {
+      if (!["result", "exception"].includes(state) || !canTransition("escalated")) return;
+      transition("escalated");
+    }
+
+    function resetDemo() {
+      if (pendingReview !== null) {
+        window.clearTimeout(pendingReview);
+        pendingReview = null;
+      }
+      if (state !== "reset" && !transition("reset")) return;
+      selectedAsset = DEMO_FIXTURES.assets[0];
+      render();
+      transition("ready");
+    }
+
+    elements.reviewButton.addEventListener("click", startReview);
+    elements.resetButton.addEventListener("click", resetDemo);
+    elements.resetLink.addEventListener("click", resetDemo);
+    elements.queueList.addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-asset-key]");
+      if (!button || state !== "ready") return;
+      const nextAsset = DEMO_FIXTURES.assets.find((asset) => asset.key === button.dataset.assetKey);
+      if (!nextAsset || nextAsset.key === selectedAsset.key) return;
+      selectedAsset = nextAsset;
+      render();
+    });
+    elements.decisionContent.addEventListener("click", (event) => {
+      const button = event.target.closest("button");
+      if (!button) return;
+      if (button.id === "draftButton") createDraft();
+      if (button.id === "escalateButton") requestAssessment();
+    });
+
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Illustrative database modernization assessment workbench using synthetic data.">
+  <title>Database migration assessment | Illustrative demo</title>
+  <style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+body { --on-accent: #fff; }
+.btn-primary { background: var(--accent-strong); border-color: var(--accent-strong); color: var(--on-accent); }
+.btn-primary:hover:not(:disabled) { background: var(--ink); border-color: var(--ink); }
+.appbar .brand-mark { font-size: 22px; line-height: 1; }
+.page { max-width: 1600px; margin: 0 auto; padding: 18px; }
+.heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.heading h1 { margin: 0; font-size: clamp(21px, 2.3vw, 27px); line-height: 1.25; }
+.eyebrow { color: var(--muted); font-size: 12px; margin: 0 0 3px; }
+.heading p:last-child { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+.workspace { display: grid; grid-template-columns: minmax(205px, 260px) minmax(0, 1fr) minmax(245px, 315px); gap: 12px; align-items: start; }
+.queue { display: grid; gap: 0; }
+.queue-item { display: grid; gap: 3px; width: 100%; text-align: left; padding: 13px 14px; border: 0; border-bottom: 1px solid var(--line-soft); border-left: 3px solid transparent; background: var(--surface); color: var(--ink); font: inherit; cursor: pointer; }
+.queue-item:last-child { border-bottom: 0; }
+.queue-item:hover { background: var(--bg); }
+.queue-item[aria-current="true"] { border-left-color: var(--accent-strong); background: var(--accent-soft); }
+.queue-item .queue-name { font-weight: 600; font-size: 14px; overflow-wrap: anywhere; }
+.queue-item .queue-meta { font-size: 12px; color: var(--muted); }
+.queue-item .queue-state { font-size: 12px; color: var(--accent-strong); font-weight: 600; }
+.detail-title { display: flex; align-items: flex-start; flex-wrap: wrap; gap: 8px; justify-content: space-between; }
+.detail-title h2 { font-size: 20px; margin: 0; line-height: 1.2; overflow-wrap: anywhere; }
+.detail-title p { font-size: 12px; color: var(--muted); margin: 4px 0 0; }
+.detail { min-width: 0; }
+.detail .card-body { display: grid; gap: 17px; }
+.detail h3, .review h3 { font-size: 14px; margin: 0 0 8px; }
+.route { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 10px 12px; border: 1px solid var(--accent-line); border-radius: var(--radius); background: var(--accent-soft); font-size: 13px; }
+.route strong { color: var(--accent-strong); overflow-wrap: anywhere; }
+.route .arrow { color: var(--accent-strong); font-weight: 700; }
+.evidence-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 0; }
+.evidence-list li { padding: 9px 0; border-top: 1px solid var(--line-soft); }
+.evidence-list strong, .evidence-list span { display: block; }
+.evidence-list strong { font-size: 13px; }
+.evidence-list span { color: var(--muted); font-size: 12.5px; overflow-wrap: anywhere; }
+.review { min-width: 0; }
+.review .card-body { display: grid; gap: 12px; }
+.review .field textarea { width: 100%; min-height: 95px; }
+.review .attest { padding: 9px; font-size: 13px; }
+.review .actions .btn { width: 100%; justify-content: center; }
+.review .status-line { border-top: 1px solid var(--line-soft); padding-top: 10px; }
+.review .audit { border-top: 1px solid var(--line-soft); padding-top: 10px; }
+.review .audit .actor, .review .audit .actor + span { display: block; }
+.result { display: grid; gap: 4px; }
+.result strong { font-size: 13px; }
+.result span { font-size: 12.5px; }
+.footer { margin-top: 18px; }
+@media (max-width: 1050px) {
+  .workspace { grid-template-columns: minmax(185px, 240px) minmax(0, 1fr); }
+  .review { grid-column: 2; }
+}
+@media (max-width: 700px) {
+  .page { padding: 12px; }
+  .heading { align-items: flex-start; }
+  .heading .btn { flex: none; }
+  .workspace { grid-template-columns: minmax(0, 1fr); }
+  .review { grid-column: auto; }
+  .queue { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .queue-item { border-bottom: 0; }
+  .queue-item:first-child { border-right: 1px solid var(--line-soft); }
+}
+@media (max-width: 420px) {
+  .heading { flex-wrap: wrap; }
+  .queue { grid-template-columns: minmax(0, 1fr); }
+  .queue-item:first-child { border-right: 0; border-bottom: 1px solid var(--line-soft); }
+}
+  </style>
+</head>
+<body data-subvertical="pharma-life-sciences">
+  <header class="appbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">▦</span>
+      <div><span class="brand-name">Migration assessment workbench</span><span class="brand-sub">Platform planning / database estate</span></div>
+    </div>
+    <p class="disclosure">Illustrative demo - synthetic data</p>
+    <p class="who">Review owner <b>Mara Vale · Head of Infrastructure</b></p>
+  </header>
+  <main class="page">
+    <div class="heading">
+      <div><p class="eyebrow">Fictional organization: Northstar Therapeutics · Assessment wave W-02</p><h1>Database migration candidates</h1><p>Review source evidence before recording the next assessment step. No migration is executed.</p></div>
+      <button type="button" class="btn" id="reset">Reset demo</button>
+    </div>
+    <div class="workspace">
+      <nav class="card" aria-label="Candidate queue">
+        <div class="card-head"><h2>Candidate queue</h2><span class="card-note">Sample inventory · 2 records</span></div>
+        <div class="queue" id="queue"></div>
+      </nav>
+      <section class="card detail" aria-labelledby="candidate-title">
+        <div class="card-head detail-title"><div><h2 id="candidate-title" tabindex="-1"></h2><p id="candidate-subtitle"></p></div><span class="tag" id="candidate-status"></span></div>
+        <div class="card-body">
+          <div class="route"><span id="source-platform"></span><span class="arrow" aria-hidden="true">→</span><strong id="target-platform"></strong></div>
+          <dl class="facts" id="facts"></dl>
+          <section aria-labelledby="evidence-heading"><h3 id="evidence-heading">Assessment evidence · sample records</h3><ul class="evidence-list" id="evidence"></ul></section>
+          <div class="notice" id="risk"></div>
+        </div>
+      </section>
+      <aside class="card review" aria-labelledby="review-heading">
+        <div class="card-head"><h2 id="review-heading">Human review</h2><span class="card-note">No cutover authority</span></div>
+        <div class="card-body">
+          <p class="status-line" id="instruction"></p>
+          <div class="field"><label for="rationale">Review rationale · sample text, editable</label><textarea id="rationale" maxlength="500" required></textarea></div>
+          <label class="attest"><input type="checkbox" id="attest"> <span>I reviewed the sample dependency and risk evidence for this candidate.</span></label>
+          <p class="dlg-error" id="error" role="alert" hidden></p>
+          <div class="actions"><button type="button" class="btn btn-primary" id="decide"></button></div>
+          <div class="notice result" id="result" hidden role="status" tabindex="-1"></div>
+          <section aria-labelledby="audit-heading"><h3 id="audit-heading">Review trail · sample</h3><ol class="audit" id="audit"></ol></section>
+        </div>
+      </aside>
+    </div>
+  </main>
+  <footer class="footer">
+    <div class="built"><span>Target options:</span><span class="svc-chip">Azure SQL Managed Instance</span><span class="svc-chip">Azure Database for PostgreSQL</span></div>
+    <span class="claim">Catalog intent: <b>reduce database licensing and operating cost, improve scalability and reliability, and free budget for innovation.</b> No savings estimate is implied.</span>
+  </footer>
+  <script>
+    const FIXTURES = {
+      candidates: [
+        {
+          id: "DB-S01", name: "Research reporting", source: "On-premises SQL Server",
+          target: "Azure SQL Managed Instance", stage: "Assessment candidate",
+          subtitle: "SQL Server · Sample inventory / DB-S01",
+          facts: [
+            ["Application owner", "Research operations"],
+            ["Maintenance", "Support renewal under review"],
+            ["Dependency", "Reporting jobs / nightly"],
+            ["Inventory date", "2026-09-18 · sample"]
+          ],
+          evidence: [
+            ["Inventory extract · INV-S01", "SQL Server instance listed; support and licensing baseline pending Finance review."],
+            ["Dependency map · DEP-S01", "Nightly reporting jobs and one downstream extract identified for test planning."],
+            ["Application owner note · APP-S01", "Owner available for non-production connectivity and reconciliation tests."]
+          ],
+          risk: "Proposed next step: plan a phased, tested pilot assessment. Validate job dependencies and reconcile outputs before any cutover decision.",
+          rationale: "Dependency inventory and application owner are identified. Recommend a non-production pilot assessment; hold cutover planning until test results and Finance baseline are reviewed.",
+          action: "Record pilot assessment recommendation",
+          outcome: "Pilot assessment recommended",
+          next: "Database Engineering Lead to plan non-production tests; application owner to confirm reconciliation. Cutover remains unapproved."
+        },
+        {
+          id: "DB-O02", name: "Trial supply ledger", source: "On-premises Oracle",
+          target: "Azure Database for PostgreSQL", stage: "Compatibility review needed",
+          subtitle: "Oracle · Sample inventory / DB-O02",
+          facts: [
+            ["Application owner", "Supply systems"],
+            ["Maintenance", "Support renewal under review"],
+            ["Dependency", "Ledger adapter / custom SQL"],
+            ["Inventory date", "2026-09-18 · sample"]
+          ],
+          evidence: [
+            ["Inventory extract · INV-O02", "Oracle instance listed; support and licensing baseline pending Finance review."],
+            ["Dependency map · DEP-O02", "Custom SQL in the ledger adapter has not been assessed for portability."],
+            ["Application owner note · APP-O02", "Owner cannot confirm equivalent behavior without a conversion and test review."]
+          ],
+          risk: "Exception: application compatibility is unverified. Do not recommend a PostgreSQL pilot or cutover until conversion assessment and owner-led tests resolve the gap.",
+          rationale: "Custom SQL in the ledger adapter has no verified PostgreSQL test result. Request a conversion and compatibility review with the application owner before any pilot recommendation.",
+          action: "Escalate compatibility review",
+          outcome: "Compatibility review requested",
+          next: "Database Engineering Lead and application owner to assess conversion and test behavior; no pilot or cutover approved."
+        }
+      ],
+      reviewer: "Mara Vale · Head of Infrastructure",
+      reviewDate: "2026-09-29 · sample"
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const state = { selected: 0, decisions: FIXTURES.candidates.map(() => null), notes: FIXTURES.candidates.map((item) => item.rationale) };
+
+    function addText(parent, tag, text, className) {
+      const element = document.createElement(tag);
+      if (className) element.className = className;
+      element.textContent = text;
+      parent.append(element);
+      return element;
+    }
+
+    function render() {
+      const candidate = FIXTURES.candidates[state.selected];
+      const decision = state.decisions[state.selected];
+      const queue = $("queue");
+      queue.replaceChildren();
+      FIXTURES.candidates.forEach((item, index) => {
+        const button = addText(queue, "button", "", "queue-item");
+        button.type = "button";
+        button.setAttribute("aria-current", String(index === state.selected));
+        addText(button, "span", item.name, "queue-name");
+        addText(button, "span", `${item.id} · ${item.source}`, "queue-meta");
+        addText(button, "span", state.decisions[index] ? item.outcome : item.stage, "queue-state");
+        button.addEventListener("click", () => {
+          state.notes[state.selected] = $("rationale").value;
+          state.selected = index;
+          render();
+          queue.children[index].focus();
+        });
+      });
+      $("candidate-title").textContent = candidate.name;
+      $("candidate-subtitle").textContent = candidate.subtitle;
+      $("candidate-status").textContent = decision ? candidate.outcome : candidate.stage;
+      $("source-platform").textContent = candidate.source;
+      $("target-platform").textContent = candidate.target;
+      const facts = $("facts");
+      facts.replaceChildren();
+      candidate.facts.forEach(([label, value]) => {
+        const group = document.createElement("div");
+        addText(group, "dt", label);
+        addText(group, "dd", value);
+        facts.append(group);
+      });
+      const evidence = $("evidence");
+      evidence.replaceChildren();
+      candidate.evidence.forEach(([source, detail]) => {
+        const item = document.createElement("li");
+        addText(item, "strong", source);
+        addText(item, "span", detail);
+        evidence.append(item);
+      });
+      $("risk").textContent = candidate.risk;
+      $("risk").className = state.selected === 1 ? "notice notice-warn" : "notice";
+      $("instruction").textContent = decision
+        ? "Recorded for this sample candidate. Reset to replay or inspect the other candidate."
+        : state.selected === 1
+          ? "Compatibility is unverified. Escalate to the accountable engineering and application owners."
+          : "Recommend a pilot assessment only after reviewing the evidence. No production change is authorized.";
+      $("rationale").value = state.notes[state.selected];
+      $("rationale").readOnly = Boolean(decision);
+      $("attest").checked = Boolean(decision);
+      $("attest").disabled = Boolean(decision);
+      $("decide").textContent = decision ? "Review recorded" : candidate.action;
+      $("decide").disabled = Boolean(decision);
+      $("error").hidden = true;
+      const result = $("result");
+      result.hidden = !decision;
+      result.className = state.selected === 1 ? "notice notice-warn result" : "notice notice-ok result";
+      result.replaceChildren();
+      if (decision) {
+        addText(result, "strong", candidate.outcome);
+        addText(result, "span", candidate.next);
+      }
+      const audit = $("audit");
+      audit.replaceChildren();
+      const entry = document.createElement("li");
+      addText(entry, "time", "09:00");
+      const content = document.createElement("span");
+      addText(content, "span", "Sample inventory", "actor is-system");
+      addText(content, "span", `Assessment evidence attached · ${candidate.id}`);
+      entry.append(content);
+      audit.append(entry);
+      if (decision) {
+        const review = document.createElement("li");
+        addText(review, "time", "09:15");
+        const reviewContent = document.createElement("span");
+        addText(reviewContent, "span", FIXTURES.reviewer, "actor is-human");
+        addText(reviewContent, "span", `${candidate.outcome} · ${FIXTURES.reviewDate}`);
+        addText(reviewContent, "span", `Rationale: ${decision}`);
+        review.append(reviewContent);
+        audit.append(review);
+      }
+    }
+
+    $("decide").addEventListener("click", () => {
+      const note = $("rationale").value.trim();
+      if (!$("attest").checked || !note) {
+        $("error").textContent = "Review the evidence, check the acknowledgement, and enter a rationale before recording.";
+        $("error").hidden = false;
+        if (!note) $("rationale").focus();
+        else $("attest").focus();
+        return;
+      }
+      state.notes[state.selected] = note;
+      state.decisions[state.selected] = note;
+      render();
+      $("result").focus();
+    });
+    $("rationale").addEventListener("input", () => { $("error").hidden = true; });
+    $("attest").addEventListener("change", () => { $("error").hidden = true; });
+    $("reset").addEventListener("click", () => {
+      state.selected = 0;
+      state.decisions = FIXTURES.candidates.map(() => null);
+      state.notes = FIXTURES.candidates.map((item) => item.rationale);
+      render();
+      $("candidate-title").focus();
+    });
+    render();
+  </script>
+</body>
+</html>
