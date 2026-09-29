@@ -1,0 +1,954 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Field service workbench - illustrative demo</title>
+  <style>
+/* HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+    /* Demo-specific aliases live after the shared subvertical bindings. */
+    body {
+      --on-accent: #ffffff;
+      --page-max: 1560px;
+    }
+
+    .btn-primary,
+    .chip[aria-pressed="true"] {
+      background: var(--accent-strong);
+      border-color: var(--accent-strong);
+      color: var(--on-accent);
+    }
+
+    .appbar { min-height: 58px; }
+    .brand-mark {
+      width: 28px; height: 28px; display: grid; place-items: center;
+      border: 1px solid currentColor; border-radius: 6px; font-size: 15px; font-weight: 700;
+    }
+
+    .page {
+      width: min(100%, var(--page-max));
+      margin: 0 auto;
+    }
+
+    .contextbar {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;
+      padding: 12px 18px; border-bottom: 1px solid var(--line);
+      background: var(--surface);
+    }
+    .contextbar strong { font-size: 14px; }
+    .contextbar span { color: var(--muted); font-size: 13px; }
+    .contextbar .context-separator { color: var(--muted-soft); }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+      gap: 16px;
+      padding: 18px;
+      align-items: start;
+    }
+    .queue-column { display: grid; gap: 12px; min-width: 0; }
+    .queue-card { overflow: hidden; }
+    .queue-list { list-style: none; padding: 0; margin: 0; display: grid; }
+    .queue-item {
+      display: grid; gap: 5px; width: 100%; text-align: left; padding: 12px 14px;
+      color: var(--ink); background: var(--surface); border: 0; border-top: 1px solid var(--line-soft);
+      cursor: pointer; font: inherit; min-height: 92px;
+    }
+    .queue-item:hover { background: var(--surface-2); }
+    .queue-item[aria-current="true"] { background: var(--accent-soft); box-shadow: inset 4px 0 var(--accent); }
+    .queue-top, .queue-meta { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .queue-id { color: var(--muted); font: 12px var(--mono); }
+    .queue-title { font-size: 14px; font-weight: 650; line-height: 1.25; }
+    .queue-meta { color: var(--muted); font-size: 12px; }
+
+    .coverage-card .card-body { display: grid; gap: 9px; }
+    .coverage-line { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; }
+    .coverage-line span:first-child { color: var(--muted); }
+    .coverage-bar { height: 7px; background: var(--line-soft); border-radius: 99px; overflow: hidden; }
+    .coverage-fill { display: block; width: 78%; height: 100%; background: var(--accent); border-radius: inherit; }
+    .coverage-note { margin: 0; color: var(--muted); font-size: 12px; }
+
+    .main-column { display: grid; gap: 14px; min-width: 0; }
+    .case-head { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
+    .case-head h1 { margin: 0; font-size: clamp(19px, 2.1vw, 26px); line-height: 1.2; }
+    .eyebrow { margin: 0 0 4px; color: var(--muted); font-size: 12px; font-weight: 650; letter-spacing: .02em; }
+    .case-head p { margin: 6px 0 0; color: var(--muted); font-size: 13.5px; }
+    .case-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+    .case-actions .btn { white-space: nowrap; }
+
+    .object-card { border-top: 3px solid var(--accent); }
+    .object-summary { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; }
+    .device-identity { display: flex; gap: 12px; align-items: flex-start; min-width: min(100%, 280px); }
+    .device-icon {
+      display: grid; place-items: center; width: 42px; height: 42px; flex: none;
+      border-radius: 7px; background: var(--accent-soft); color: var(--accent-strong);
+      border: 1px solid var(--accent-line); font-size: 20px;
+    }
+    .device-identity h2 { margin: 0; font-size: 19px; line-height: 1.25; }
+    .device-identity p { margin: 3px 0 0; color: var(--muted); font-size: 13px; }
+    .device-state { text-align: right; }
+    .device-state .state-copy { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; }
+
+    .telemetry-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(240px, .85fr); gap: 14px; }
+    .signal-list { display: grid; gap: 10px; }
+    .signal-row { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; gap: 9px; align-items: start; }
+    .signal-dot { width: 9px; height: 9px; margin-top: 6px; border-radius: 50%; background: var(--ok); }
+    .signal-dot.warn { background: var(--warn); }
+    .signal-name { display: block; font-size: 13.5px; font-weight: 600; }
+    .signal-source { display: block; color: var(--muted); font-size: 12px; }
+    .signal-value { color: var(--ink-soft); font: 12px var(--mono); text-align: right; white-space: nowrap; }
+    .sparkline { display: flex; align-items: end; gap: 4px; height: 54px; padding: 7px 0 0; border-bottom: 1px solid var(--line); }
+    .sparkline span { flex: 1; min-width: 5px; background: var(--accent); border-radius: 3px 3px 0 0; opacity: .82; }
+    .sparkline span:nth-child(4), .sparkline span:nth-child(5) { background: var(--warn); }
+    .chart-label { display: flex; justify-content: space-between; color: var(--muted); font-size: 11.5px; }
+
+    .diagnostic-card .card-body { display: grid; gap: 12px; }
+    .diagnostic-intro { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; }
+    .diagnostic-intro p { margin: 0; color: var(--muted); font-size: 13px; max-width: 70ch; }
+    .diagnostic-status { min-width: 120px; text-align: right; }
+    .diagnostic-status strong { display: block; font-size: 13px; }
+    .diagnostic-status span { display: block; color: var(--muted); font-size: 12px; }
+    .diagnostic-output { display: grid; gap: 10px; }
+    .result-grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(210px, .7fr); gap: 12px; }
+    .result-callout { padding: 12px; background: var(--accent-soft); border: 1px solid var(--accent-line); border-radius: var(--radius); }
+    .result-callout h3 { margin: 0; font-size: 15px; }
+    .result-callout p { margin: 5px 0 0; font-size: 13px; }
+    .review-list { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+    .review-list li { display: flex; justify-content: space-between; gap: 10px; padding-bottom: 7px; border-bottom: 1px solid var(--line-soft); font-size: 13px; }
+    .review-list li:last-child { border-bottom: 0; padding-bottom: 0; }
+    .review-list span:first-child { color: var(--muted); }
+    .exception-output { display: grid; gap: 10px; }
+    .exception-output .notice { margin: 0; }
+    .exception-detail { margin: 0; padding: 10px 12px; border-left: 3px solid var(--warn); background: var(--warn-bg); color: var(--ink-soft); font-size: 13px; }
+    .review-panel { border: 1px solid var(--accent-line); background: var(--surface); border-radius: var(--radius); }
+    .review-panel .card-head { background: var(--accent-soft); }
+    .review-panel .card-body { display: grid; gap: 11px; }
+    .review-rationale { margin: 0; font-size: 13.5px; }
+    .review-rationale strong { font-weight: 650; }
+    .audit-mini { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--muted); font-size: 12px; }
+
+    .secondary-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(250px, .8fr); gap: 14px; }
+    .timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+    .timeline li { display: grid; grid-template-columns: 76px 10px minmax(0, 1fr); gap: 9px; align-items: start; font-size: 13px; }
+    .timeline time { color: var(--muted); font: 12px var(--mono); }
+    .timeline-marker { width: 9px; height: 9px; margin-top: 5px; border: 2px solid var(--accent); border-radius: 50%; background: var(--surface); }
+    .timeline strong { font-weight: 600; }
+    .timeline p { margin: 2px 0 0; color: var(--muted); font-size: 12.5px; }
+    .evidence-details summary { cursor: pointer; color: var(--accent-strong); font-weight: 600; font-size: 13px; }
+    .evidence-details[open] summary { margin-bottom: 10px; }
+    .evidence-details .evidence { margin: 0; }
+
+    .screen-reader-status { position: fixed; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+    .footer .claim { line-height: 1.45; }
+
+    @media (max-width: 980px) {
+      .workspace { grid-template-columns: 260px minmax(0, 1fr); padding: 14px; }
+      .telemetry-grid, .secondary-grid { grid-template-columns: 1fr; }
+      .result-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 700px) {
+      .workspace { grid-template-columns: 1fr; padding: 12px; }
+      .queue-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .queue-item { min-height: 108px; border-right: 1px solid var(--line-soft); }
+      .queue-item[aria-current="true"] { box-shadow: inset 0 4px var(--accent); }
+      .case-head, .diagnostic-intro { display: grid; }
+      .case-actions, .diagnostic-status { justify-content: flex-start; text-align: left; }
+      .object-summary { display: grid; }
+      .device-state { text-align: left; }
+    }
+    @media (max-width: 460px) {
+      .queue-list { grid-template-columns: 1fr; }
+      .contextbar { padding: 10px 14px; }
+      .contextbar .context-separator { display: none; }
+      .card-body { padding: 12px; }
+      .timeline li { grid-template-columns: 58px 10px minmax(0, 1fr); }
+      .appbar .disclosure { order: 3; }
+    }
+  </style>
+</head>
+<body data-subvertical="medtech">
+  <header class="appbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">+</span>
+      <span>
+        <span class="brand-name">Northstar Service Operations</span>
+        <span class="brand-sub">Field service workbench</span>
+      </span>
+    </div>
+    <p class="disclosure"><span aria-hidden="true">i</span> Illustrative demo - synthetic data</p>
+    <p class="who">Signed in as <b>Jordan Lee</b> · Remote Support Lead</p>
+  </header>
+
+  <main class="page">
+    <div class="contextbar" aria-label="Work context">
+      <strong>Service operations queue</strong>
+      <span class="context-separator" aria-hidden="true">/</span>
+      <span>PoV workspace · Northstar BioSystems</span>
+      <span class="context-separator" aria-hidden="true">/</span>
+      <span>29 Sep 2026 · sample shift</span>
+    </div>
+
+    <div class="workspace">
+      <aside class="queue-column" aria-label="Service work queue">
+        <section class="card queue-card">
+          <div class="card-head">
+            <h2>Needs a service decision</h2>
+            <span class="card-note" id="queue-count">2 sample cases</span>
+          </div>
+          <ul class="queue-list" id="case-list"></ul>
+        </section>
+        <section class="card coverage-card">
+          <div class="card-head">
+            <h2>Installed-base coverage</h2>
+            <span class="tag tag-warn">sample view</span>
+          </div>
+          <div class="card-body">
+            <div class="coverage-line"><span>Connected device signals</span><strong>sample</strong></div>
+            <div class="coverage-bar" aria-label="Illustrative coverage bar"><span class="coverage-fill"></span></div>
+            <p class="coverage-note">Connectivity assessment is a prerequisite when telemetry is incomplete.</p>
+            <button class="btn-link" id="coverage-help" type="button">Review coverage assumptions</button>
+            <p class="status-line" id="coverage-status" aria-live="polite"></p>
+          </div>
+        </section>
+      </aside>
+
+      <section class="main-column" aria-labelledby="workbench-title">
+        <div class="case-head">
+          <div>
+            <p class="eyebrow">Remote diagnostics and guided dispatch</p>
+            <h1 id="workbench-title">Decide the safest next service step</h1>
+            <p>Inspect device evidence before asking a technician to travel. A person reviews every recommendation.</p>
+          </div>
+          <div class="case-actions">
+            <button class="btn" id="reset-button" type="button">Reset case</button>
+          </div>
+        </div>
+
+        <section class="card object-card" aria-labelledby="device-title">
+          <div class="card-body">
+            <div class="object-summary">
+              <div class="device-identity">
+                <span class="device-icon" aria-hidden="true">⌁</span>
+                <div>
+                  <h2 id="device-title">Loading sample device</h2>
+                  <p id="device-location"></p>
+                </div>
+              </div>
+              <div class="device-state">
+                <span class="tag tag-warn" id="device-status">Review needed</span>
+                <span class="state-copy" id="last-seen"></span>
+              </div>
+            </div>
+            <dl class="facts" id="device-facts"></dl>
+          </div>
+        </section>
+
+        <div class="telemetry-grid">
+          <section class="card" aria-labelledby="telemetry-title">
+            <div class="card-head">
+              <h2 id="telemetry-title">Sample device signals</h2>
+              <span class="card-note" id="signal-window">Last sample window</span>
+            </div>
+            <div class="card-body">
+              <div class="signal-list" id="signal-list"></div>
+            </div>
+          </section>
+          <section class="card" aria-labelledby="trend-title">
+            <div class="card-head">
+              <h2 id="trend-title">Signal trend</h2>
+              <span class="card-note">Illustrative readings</span>
+            </div>
+            <div class="card-body">
+              <div class="sparkline" id="sparkline" aria-label="Illustrative signal trend bars"></div>
+              <div class="chart-label"><span>Earlier</span><span>Most recent</span></div>
+              <p class="rule" style="margin: 12px 0 0;">Signal evidence is shown for review; it is not a diagnosis or safety determination.</p>
+            </div>
+          </section>
+        </div>
+
+        <section class="card diagnostic-card" aria-labelledby="diagnostic-title">
+          <div class="card-head">
+            <h2 id="diagnostic-title">Remote diagnostic</h2>
+            <span class="card-note">Human review required before dispatch</span>
+          </div>
+          <div class="card-body">
+            <div class="diagnostic-intro">
+              <p>Run a deterministic sample analysis against the selected device signals. The result is a recommendation with evidence, not an automatic service action.</p>
+              <div class="diagnostic-status">
+                <strong id="diagnostic-state">Ready</strong>
+                <span id="diagnostic-state-detail">No analysis run</span>
+              </div>
+            </div>
+            <div class="actions">
+              <button class="btn btn-primary" id="run-button" type="button">Run remote diagnostics</button>
+              <button class="btn" id="evidence-button" type="button">Open source evidence</button>
+            </div>
+            <p class="status-line" id="live-status" aria-live="polite"></p>
+
+            <div class="diagnostic-output" id="result-output" hidden>
+              <div class="result-grid">
+                <div class="result-callout">
+                  <h3 id="result-title">Review recommended action</h3>
+                  <p id="result-copy"></p>
+                </div>
+                <ul class="review-list" id="result-facts"></ul>
+              </div>
+              <div class="actions">
+                <button class="btn btn-primary" id="review-button" type="button">Review dispatch plan</button>
+                <span class="tag tag-warn">Recommendation only</span>
+              </div>
+            </div>
+
+            <div class="exception-output" id="exception-output" hidden>
+              <div class="notice notice-warn">
+                <span aria-hidden="true">!</span>
+                <div><strong>Low-confidence diagnostic</strong><span class="notice-note">Telemetry coverage is not sufficient to recommend a truck roll. Do not infer device health from this result.</span></div>
+              </div>
+              <p class="exception-detail" id="exception-copy"></p>
+              <div class="actions">
+                <button class="btn btn-primary" id="escalate-button" type="button">Escalate to remote support</button>
+                <button class="btn" id="coverage-button" type="button">Start connectivity assessment</button>
+              </div>
+            </div>
+
+            <section class="review-panel" id="review-panel" aria-labelledby="review-title" hidden>
+              <div class="card-head">
+                <h3 id="review-title">Dispatch review</h3>
+                <span class="tag tag-warn">Awaiting Jordan Lee</span>
+              </div>
+              <div class="card-body">
+                <p class="review-rationale" id="review-rationale"></p>
+                <div class="audit-mini">
+                  <span>Source: sample device telemetry</span>
+                  <span>Generated: sample recommendation</span>
+                  <span>Approver: Jordan Lee</span>
+                </div>
+                <div class="actions">
+                  <button class="btn btn-primary" id="approve-button" type="button">Approve dispatch draft</button>
+                  <button class="btn" id="review-escalate-button" type="button">Escalate instead</button>
+                </div>
+              </div>
+            </section>
+
+            <div class="notice notice-ok" id="complete-output" hidden>
+              <span aria-hidden="true">✓</span>
+              <div><strong id="complete-title">Dispatch draft approved</strong><span class="notice-note" id="complete-copy"></span></div>
+            </div>
+          </div>
+        </section>
+
+        <div class="secondary-grid">
+          <section class="card" aria-labelledby="timeline-title">
+            <div class="card-head">
+              <h2 id="timeline-title">Service timeline</h2>
+              <span class="card-note">Synthetic audit trail</span>
+            </div>
+            <div class="card-body">
+              <ol class="timeline" id="timeline"></ol>
+            </div>
+          </section>
+          <section class="card" aria-labelledby="evidence-title">
+            <div class="card-head">
+              <h2 id="evidence-title">Grounding and guardrails</h2>
+              <span class="tag tag-ok">Reviewable</span>
+            </div>
+            <div class="card-body">
+              <p class="rule">Recommendations stay reversible. Dispatch, escalation, and connectivity assessment require a person to choose the next step.</p>
+              <details class="evidence-details" id="evidence-details" hidden>
+                <summary>Sample source evidence</summary>
+                <p class="evidence evidence-mono" id="evidence-copy"></p>
+              </details>
+            </div>
+          </section>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="built">
+      <span>Built on</span>
+      <span class="svc-chip">Azure IoT</span>
+      <span class="svc-chip">Azure Machine Learning</span>
+      <span class="svc-chip">Azure AI Bot Service</span>
+      <span class="svc-chip">Microsoft Fabric</span>
+    </div>
+    <div class="claim"><b>Catalog hypothesis:</b> first-time-fix rate up; truck rolls and mean-time-to-repair down 20-40%.</div>
+  </footer>
+
+  <p class="screen-reader-status" id="screen-reader-status" aria-live="polite"></p>
+
+  <script>
+    const FIXTURES = {
+      cases: [
+        {
+          id: "WO-SYN-2048",
+          title: "Cooling loop alert",
+          site: "Orchid Point Imaging Center",
+          region: "West corridor",
+          device: "Aurelia CT-7",
+          serial: "SYN-CT7-04821",
+          firmware: "4.8.2 sample",
+          lastSeen: "Last seen 09:42 local time",
+          status: "Review needed",
+          statusClass: "tag-warn",
+          signalWindow: "09:36-09:42 local",
+          signals: [
+            { name: "Cooling-loop temperature", source: "Device gateway · sample", value: "72.4 °C", tone: "warn" },
+            { name: "Pump vibration", source: "Device gateway · sample", value: "Elevated", tone: "warn" },
+            { name: "Power draw", source: "Device gateway · sample", value: "Within range", tone: "ok" }
+          ],
+          bars: [38, 43, 48, 58, 61, 66, 72, 76, 81, 86],
+          diagnostic: {
+            confidence: "Good signal coverage",
+            title: "Likely cooling-loop service",
+            copy: "The recent temperature and vibration pattern is consistent with a cooling-loop issue in this synthetic fixture. Review the proposed parts and route before contacting the site.",
+            facts: [
+              ["Evidence", "Temperature + vibration trend"],
+              ["Proposed visit", "Cooling module inspection"],
+              ["Travel action", "Draft only"]
+            ],
+            rationale: "The sample trend supports a cooling-loop inspection, but it does not establish root cause. Jordan Lee should confirm the evidence and service scope before a technician is dispatched.",
+            evidence: "SOURCE: SYNTHETIC DEVICE TELEMETRY\nWORK ORDER: WO-SYN-2048\nWINDOW: 09:36-09:42 local time\nSIGNALS: cooling-loop temperature 72.4 °C; pump vibration elevated; power draw within range\nMODEL OUTPUT: likely cooling-loop service (illustrative recommendation)\nHUMAN GATE: Jordan Lee reviews and approves or escalates"
+          }
+        },
+        {
+          id: "WO-SYN-2053",
+          title: "Intermittent signal loss",
+          site: "Bluebird Research Annex",
+          region: "North corridor",
+          device: "Aurelia CT-7",
+          serial: "SYN-CT7-05107",
+          firmware: "4.8.1 sample",
+          lastSeen: "Last seen 08:17 local time",
+          status: "Telemetry gap",
+          statusClass: "tag-stop",
+          signalWindow: "07:47-08:17 local",
+          signals: [
+            { name: "Device heartbeat", source: "Gateway · sample", value: "Intermittent", tone: "warn" },
+            { name: "Cooling-loop temperature", source: "No recent sample", value: "Unavailable", tone: "warn" },
+            { name: "Power draw", source: "No recent sample", value: "Unavailable", tone: "warn" }
+          ],
+          bars: [68, 63, 57, 38, 26, 12, 7, 5, 4, 3],
+          diagnostic: {
+            confidence: "Limited signal coverage",
+            copy: "Only intermittent heartbeat samples are available for this synthetic fixture. A remote diagnostic cannot distinguish a connectivity issue from a device issue.",
+            evidence: "SOURCE: SYNTHETIC DEVICE TELEMETRY\nWORK ORDER: WO-SYN-2053\nWINDOW: 07:47-08:17 local time\nSIGNALS: heartbeat intermittent; cooling-loop temperature unavailable; power draw unavailable\nMODEL OUTPUT: insufficient evidence (illustrative low-confidence result)\nREQUIRED NEXT STEP: connectivity assessment or human escalation"
+          }
+        }
+      ]
+    };
+
+    const state = { selected: 0, phase: "ready", token: 0 };
+    const $ = (id) => document.getElementById(id);
+
+    function setText(id, value) {
+      $(id).textContent = value;
+    }
+
+    function announce(value) {
+      setText("screen-reader-status", value);
+      setText("live-status", value);
+    }
+
+    function renderQueue() {
+      const list = $("case-list");
+      list.replaceChildren();
+      FIXTURES.cases.forEach((item, index) => {
+        const li = document.createElement("li");
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "queue-item";
+        button.setAttribute("aria-current", index === state.selected ? "true" : "false");
+        button.addEventListener("click", () => selectCase(index));
+
+        const top = document.createElement("span");
+        top.className = "queue-top";
+        const id = document.createElement("span");
+        id.className = "queue-id";
+        id.textContent = item.id;
+        const tag = document.createElement("span");
+        tag.className = `tag ${item.statusClass}`;
+        tag.textContent = item.status;
+        top.append(id, tag);
+
+        const title = document.createElement("span");
+        title.className = "queue-title";
+        title.textContent = item.title;
+        const meta = document.createElement("span");
+        meta.className = "queue-meta";
+        meta.textContent = `${item.site} · ${item.region}`;
+        button.append(top, title, meta);
+        li.append(button);
+        list.append(li);
+      });
+    }
+
+    function renderFacts(item) {
+      const facts = $("device-facts");
+      facts.replaceChildren();
+      [["Work order", item.id], ["Serial", item.serial], ["Firmware", item.firmware], ["Site", item.site]].forEach(([label, value]) => {
+        const dt = document.createElement("dt");
+        dt.textContent = label;
+        const dd = document.createElement("dd");
+        dd.textContent = value;
+        facts.append(dt, dd);
+      });
+    }
+
+    function renderSignals(item) {
+      const list = $("signal-list");
+      list.replaceChildren();
+      item.signals.forEach((signal) => {
+        const row = document.createElement("div");
+        row.className = "signal-row";
+        const dot = document.createElement("span");
+        dot.className = `signal-dot${signal.tone === "warn" ? " warn" : ""}`;
+        dot.setAttribute("aria-hidden", "true");
+        const copy = document.createElement("span");
+        const name = document.createElement("span");
+        name.className = "signal-name";
+        name.textContent = signal.name;
+        const source = document.createElement("span");
+        source.className = "signal-source";
+        source.textContent = signal.source;
+        copy.append(name, source);
+        const value = document.createElement("span");
+        value.className = "signal-value";
+        value.textContent = signal.value;
+        row.append(dot, copy, value);
+        list.append(row);
+      });
+
+      const sparkline = $("sparkline");
+      sparkline.replaceChildren();
+      item.bars.forEach((height) => {
+        const bar = document.createElement("span");
+        bar.style.height = `${height}%`;
+        bar.setAttribute("aria-hidden", "true");
+        sparkline.append(bar);
+      });
+    }
+
+    function renderTimeline(item) {
+      const timeline = $("timeline");
+      timeline.replaceChildren();
+      [
+        ["09:42", "Telemetry sample received", "Gateway record is available for review."],
+        ["09:45", "Work order routed", `${item.title} placed in the remote support queue.`],
+        ["Now", "Human decision pending", "Run a diagnostic, then review the proposed next step."]
+      ].forEach(([time, title, detail]) => {
+        const row = document.createElement("li");
+        const stamp = document.createElement("time");
+        stamp.textContent = time;
+        const marker = document.createElement("span");
+        marker.className = "timeline-marker";
+        marker.setAttribute("aria-hidden", "true");
+        const copy = document.createElement("div");
+        const strong = document.createElement("strong");
+        strong.textContent = title;
+        const text = document.createElement("p");
+        text.textContent = detail;
+        copy.append(strong, text);
+        row.append(stamp, marker, copy);
+        timeline.append(row);
+      });
+    }
+
+    function clearOutputs() {
+      $("result-output").hidden = true;
+      $("exception-output").hidden = true;
+      $("review-panel").hidden = true;
+      $("complete-output").hidden = true;
+      $("evidence-details").hidden = true;
+      $("evidence-details").open = false;
+      $("run-button").disabled = false;
+      $("run-button").textContent = "Run remote diagnostics";
+      setText("diagnostic-state", "Ready");
+      setText("diagnostic-state-detail", "No analysis run");
+      setText("live-status", "");
+    }
+
+    function renderCase() {
+      const item = FIXTURES.cases[state.selected];
+      setText("device-title", item.device);
+      setText("device-location", `${item.site} · ${item.region}`);
+      setText("device-status", item.status);
+      $("device-status").className = `tag ${item.statusClass}`;
+      setText("last-seen", item.lastSeen);
+      setText("signal-window", item.signalWindow);
+      renderFacts(item);
+      renderSignals(item);
+      renderTimeline(item);
+      clearOutputs();
+      $("coverage-status").textContent = "";
+    }
+
+    function selectCase(index) {
+      state.token += 1;
+      state.selected = index;
+      state.phase = "ready";
+      renderQueue();
+      renderCase();
+      announce(`Selected ${FIXTURES.cases[index].id}. Ready to run a remote diagnostic.`);
+    }
+
+    function runDiagnostic() {
+      const item = FIXTURES.cases[state.selected];
+      if (state.phase === "working") return;
+      state.token += 1;
+      const runToken = state.token;
+      state.phase = "working";
+      $("run-button").disabled = true;
+      $("run-button").textContent = "Analyzing sample signals...";
+      setText("diagnostic-state", "Working");
+      setText("diagnostic-state-detail", "Reading sample telemetry");
+      announce("Remote diagnostic is analyzing the selected sample signals.");
+
+      window.setTimeout(() => {
+        if (runToken !== state.token) return;
+        state.phase = item.diagnostic.facts ? "result" : "exception";
+        $("run-button").disabled = false;
+        $("run-button").textContent = "Run remote diagnostics again";
+        setText("diagnostic-state", item.diagnostic.facts ? "Review result" : "Exception");
+        setText("diagnostic-state-detail", item.diagnostic.confidence);
+        if (item.diagnostic.facts) {
+          setText("result-title", item.diagnostic.title);
+          setText("result-copy", item.diagnostic.copy);
+          const facts = $("result-facts");
+          facts.replaceChildren();
+          item.diagnostic.facts.forEach(([label, value]) => {
+            const row = document.createElement("li");
+            const labelNode = document.createElement("span");
+            labelNode.textContent = label;
+            const valueNode = document.createElement("strong");
+            valueNode.textContent = value;
+            row.append(labelNode, valueNode);
+            facts.append(row);
+          });
+          $("result-output").hidden = false;
+          announce("Diagnostic complete. Review the proposed dispatch plan before approving it.");
+        } else {
+          setText("exception-copy", item.diagnostic.copy);
+          $("exception-output").hidden = false;
+          announce("Diagnostic complete with limited confidence. Choose escalation or connectivity assessment.");
+        }
+      }, 650);
+    }
+
+    function showEvidence() {
+      const item = FIXTURES.cases[state.selected];
+      setText("evidence-copy", item.diagnostic.evidence);
+      $("evidence-details").hidden = false;
+      $("evidence-details").open = true;
+      $("evidence-details").querySelector("summary").focus();
+      announce("Source evidence opened below the decision controls.");
+    }
+
+    function reviewDispatch() {
+      const item = FIXTURES.cases[state.selected];
+      state.phase = "review";
+      $("review-panel").hidden = false;
+      setText("review-rationale", item.diagnostic.rationale);
+      setText("diagnostic-state", "Human review");
+      setText("diagnostic-state-detail", "Awaiting Jordan Lee");
+      announce("Dispatch review opened. Approve the draft or escalate instead.");
+      $("approve-button").focus();
+    }
+
+    function finish(title, copy, statusClass) {
+      state.phase = "complete";
+      $("review-panel").hidden = true;
+      $("result-output").hidden = true;
+      $("exception-output").hidden = true;
+      $("complete-output").hidden = false;
+      $("complete-output").className = `notice ${statusClass}`;
+      setText("complete-title", title);
+      setText("complete-copy", copy);
+      setText("diagnostic-state", "Recorded");
+      setText("diagnostic-state-detail", "Human decision captured");
+      announce(`${title}. ${copy}`);
+    }
+
+    $("run-button").addEventListener("click", runDiagnostic);
+    $("evidence-button").addEventListener("click", showEvidence);
+    $("review-button").addEventListener("click", reviewDispatch);
+    $("approve-button").addEventListener("click", () => {
+      finish("Dispatch draft approved by Jordan Lee", "Draft route: remote technician review at the sample site. No work order was sent.", "notice-ok");
+    });
+    $("review-escalate-button").addEventListener("click", () => {
+      finish("Escalated by Jordan Lee", "The recommendation was not approved. Remote support owns the next review.", "notice-warn");
+    });
+    $("escalate-button").addEventListener("click", () => {
+      finish("Escalated by Jordan Lee", "No dispatch was created. The limited telemetry case is queued for human remote support.", "notice-warn");
+    });
+    $("coverage-button").addEventListener("click", () => {
+      state.phase = "coverage";
+      setText("coverage-status", "Connectivity assessment queued for human review.");
+      setText("diagnostic-state", "Coverage review");
+      setText("diagnostic-state-detail", "No dispatch created");
+      announce("Connectivity assessment queued. No dispatch was created.");
+    });
+    $("coverage-help").addEventListener("click", () => {
+      setText("coverage-status", "Coverage assumptions are sample data; validate installed-base connectivity before scaling a PoV.");
+      announce("Coverage assumptions shown. Validate connectivity before scaling a proof of value.");
+    });
+    $("reset-button").addEventListener("click", () => {
+      state.token += 1;
+      state.phase = "ready";
+      renderQueue();
+      renderCase();
+      announce("Case reset. Select a sample work order or run the default diagnostic.");
+    });
+
+    renderQueue();
+    renderCase();
+  </script>
+</body>
+</html>
