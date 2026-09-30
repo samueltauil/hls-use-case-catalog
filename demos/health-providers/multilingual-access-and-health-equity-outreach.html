@@ -1,0 +1,1328 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Language release desk | Illustrative provider demo</title>
+<style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* =========================================================================
+   Demo-specific layout — language release desk
+   ========================================================================= */
+
+.workspace { max-width: 1520px; margin: 0 auto; padding: 16px 18px 28px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+
+/* Grid and flex children default to min-width:auto, which lets a horizontal
+   scroller push the whole page sideways instead of clipping. Pin the whole
+   chain to zero so overflow:auto can do its job. */
+.workspace .card > .card-body,
+.workspace .card > .card-body > *,
+.cols > * { min-width: 0; max-width: 100%; }
+.q-list, .seg-list { max-width: 100%; }
+
+.eyebrow { margin: 0; font-size: 12px; font-weight: 600; color: var(--accent-strong); text-transform: uppercase; letter-spacing: .06em; }
+.desk-head h1 { margin: 4px 0 5px; font-size: 23px; line-height: 1.2; }
+.lede { margin: 0 0 12px; font-size: 13.5px; color: var(--muted); max-width: 88ch; }
+
+.cols { display: grid; grid-template-columns: 256px minmax(0, 1fr) 320px; gap: 14px; align-items: start; min-width: 0; }
+
+/* ------------------------------------------------------------ queue */
+.q-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; min-width: 0; }
+.q-btn {
+  width: 100%; text-align: left; font: inherit; cursor: pointer;
+  background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--line);
+  border-radius: var(--radius); padding: 9px 11px; display: grid; gap: 3px;
+}
+.q-btn:hover { background: var(--surface-2); }
+.q-btn[aria-current="true"] { border-color: var(--accent-line); border-left-color: var(--accent); background: var(--accent-soft); }
+.q-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.q-id { font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
+.q-title { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+.q-meta { font-size: 12px; color: var(--muted); }
+
+/* ---------------------------------------------------------- segments */
+.pkt-head { display: grid; gap: 9px; padding: 13px 15px; border-bottom: 1px solid var(--line-soft); }
+.pkt-title { display: flex; flex-wrap: wrap; align-items: center; gap: 7px 11px; }
+.pkt-title h2 { margin: 0; font-size: 16.5px; }
+.pkt-sub { margin: 0; font-size: 12.5px; color: var(--muted); }
+
+.seg-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; min-width: 0; }
+.seg-btn {
+  width: 100%; text-align: left; font: inherit; cursor: pointer;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 11px; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; justify-content: space-between;
+}
+.seg-btn:hover { background: var(--surface-2); }
+.seg-btn[aria-current="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--accent-soft); }
+.seg-label { font-size: 13.5px; font-weight: 600; }
+
+/* ------------------------------------------------------- decision bar */
+/* The decision and its controls sit above the evidence so the next action is
+   reachable in the first viewport at every width. */
+.decide {
+  display: flex; flex-wrap: wrap; gap: 9px 12px; align-items: center;
+  padding: 11px 12px; border: 1px solid var(--accent-line); background: var(--accent-soft);
+  border-radius: var(--radius); margin-bottom: 11px;
+}
+.decide-note { font-size: 13px; color: var(--ink-soft); flex: 1 1 220px; min-width: 0; }
+.decide .actions { margin-left: auto; }
+
+/* ------------------------------------------------------- proof panel */
+.proof { display: grid; gap: 10px; }
+.pane { border: 1px solid var(--line-soft); border-radius: var(--radius); background: var(--bg); padding: 10px 12px; }
+.pane h4 {
+  margin: 0 0 5px; font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em;
+  color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 9px; align-items: center;
+}
+.pane p { margin: 0; font-size: 14px; line-height: 1.55; }
+.pane-target { border-left: 3px solid var(--accent); }
+.pane-approved { border-left: 3px solid var(--ok); }
+.pane-none { border-left: 3px solid var(--stop); }
+.back-note { display: block; margin-top: 5px; font-size: 12px; color: var(--muted); }
+.hl { background: var(--warn-bg); box-shadow: 0 0 0 1px #e6d08a; border-radius: 3px; padding: 0 2px; font-weight: 600; }
+.locale { font-family: var(--mono); font-size: 11px; }
+
+/* -------------------------------------------------------------- rail */
+.rail-block { padding: 12px 14px; border-bottom: 1px solid var(--line-soft); display: grid; gap: 9px; }
+.rail-block:last-child { border-bottom: 0; }
+.rail-block h3 { margin: 0; font-size: 13.5px; font-weight: 600; }
+.tally { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 13px; }
+.tally li { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.tally b { font-variant-numeric: tabular-nums; }
+.blockers { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 12.5px; }
+.blockers li { display: flex; gap: 7px; align-items: flex-start; }
+.blockers .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--stop); flex: none; margin-top: 6px; }
+
+@media (min-width: 1081px) {
+  /* Segments and their proof sit side by side so the decision bar stays in the
+     first viewport rather than below a five-row list. */
+  .packet > .card-body { grid-template-columns: minmax(0, 286px) minmax(0, 1fr); column-gap: 16px; align-items: start; }
+  .packet > .card-body > .rule { grid-column: 1 / -1; }
+}
+@media (max-width: 1080px) {
+  .cols { grid-template-columns: minmax(0, 1fr) 320px; }
+  .queue { grid-column: 1 / -1; }
+  .q-list { display: flex; overflow-x: auto; padding-bottom: 4px; }
+  .q-btn { min-width: 218px; }
+  /* Segments become a compact strip so the decision bar stays above the fold. */
+  .seg-list { display: flex; overflow-x: auto; padding-bottom: 4px; }
+  .seg-btn { min-width: 236px; flex-wrap: nowrap; justify-content: flex-start; gap: 8px; }
+  .seg-label { white-space: nowrap; }
+}
+@media (max-width: 860px) {
+  .cols { display: flex; flex-direction: column; }
+  .queue { order: 0; }
+  .packet { order: 1; }
+  .rail { order: 2; }
+}
+@media (max-width: 700px) {
+  /* Every block above the decision bar is trimmed so the reviewer's next action
+     stays inside the first viewport on a phone. No information is dropped --
+     the full finding still reads out in the evidence panes below. */
+  .appbar { padding: 7px 12px; gap: 5px 10px; }
+  .appbar .who { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 6px; font-size: 12px; line-height: 1.35; }
+  .facts { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 2px 16px; }
+  .facts > div { display: flex; align-items: baseline; gap: 6px; flex: 0 0 auto; }
+  .facts dt { font-size: 11.5px; white-space: nowrap; }
+  .facts dd { font-size: 14px; white-space: nowrap; }
+  .eyebrow { display: none; }
+  .desk-head h1 { font-size: 19px; }
+  .workspace { padding: 12px; gap: 11px; }
+  .lede { display: none; }
+  .q-btn { min-width: 190px; }
+  .pkt-title h2 { font-size: 15px; }
+  /* Packet context becomes a scrollable strip rather than a four-cell block. */
+  .meta-grid { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 0 16px; }
+  .meta-grid > div { flex: 0 0 auto; display: flex; align-items: baseline; gap: 6px; white-space: nowrap; }
+  .meta-grid dt { font-size: 11px; }
+  .meta-grid dd { font-size: 12.5px; }
+  /* Navigation yields to the primary object on the smallest screens. */
+  .queue { order: 3; }
+  .decide { padding: 9px 10px; }
+  .decide .actions { margin-left: 0; gap: 8px; }
+  .decide .btn { font-size: 12.5px; padding: 8px 10px; }
+  .decide-why { display: none; }
+  #proofWrap .card-note { display: none; }
+}
+</style>
+</head>
+<body data-subvertical="health-providers">
+
+<header class="appbar">
+  <div class="brand">
+    <svg class="brand-mark" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+      <path d="M3 5h9M7.5 5v2c0 3.6-2 6.4-4.5 8"/><path d="M5 10c1.4 2.8 3.9 4.7 7 5.4"/><path d="M13 21l4.2-10 4.2 10"/><path d="M14.7 17.4h5"/>
+    </svg>
+    <span class="brand-name">Kestrel Vale Health<span class="brand-sub">Language access console</span></span>
+  </div>
+  <p class="disclosure">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.6v.5"/></svg>
+    Illustrative demo — synthetic data
+  </p>
+  <button class="btn" type="button" id="resetBtn">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3.5 4.5V10H9"/></svg>
+    Reset demo
+  </button>
+  <p class="who">Signed in as <b>Nadia Okafor</b> · <span class="mono">DEMO-LAC-08</span><br>Language Access Coordinator · certified medical interpreter</p>
+</header>
+
+<main class="workspace">
+
+  <section class="desk-head" aria-labelledby="deskTitle">
+    <p class="eyebrow">Access &amp; Patient Engagement · language release</p>
+    <h1 id="deskTitle">Language release desk</h1>
+    <p class="lede">
+      Outreach packets are drafted in the patient's preferred language, then held here until a named reviewer clears every
+      segment against the health system's approved clinical phrasing. Nothing reaches a patient on model output alone.
+    </p>
+    <dl class="facts">
+      <div><dt>Packets awaiting release</dt><dd><b id="fAwaiting">3</b> · queued this shift</dd></div>
+      <div><dt>Released today</dt><dd><b id="fReleased">5</b> · across 4 locales</dd></div>
+      <div><dt>Open interpreter escalations</dt><dd><b id="fEsc">2</b> · clinical content</dd></div>
+      <div><dt>Cohort source</dt><dd>Microsoft Fabric · language preference + SDOH</dd></div>
+    </dl>
+  </section>
+
+  <div class="cols">
+
+    <aside class="card queue" aria-labelledby="queueTitle">
+      <div class="card-head"><h2 id="queueTitle">Release queue</h2><span class="card-note" id="queueCount"></span></div>
+      <div class="card-body">
+        <ul class="q-list" id="queueList"></ul>
+      </div>
+    </aside>
+
+    <section class="card packet" aria-labelledby="pktTitle">
+      <div class="pkt-head">
+        <div class="pkt-title">
+          <h2 id="pktTitle">—</h2>
+          <span class="tag" id="pktStatus"></span>
+        </div>
+        <p class="pkt-sub" id="pktSub"></p>
+        <dl class="meta-grid" id="pktMeta"></dl>
+      </div>
+      <div class="card-body" style="display:grid;gap:13px;">
+
+        <div>
+          <div class="card-head" style="padding:0 0 9px;border:0;">
+            <h3>Message segments</h3>
+            <span class="card-note" id="segCount"></span>
+          </div>
+          <ul class="seg-list" id="segList"></ul>
+        </div>
+
+        <div id="proofWrap">
+          <div class="card-head" style="padding:0 0 9px;border:0;">
+            <h3 id="proofTitle">Translation proof</h3>
+            <span class="card-note">Back-translation lets a reviewer check meaning without reading the target language.</span>
+          </div>
+          <div class="decide" id="decideBar">
+            <span class="decide-note" id="decideNote"></span>
+            <div class="actions" id="segActions"></div>
+          </div>
+          <p class="status-line" id="say" role="status" aria-live="polite" style="margin:0 0 11px;"></p>
+          <div class="proof" id="proof"></div>
+        </div>
+
+        <div class="rule">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l7.5 3.4v5c0 4.6-3.1 8.2-7.5 9.6-4.4-1.4-7.5-5-7.5-9.6v-5z"/></svg>
+          <span id="assembly"></span>
+        </div>
+
+      </div>
+    </section>
+
+    <aside class="card rail" aria-labelledby="railTitle">
+      <div class="card-head"><h2 id="railTitle">Release control</h2></div>
+
+      <div class="rail-block">
+        <h3>Conformance</h3>
+        <ul class="tally" id="tally"></ul>
+      </div>
+
+      <div class="rail-block" id="blockWrap">
+        <h3>Blocking this release</h3>
+        <ul class="blockers" id="blockers"></ul>
+      </div>
+
+      <div class="rail-block">
+        <h3>Reviewer attestation</h3>
+        <label class="attest">
+          <input type="checkbox" id="attest">
+          <span>I reviewed every segment against the approved clinical phrasing for this locale, and I am accountable for this release.</span>
+        </label>
+        <p class="status-line" id="attestNote" style="font-size:12.5px;color:var(--muted);" hidden></p>
+        <button class="btn btn-primary" type="button" id="releaseBtn" style="justify-content:center;">Release packet to channels</button>
+        <p class="status-line" id="railSay" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="rail-block">
+        <h3>Equity reporting</h3>
+        <p style="margin:0;font-size:12.5px;color:var(--muted);" id="equityNote"></p>
+      </div>
+
+      <div class="rail-block">
+        <h3>Audit trail</h3>
+        <ul class="audit" id="audit"></ul>
+      </div>
+    </aside>
+
+  </div>
+</main>
+
+<footer class="footer">
+  <span class="built">Built with
+    <span class="svc-chip">Azure AI Speech</span>
+    <span class="svc-chip">Azure OpenAI in Azure AI Foundry Models</span>
+    <span class="svc-chip">Azure AI Bot Service</span>
+    <span class="svc-chip">Microsoft Fabric</span>
+  </span>
+  <p class="claim"><b>Catalog value claim:</b> multilingual engagement widens access, reduces no-shows in underserved cohorts, and supports CMS health-equity metrics. Every name, packet, cohort and count on this screen is synthetic and illustrates the workflow only.</p>
+</footer>
+
+<dialog id="dlg" aria-labelledby="dlgT">
+  <div class="dlg-head">
+    <div><h2 id="dlgT">—</h2><span class="dlg-sub" id="dlgSub"></span></div>
+    <button class="btn" type="button" id="dlgX" aria-label="Close dialog" style="min-height:32px;padding:4px 9px;">Close</button>
+  </div>
+  <div class="dlg-body" id="dlgBody"></div>
+  <div class="dlg-foot">
+    <p class="dlg-error" id="dlgErr" style="margin-right:auto;"></p>
+    <button class="btn" type="button" id="dlgCancel">Cancel</button>
+    <button class="btn btn-primary" type="button" id="dlgOk">Confirm</button>
+  </div>
+</dialog>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ------------------------------------------------------------------ data
+     Every packet, patient cohort, name and count below is invented for this
+     demonstration. No real health system, patient or outcome is represented. */
+
+  var PACKETS = [
+    {
+      id: "PKT-4471",
+      title: "Colorectal screening recall",
+      locale: "es-MX",
+      language: "Spanish (Mexico)",
+      channels: "SMS · voice callback · chat follow-up",
+      cohort: "East Corridor — households with a non-English language preference",
+      reach: "2,140 households",
+      reading: "Grade 6 target",
+      equity: "Language access — preventive screening recall. Attributed to the health-equity measure set reported by the Chief Health Equity Officer.",
+      released: false,
+      segments: [
+        { id: "S1", label: "Greeting and identification", by: "model",
+          src: "Hello, this is Kestrel Vale Health calling about your preventive care.",
+          mt: "Hola, le llama Kestrel Vale Health sobre su atención preventiva.",
+          back: "Hello, Kestrel Vale Health is calling you about your preventive care.",
+          state: "match" },
+        { id: "S2", label: "Why we are reaching out", by: "rewrite",
+          src: "Our records indicate you are due to undergo colorectal carcinoma screening.",
+          mt: "Según nuestros registros, le toca hacerse una prueba de detección de cáncer colorrectal.",
+          back: "According to our records, it is time for you to have a colorectal cancer screening test.",
+          state: "rewrite",
+          rewriteNote: "Rewritten from a clinical source sentence to the Grade 6 reading target before translation." },
+        { id: "S3", label: "What the screening involves", by: "model",
+          src: "You can complete an at-home stool test. No preparation and no time off work are needed.",
+          mt: "Puede hacerse una prueba de heces en casa. No necesita preparación ni faltar al trabajo.",
+          back: "You can do a stool test at home. You do not need preparation or to miss work.",
+          state: "deviates",
+          finding: {
+            phrase: "prueba de heces",
+            note: "The proposed wording is a generic description. The approved term bank names the FIT kit, which is the wording printed on the kit the patient receives and shown in the patient portal. Dropping it is how people end up unsure whether the mailed kit is the thing they were told about."
+          },
+          approved: {
+            mt: "Puede hacerse en casa una prueba de sangre oculta en las heces (FIT). No necesita preparación ni faltar al trabajo.",
+            back: "You can do a fecal occult blood test (FIT) at home. You do not need preparation or to miss work.",
+            phrase: "prueba de sangre oculta en las heces (FIT)"
+          } },
+        { id: "S4", label: "How to request a kit or schedule", by: "model",
+          src: "Reply KIT to have a test kit mailed to you, or call us to schedule.",
+          mt: "Responda KIT para que le enviemos una prueba por correo, o llámenos para agendar.",
+          back: "Reply KIT so we can mail you a test, or call us to schedule.",
+          state: "match" },
+        { id: "S5", label: "Interpreter offer and language rights notice", by: "fixed",
+          src: "Free language assistance is available. Tell us your preferred language at any time.",
+          mt: "Contamos con asistencia lingüística gratuita. Puede indicarnos su idioma preferido en cualquier momento.",
+          back: "We have free language assistance. You can tell us your preferred language at any time.",
+          state: "match" }
+      ],
+      audit: [
+        { t: "08:41", who: "Microsoft Fabric", kind: "system", text: "Cohort assembled from language preference and SDOH indicators. 2,140 households selected." },
+        { t: "08:44", who: "Azure OpenAI", kind: "system", text: "Source copy rewritten to the Grade 6 reading target and drafted into es-MX." },
+        { t: "08:46", who: "Term bank check", kind: "system", text: "5 segments compared against approved clinical phrasing. 1 deviation raised for review." },
+        { t: "08:47", who: "Azure AI Speech", kind: "system", text: "Voice callback rendered in es-MX for review playback. Hold placed pending language release." }
+      ]
+    },
+
+    {
+      id: "PKT-4472",
+      title: "Post-discharge medication instructions",
+      locale: "ht-HT",
+      language: "Haitian Creole",
+      channels: "Voice callback · chat follow-up",
+      cohort: "Riverbend — discharges in the last 48 hours",
+      reach: "96 households",
+      reading: "Grade 5 target",
+      equity: "Language access — post-discharge follow-up. Attributed to the avoidable-readmission workstream alongside the health-equity measure set.",
+      released: false,
+      segments: [
+        { id: "S1", label: "Greeting and identification", by: "model",
+          src: "Hello, this is Kestrel Vale Health following up after your hospital stay.",
+          mt: "Bonjou, se Kestrel Vale Health k ap rele w apre sejou w lopital la.",
+          back: "Hello, this is Kestrel Vale Health calling you after your hospital stay.",
+          state: "match" },
+        { id: "S2", label: "How to take your medicine", by: "model",
+          src: "Take one tablet every 12 hours with food. Do not take two tablets at once.",
+          mt: null, back: null,
+          state: "abstain",
+          finding: {
+            phrase: "",
+            note: "The term bank holds no validated ht-HT entry for this dosing instruction. The drafting model is configured to decline rather than translate unvalidated dosing content, so no proposal was returned. A qualified medical interpreter has to supply and sign this segment."
+          } },
+        { id: "S3", label: "When to call the care team", by: "model",
+          src: "Call us if your swelling gets worse or you gain more than three pounds in one day.",
+          mt: "Rele nou si anflamasyon an vin pi mal.",
+          back: "Call us if the swelling gets worse.",
+          state: "deviates",
+          finding: {
+            phrase: "si anflamasyon an vin pi mal",
+            note: "The proposal silently drops the weight-gain threshold. That threshold is the part of the instruction that tells a patient when to pick up the phone, so losing it changes the clinical meaning rather than the style."
+          },
+          approved: {
+            mt: "Rele nou si anflamasyon an vin pi mal oswa si ou pran plis pase twa liv nan yon jou.",
+            back: "Call us if the swelling gets worse or if you gain more than three pounds in one day.",
+            phrase: "oswa si ou pran plis pase twa liv nan yon jou"
+          } },
+        { id: "S4", label: "Interpreter offer and language rights notice", by: "fixed",
+          src: "Free language assistance is available. Tell us your preferred language at any time.",
+          mt: "Nou gen sèvis entèprèt gratis. Ou ka di nou ki lang ou pi pito nenpòt lè.",
+          back: "We have free interpreter services. You can tell us your preferred language at any time.",
+          state: "match" }
+      ],
+      audit: [
+        { t: "08:52", who: "Microsoft Fabric", kind: "system", text: "Cohort assembled from recent discharges with a non-English language preference. 96 households selected." },
+        { t: "08:55", who: "Azure OpenAI", kind: "system", text: "Draft returned for 3 of 4 segments. One segment declined as unvalidated clinical dosing content." },
+        { t: "08:56", who: "Term bank check", kind: "system", text: "1 deviation raised. 1 segment has no approved phrasing in this locale." },
+        { t: "08:57", who: "Release gate", kind: "system", text: "Release held. Clinical dosing content cannot be released without interpreter sign-off." }
+      ]
+    },
+
+    {
+      id: "PKT-4468",
+      title: "Prenatal appointment reminder",
+      locale: "vi-VN",
+      language: "Vietnamese",
+      channels: "SMS · chat follow-up",
+      cohort: "Northgate — first-trimester prenatal panel",
+      reach: "310 households",
+      reading: "Grade 6 target",
+      equity: "Language access — prenatal attendance. Attributed to the maternal-health strand of the health-equity measure set.",
+      released: false,
+      segments: [
+        { id: "S1", label: "Greeting and identification", by: "model",
+          src: "Hello, this is Kestrel Vale Health with a reminder about your prenatal visit.",
+          mt: "Xin chào, Kestrel Vale Health xin nhắc bạn về lần khám thai sắp tới.",
+          back: "Hello, Kestrel Vale Health reminds you about your upcoming prenatal visit.",
+          state: "match" },
+        { id: "S2", label: "Appointment time and place", by: "model",
+          src: "Your prenatal visit is on Tuesday at 9:40 AM at the Northgate clinic.",
+          mt: "Buổi khám thai của bạn vào 9:40 sáng thứ Ba tại phòng khám Northgate.",
+          back: "Your prenatal visit is at 9:40 AM Tuesday at the Northgate clinic.",
+          state: "deviates",
+          finding: {
+            phrase: "phòng khám Northgate",
+            note: "The term bank entry still carries the site's former name, retired when the building was rebranded last year. This one needs reviewer judgement: the approved entry may now be the wrong answer, and the signage a patient will actually see matches the proposal."
+          },
+          approved: {
+            mt: "Buổi khám thai của bạn vào 9:40 sáng thứ Ba tại Trung tâm Sức khỏe Northgate.",
+            back: "Your prenatal visit is at 9:40 AM Tuesday at the Northgate Health Center.",
+            phrase: "Trung tâm Sức khỏe Northgate"
+          } },
+        { id: "S3", label: "What to bring", by: "model",
+          src: "Please bring your insurance card and a list of the medicines you take.",
+          mt: "Vui lòng mang theo thẻ bảo hiểm và danh sách các loại thuốc bạn đang dùng.",
+          back: "Please bring your insurance card and the list of medicines you are taking.",
+          state: "match" },
+        { id: "S4", label: "Interpreter offer and language rights notice", by: "fixed",
+          src: "Free language assistance is available. Tell us your preferred language at any time.",
+          mt: "Chúng tôi có dịch vụ thông dịch miễn phí. Bạn có thể cho chúng tôi biết ngôn ngữ ưa thích bất cứ lúc nào.",
+          back: "We have free interpreter services. You can tell us your preferred language at any time.",
+          state: "match" }
+      ],
+      audit: [
+        { t: "08:33", who: "Microsoft Fabric", kind: "system", text: "Cohort assembled from the first-trimester prenatal panel. 310 households selected." },
+        { t: "08:36", who: "Azure OpenAI", kind: "system", text: "Appointment copy drafted into vi-VN from the scheduling record." },
+        { t: "08:37", who: "Term bank check", kind: "system", text: "4 segments compared. 1 deviation raised on a site name." }
+      ]
+    },
+
+    {
+      id: "PKT-4463",
+      title: "Seasonal vaccine clinic notice",
+      locale: "so-SO",
+      language: "Somali",
+      channels: "SMS",
+      cohort: "Fairlane — community clinic catchment",
+      reach: "1,475 households",
+      reading: "Grade 5 target",
+      equity: "Language access — immunisation outreach. Released yesterday and already attributed for reporting.",
+      released: true,
+      segments: [
+        { id: "S1", label: "Greeting and identification", by: "model",
+          src: "Hello, this is Kestrel Vale Health about a walk-in vaccine clinic near you.",
+          mt: "Salaan, waa Kestrel Vale Health oo kaala hadlaya xarun tallaal oo kuu dhow.",
+          back: "Greetings, this is Kestrel Vale Health speaking to you about a vaccine centre near you.",
+          state: "match" },
+        { id: "S2", label: "Clinic time and place", by: "model",
+          src: "The clinic is open Saturday from 9 AM to 2 PM at the Fairlane community centre. No appointment is needed.",
+          mt: "Xaruntu waxay furan tahay Sabtida 9 subaxnimo ilaa 2 galabnimo ee Fairlane community centre. Ballan looma baahna.",
+          back: "The centre is open Saturday 9 AM to 2 PM at the Fairlane community centre. No appointment is needed.",
+          state: "match" },
+        { id: "S3", label: "Interpreter offer and language rights notice", by: "fixed",
+          src: "Free language assistance is available. Tell us your preferred language at any time.",
+          mt: "Waxaa la heli karaa caawimaad luqadeed oo bilaash ah. Waqti kasta noo sheeg luqadda aad doorbidayso.",
+          back: "Free language assistance is available. Tell us at any time the language you prefer.",
+          state: "match" }
+      ],
+      audit: [
+        { t: "16:02", who: "Term bank check", kind: "system", text: "3 segments compared against approved clinical phrasing. No deviations raised." },
+        { t: "16:09", who: "Ifrah Warsame", kind: "human", text: "Reviewed all segments against approved phrasing. Attestation recorded." },
+        { t: "16:10", who: "Ifrah Warsame", kind: "human", text: "Language release approved for so-SO. Packet handed to SMS delivery." },
+        { t: "16:10", who: "Release gate", kind: "system", text: "Packet locked. Released content is read-only and retained for equity reporting." }
+      ]
+    }
+  ];
+
+  var INTERPRETERS = [
+    { id: "queue-ht", label: "Haitian Creole medical interpreter queue — next available" },
+    { id: "named-jn", label: "J. Narcisse — certified medical interpreter, ht-HT (on shift)" },
+    { id: "vendor", label: "Contracted interpreter vendor — 4 hour turnaround" }
+  ];
+
+  var SVC_LABEL = {
+    model: "Azure OpenAI · drafted",
+    rewrite: "Azure OpenAI · plain-language rewrite",
+    fixed: "Fixed notice · reviewed text, not model-generated"
+  };
+
+  /* ----------------------------------------------------------------- state
+     Org-wide counters live on `state`. Everything a reviewer does to a single
+     packet lives in SAVED[packetId], so one packet's decisions, attestation
+     and audit trail can never bleed into another. */
+
+  var state, SAVED, currentId, currentSeg, clock;
+
+  function freshWork(p) {
+    return {
+      choice: {},      // segment id -> "approved" | "proposed"
+      rationale: {},   // segment id -> reviewer's written reason
+      routed: {},      // segment id -> { to, note, at }
+      attested: false,
+      released: !!p.released,
+      audit: p.audit.map(function (r) { return { t: r.t, who: r.who, kind: r.kind, text: r.text }; })
+    };
+  }
+
+  function reset() {
+    state = { awaiting: 3, releasedToday: 5, escalations: 2 };
+    SAVED = {};
+    PACKETS.forEach(function (p) { SAVED[p.id] = freshWork(p); });
+    currentId = "PKT-4471";
+    clock = 9 * 60 + 12;
+    autoSelect();
+  }
+
+  /* Open on the first segment that still needs a decision, so the reviewer
+     lands on the next action instead of an empty panel. */
+  function autoSelect() {
+    var p = packet(currentId), w = SAVED[currentId];
+    currentSeg = null;
+    for (var i = 0; i < p.segments.length; i++) {
+      if (STATE_META[segState(p.segments[i], w)].blocking) { currentSeg = p.segments[i].id; break; }
+    }
+    if (!currentSeg) currentSeg = p.segments[0].id;
+  }
+
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+  function nextStamp() { clock += 1; return pad(Math.floor(clock / 60)) + ":" + pad(clock % 60); }
+
+  function pushAudit(w, who, kind, text) {
+    var t = nextStamp();
+    w.audit.push({ t: t, who: who, kind: kind, text: text });
+    return t;
+  }
+
+  function packet(id) {
+    for (var i = 0; i < PACKETS.length; i++) { if (PACKETS[i].id === id) return PACKETS[i]; }
+    return PACKETS[0];
+  }
+  function work() { return SAVED[currentId]; }
+
+  /* ------------------------------------------------------------ derivation */
+
+  function segState(s, w) {
+    if (s.state === "deviates") {
+      if (w.choice[s.id] === "approved") return "usedApproved";
+      if (w.choice[s.id] === "proposed") return "override";
+      return "deviates";
+    }
+    if (s.state === "abstain") { return w.routed[s.id] ? "routed" : "abstain"; }
+    return s.state;
+  }
+
+  var STATE_META = {
+    match:        { label: "Matches approved phrasing", cls: "tag-ok",   blocking: false },
+    rewrite:      { label: "Plain-language rewrite",    cls: "tag-ok",   blocking: false },
+    usedApproved: { label: "Approved phrasing applied", cls: "tag-ok",   blocking: false },
+    override:     { label: "Proposal kept · rationale", cls: "tag-warn", blocking: false },
+    deviates:     { label: "Deviates from term bank",   cls: "tag-warn", blocking: true  },
+    abstain:      { label: "No approved phrasing",      cls: "tag-stop", blocking: true  },
+    routed:       { label: "With medical interpreter",  cls: "tag-stop", blocking: true  }
+  };
+
+  function blockers() {
+    var p = packet(currentId), w = work(), out = [];
+    p.segments.forEach(function (s) {
+      var st = segState(s, w);
+      if (STATE_META[st].blocking) out.push({ seg: s, st: st });
+    });
+    return out;
+  }
+
+  function packetStatus() {
+    var w = work();
+    if (w.released) return { label: "Released", cls: "tag-ok" };
+    var b = blockers();
+    var anyRouted = b.some(function (x) { return x.st === "routed"; });
+    if (anyRouted) return { label: "With medical interpreter", cls: "tag-stop" };
+    if (b.length) return { label: "Awaiting language release", cls: "tag-warn" };
+    if (!w.attested) return { label: "Ready for attestation", cls: "tag-warn" };
+    return { label: "Ready to release", cls: "tag-ok" };
+  }
+
+  function segText(s, w) {
+    if (s.state === "deviates" && w.choice[s.id] === "approved") {
+      return { mt: s.approved.mt, back: s.approved.back, phrase: s.approved.phrase };
+    }
+    return { mt: s.mt, back: s.back, phrase: s.finding ? s.finding.phrase : "" };
+  }
+
+  /* ----------------------------------------------------------------- utils */
+
+  function esc(t) {
+    return String(t == null ? "" : t)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  /* Highlight the phrase carried by the *finding*, not the segment, so two
+     findings that point at the same sentence never bold each other's words. */
+  function mark(text, phrase) {
+    var safe = esc(text);
+    if (!phrase) return safe;
+    var needle = esc(phrase);
+    var at = safe.indexOf(needle);
+    if (at < 0) return safe;
+    return safe.slice(0, at) + '<span class="hl">' + needle + "</span>" + safe.slice(at + needle.length);
+  }
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  function say(msg) { $("say").textContent = msg || ""; }
+  function railSay(msg) { $("railSay").textContent = msg || ""; }
+
+  /* Focus is lost whenever a region is re-rendered, so every handler names the
+     control the reviewer should land on next. */
+  function refocus(sel) {
+    if (!sel) return;
+    var el = document.querySelector(sel);
+    if (el) el.focus();
+  }
+
+  /* --------------------------------------------------------------- render */
+
+  function renderFacts() {
+    $("fAwaiting").textContent = state.awaiting;
+    $("fReleased").textContent = state.releasedToday;
+    $("fEsc").textContent = state.escalations;
+  }
+
+  function renderQueue() {
+    var open = PACKETS.filter(function (p) { return !SAVED[p.id].released; }).length;
+    $("queueCount").textContent = open + " open · " + PACKETS.length + " shown";
+    $("queueList").innerHTML = PACKETS.map(function (p) {
+      var w = SAVED[p.id];
+      var st = w.released ? "Released" : (p.id === currentId ? packetStatus().label : "Awaiting release");
+      if (!w.released && p.id !== currentId) {
+        var pending = p.segments.filter(function (s) { return STATE_META[segState(s, w)].blocking; }).length;
+        st = pending ? pending + " segment(s) to decide" : "Ready to release";
+      }
+      return '<li><button class="q-btn" type="button" data-pkt="' + esc(p.id) + '" id="q-' + esc(p.id) + '"' +
+        ' aria-current="' + (p.id === currentId ? "true" : "false") + '">' +
+        '<span class="q-top"><span class="q-id">' + esc(p.id) + '</span>' +
+        '<span class="tag locale">' + esc(p.locale) + '</span></span>' +
+        '<span class="q-title">' + esc(p.title) + "</span>" +
+        '<span class="q-meta">' + esc(p.language) + " · " + esc(st) + "</span>" +
+        "</button></li>";
+    }).join("");
+  }
+
+  function renderPacketHead() {
+    var p = packet(currentId), st = packetStatus();
+    $("pktTitle").textContent = p.title;
+    $("pktStatus").textContent = st.label;
+    $("pktStatus").className = "tag " + st.cls;
+    $("pktSub").textContent = p.id + " · " + p.language + " (" + p.locale + ") · " + p.channels;
+    $("pktMeta").innerHTML =
+      "<div><dt>Cohort</dt><dd>" + esc(p.cohort) + "</dd></div>" +
+      "<div><dt>Cohort reach</dt><dd>" + esc(p.reach) + "</dd></div>" +
+      "<div><dt>Reading level</dt><dd>" + esc(p.reading) + "</dd></div>" +
+      "<div><dt>Reviewer</dt><dd>" + (SAVED[p.id].released && p.released ? "Ifrah Warsame" : "Nadia Okafor") + "</dd></div>";
+    $("assembly").textContent =
+      "Cohort built in Microsoft Fabric from language preference and SDOH indicators. Draft and plain-language rewrite from Azure OpenAI " +
+      "in Azure AI Foundry Models. Voice callback rendered by Azure AI Speech. Chat follow-up answered by Azure AI Bot Service. " +
+      "Every release decision below is made by a named member of staff.";
+    $("equityNote").textContent = p.equity;
+  }
+
+  function renderSegments() {
+    var p = packet(currentId), w = work();
+    var cleared = p.segments.filter(function (s) { return !STATE_META[segState(s, w)].blocking; }).length;
+    $("segCount").textContent = cleared + " of " + p.segments.length + " cleared";
+    $("segList").innerHTML = p.segments.map(function (s) {
+      var st = segState(s, w), m = STATE_META[st];
+      return '<li><button class="seg-btn" type="button" data-seg="' + esc(s.id) + '" id="seg-' + esc(s.id) + '"' +
+        ' aria-current="' + (s.id === currentSeg ? "true" : "false") + '">' +
+        '<span class="seg-label">' + esc(s.id) + " · " + esc(s.label) + "</span>" +
+        '<span class="tag ' + m.cls + '">' + esc(m.label) + "</span>" +
+        "</button></li>";
+    }).join("");
+  }
+
+  function renderProof() {
+    var p = packet(currentId), w = work();
+    var s = null;
+    p.segments.forEach(function (x) { if (x.id === currentSeg) s = x; });
+    if (!s) {
+      $("proofTitle").textContent = "Translation proof";
+      $("proof").innerHTML = '<div class="pane"><p style="color:var(--muted);font-size:13.5px;">Choose a segment above to compare the source, the proposed translation, its back-translation, and the approved clinical phrasing.</p></div>';
+      $("segActions").innerHTML = "";
+      $("decideNote").textContent = "Choose a segment to review.";
+      return;
+    }
+
+    var st = segState(s, w), m = STATE_META[st];
+    var t = segText(s, w);
+    $("proofTitle").textContent = "Translation proof · " + s.id + " " + s.label;
+
+    var html = "";
+
+    html += '<div class="pane"><h4>Source · English <span class="tag">' + esc(SVC_LABEL[s.by] || "Drafted") + "</span></h4>" +
+            "<p>" + esc(s.src) + "</p>" +
+            (s.rewriteNote ? '<span class="back-note">' + esc(s.rewriteNote) + "</span>" : "") + "</div>";
+
+    if (st === "abstain" || st === "routed") {
+      html += '<div class="pane pane-none"><h4>Proposed · ' + esc(s.language || p.language) + ' <span class="locale">' + esc(p.locale) + '</span> <span class="tag tag-stop">No proposal returned</span></h4>' +
+              '<p style="color:var(--muted);">The drafting model declined this segment rather than guessing at unvalidated clinical wording.</p></div>';
+    } else {
+      html += '<div class="pane pane-target"><h4>Proposed · ' + esc(p.language) + ' <span class="locale">' + esc(p.locale) + '</span>' +
+              (st === "usedApproved" ? ' <span class="tag tag-ok">Approved phrasing applied</span>' : "") +
+              (st === "override" ? ' <span class="tag tag-warn">Kept by reviewer</span>' : "") + "</h4>" +
+              '<p lang="' + esc(p.locale) + '">' + mark(t.mt, t.phrase) + "</p>" +
+              '<span class="back-note"><b>Back-translation to English:</b> ' + esc(t.back) + "</span></div>";
+    }
+
+    if (s.finding && (st === "deviates" || st === "abstain" || st === "routed" || st === "override")) {
+      html += '<div class="notice notice-' + (st === "deviates" || st === "override" ? "warn" : "stop") + '">' +
+              '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 4.5l8.5 15h-17z"/><path d="M12 10v4M12 16.6v.4"/></svg>' +
+              "<span><b>" + esc(m.label) + ".</b> " + esc(s.finding.note) +
+              (st === "override" && w.rationale[s.id] ? '<span class="notice-note"><b>Reviewer rationale:</b> ' + esc(w.rationale[s.id]) + "</span>" : "") +
+              (st === "routed" ? '<span class="notice-note"><b>Routed to:</b> ' + esc(w.routed[s.id].to) + " at " + esc(w.routed[s.id].at) +
+                (w.routed[s.id].note ? " — " + esc(w.routed[s.id].note) : "") + "</span>" : "") +
+              "</span></div>";
+    }
+
+    if (s.approved && st !== "usedApproved") {
+      html += '<div class="pane pane-approved"><h4>Approved term bank entry <span class="tag tag-ok">Clinically reviewed</span></h4>' +
+              '<p lang="' + esc(p.locale) + '">' + mark(s.approved.mt, s.approved.phrase) + "</p>" +
+              '<span class="back-note"><b>Back-translation to English:</b> ' + esc(s.approved.back) + "</span></div>";
+    }
+
+    $("proof").innerHTML = html;
+
+    /* Actions available on this segment. */
+    var acts = "";
+    if (w.released) {
+      acts = '<p class="status-line">This packet is released and read-only. Segment decisions are retained as recorded.</p>';
+    } else if (st === "deviates") {
+      acts = '<button class="btn btn-primary" type="button" id="useApproved">Use approved phrasing</button>' +
+             '<button class="btn" type="button" id="keepProposed">Keep proposed wording…</button>';
+    } else if (st === "abstain") {
+      acts = '<button class="btn btn-primary" type="button" id="routeSeg">Route to medical interpreter…</button>' +
+             '<p class="status-line" style="flex-basis:100%;">There is no self-service path here. Clinical dosing content without approved phrasing has to be written and signed by a qualified interpreter.</p>';
+    } else if (st === "routed") {
+      acts = '<p class="status-line">Waiting on the interpreter. Release stays blocked until the signed segment comes back.</p>';
+    } else if (st === "usedApproved" || st === "override") {
+      acts = '<button class="btn" type="button" id="undoSeg">Undo this decision</button>';
+    } else {
+      acts = '<p class="status-line">No decision needed. This segment already matches the approved phrasing for ' + esc(p.locale) + ".</p>";
+    }
+    $("segActions").innerHTML = acts;
+
+    /* The decision bar states the finding before the evidence panes explain it,
+       so the reviewer's next action is reachable without scrolling. */
+    $("decideNote").innerHTML = '<b class="decide-state">' + esc(s.id) + " · " + esc(m.label) + ".</b> " +
+      '<span class="decide-why">' +
+      (w.released ? "Recorded at release."
+        : st === "match" || st === "rewrite" ? "Nothing to decide on this segment."
+        : s.finding ? esc(s.finding.short || s.finding.note) : "Review the evidence below.") +
+      "</span>";
+  }
+
+  function renderRail() {
+    var p = packet(currentId), w = work();
+    var counts = {};
+    p.segments.forEach(function (s) {
+      var lbl = STATE_META[segState(s, w)].label;
+      counts[lbl] = (counts[lbl] || 0) + 1;
+    });
+    $("tally").innerHTML = Object.keys(counts).map(function (k) {
+      return "<li><span>" + esc(k) + "</span><b>" + counts[k] + "</b></li>";
+    }).join("");
+
+    var b = blockers();
+    if (w.released) {
+      $("blockWrap").hidden = true;
+    } else {
+      $("blockWrap").hidden = false;
+      $("blockers").innerHTML = b.length
+        ? b.map(function (x) {
+            return '<li><span class="dot"></span><span>' + esc(x.seg.id) + " · " + esc(x.seg.label) + " — " + esc(STATE_META[x.st].label) + "</span></li>";
+          }).join("")
+        : '<li><span>Nothing blocking. Every segment carries a decision.</span></li>';
+    }
+
+    var att = $("attest");
+    att.checked = w.attested;
+    /* A reviewer cannot honestly attest to content that still has an open
+       decision on it, so the checkbox only comes alive once nothing blocks. */
+    att.disabled = !!w.released || b.length > 0;
+    var note = $("attestNote");
+    if (w.released) {
+      note.hidden = false;
+      note.textContent = "Recorded before release and retained with the packet.";
+    } else if (b.length) {
+      note.hidden = false;
+      note.textContent = "Available once every segment carries a decision. " + b.length + " still open.";
+    } else {
+      note.hidden = true;
+      note.textContent = "";
+    }
+
+    var btn = $("releaseBtn");
+    if (w.released) {
+      btn.textContent = "Released";
+      btn.disabled = true;
+      btn.removeAttribute("aria-disabled");
+    } else {
+      btn.textContent = "Release packet to channels";
+      btn.disabled = false;
+      /* Blocked by a clinical rule rather than being inert: stays focusable so
+         activating it can explain why, instead of silently doing nothing. */
+      btn.setAttribute("aria-disabled", (b.length || !w.attested) ? "true" : "false");
+    }
+
+    $("audit").innerHTML = w.audit.map(function (r) {
+      return "<li><time>" + esc(r.t) + "</time><span><span class=\"actor " +
+        (r.kind === "human" ? "is-human" : "is-system") + "\">" + esc(r.who) + "</span> — " + esc(r.text) + "</span></li>";
+    }).join("");
+  }
+
+  function render() {
+    renderFacts();
+    renderQueue();
+    renderPacketHead();
+    renderSegments();
+    renderProof();
+    renderRail();
+  }
+
+  /* --------------------------------------------------------------- dialog */
+
+  var dlg = $("dlg"), dlgMode = null, dlgSeg = null;
+
+  function openDlg(mode, segId) {
+    var p = packet(currentId), s = null;
+    p.segments.forEach(function (x) { if (x.id === segId) s = x; });
+    if (!s) return;
+    dlgMode = mode; dlgSeg = segId;
+    $("dlgErr").textContent = "";
+
+    if (mode === "override") {
+      $("dlgT").textContent = "Keep the proposed wording";
+      $("dlgSub").textContent = s.id + " · " + s.label + " · " + p.language + " (" + p.locale + ")";
+      $("dlgBody").innerHTML =
+        '<p class="evidence" lang="' + esc(p.locale) + '">' + esc(s.mt) + "</p>" +
+        '<p style="margin:0;font-size:13px;color:var(--muted);"><b>Back-translation:</b> ' + esc(s.back) + "</p>" +
+        '<div class="notice notice-warn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 4.5l8.5 15h-17z"/><path d="M12 10v4M12 16.6v.4"/></svg>' +
+        "<span>You are choosing wording that differs from the approved term bank. Your name and reason are attached to this segment and travel with the packet.</span></div>" +
+        '<div class="field"><label for="ovReason">Why is the proposed wording the right choice here?</label>' +
+        '<textarea id="ovReason" placeholder="For example: the approved entry uses a site name retired in last year&#39;s rebrand."></textarea></div>';
+      $("dlgOk").textContent = "Keep wording and record reason";
+    } else {
+      $("dlgT").textContent = "Route to a medical interpreter";
+      $("dlgSub").textContent = s.id + " · " + s.label + " · " + p.language + " (" + p.locale + ")";
+      $("dlgBody").innerHTML =
+        '<p class="evidence">' + esc(s.src) + "</p>" +
+        '<div class="notice notice-stop"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5M12 15.6v.4"/></svg>' +
+        "<span>Routing does not clear the packet. Release stays blocked until a qualified interpreter returns and signs this segment.</span></div>" +
+        '<div class="field"><label for="ovWho">Send to</label>' +
+        '<select id="ovWho" style="font:inherit;font-size:14px;padding:9px 10px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);color:var(--ink);">' +
+        INTERPRETERS.map(function (i) { return '<option value="' + esc(i.label) + '">' + esc(i.label) + "</option>"; }).join("") +
+        "</select></div>" +
+        '<div class="field"><label for="ovNote">Note for the interpreter (optional)</label>' +
+        '<textarea id="ovNote" placeholder="For example: dosing instruction, needs validated phrasing added to the term bank."></textarea></div>';
+      $("dlgOk").textContent = "Route and log escalation";
+    }
+
+    dlg.showModal();
+    var first = $("dlgBody").querySelector("textarea, select");
+    if (first) first.focus();
+  }
+
+  function closeDlg(returnTo) {
+    if (dlg.open) dlg.close();
+    dlgMode = null; dlgSeg = null;
+    refocus(returnTo || "#seg-" + currentSeg);
+  }
+
+  function confirmDlg() {
+    var p = packet(currentId), w = work(), segId = dlgSeg, s = null;
+    p.segments.forEach(function (x) { if (x.id === segId) s = x; });
+    if (!s) { closeDlg(); return; }
+
+    if (dlgMode === "override") {
+      var reason = ($("ovReason").value || "").trim();
+      if (reason.length < 12) {
+        $("dlgErr").textContent = "Add a short reason (at least 12 characters) before keeping wording that differs from the term bank.";
+        $("ovReason").focus();
+        return;
+      }
+      w.choice[s.id] = "proposed";
+      w.rationale[s.id] = reason;
+      if (w.attested) { w.attested = false; }
+      pushAudit(w, "Nadia Okafor", "human", s.id + " — proposed " + p.locale + " wording kept over the term bank entry. Reason: " + reason);
+      dlg.close(); dlgMode = null; dlgSeg = null;
+      render();
+      railSay("");
+      say(s.id + " keeps the proposed wording. Your reason is recorded on the segment and in the audit trail.");
+      refocus("#seg-" + s.id);
+      return;
+    }
+
+    var to = $("ovWho").value;
+    var note = ($("ovNote").value || "").trim();
+    var at = pushAudit(w, "Nadia Okafor", "human", s.id + " — routed to " + to + "." + (note ? " Note: " + note : ""));
+    w.routed[s.id] = { to: to, note: note, at: at };
+    state.escalations += 1;
+    if (w.attested) { w.attested = false; }
+    pushAudit(w, "Release gate", "system", "Release remains blocked for " + p.id + ". " + s.id + " is awaiting a signed interpreter translation.");
+    dlg.close(); dlgMode = null; dlgSeg = null;
+    render();
+    railSay("");
+    say(s.id + " is with " + to + ". Release stays blocked until the signed segment comes back.");
+    refocus("#seg-" + s.id);
+  }
+
+  /* -------------------------------------------------------------- actions */
+
+  function selectPacket(id) {
+    currentId = id;
+    var p = packet(id), w = work();
+    autoSelect();
+    render();
+    say(w.released
+      ? p.id + " was released and is read-only."
+      : "Opened " + p.id + ". " + (blockers().length ? "Start with " + currentSeg + "." : "Every segment is decided; attest and release when ready."));
+    railSay("");
+    refocus("#q-" + id);
+  }
+
+  function selectSegment(segId) {
+    currentSeg = segId;
+    renderSegments();
+    renderProof();
+    say("");
+    railSay("");
+    refocus("#seg-" + segId);
+  }
+
+  function useApproved() {
+    var p = packet(currentId), w = work(), s = null;
+    p.segments.forEach(function (x) { if (x.id === currentSeg) s = x; });
+    if (!s || !s.approved || w.released) return;
+    w.choice[s.id] = "approved";
+    delete w.rationale[s.id];
+    if (w.attested) { w.attested = false; }
+    pushAudit(w, "Nadia Okafor", "human", s.id + " — approved term bank phrasing applied in place of the proposed wording.");
+    render();
+    railSay("");
+    say(s.id + " now carries the approved phrasing. " + (blockers().length ? blockers().length + " segment(s) still to decide." : "Nothing left blocking this packet."));
+    refocus("#seg-" + s.id);
+  }
+
+  function undoSeg() {
+    var p = packet(currentId), w = work(), s = null;
+    p.segments.forEach(function (x) { if (x.id === currentSeg) s = x; });
+    if (!s || w.released) return;
+    delete w.choice[s.id];
+    delete w.rationale[s.id];
+    if (w.attested) { w.attested = false; }
+    pushAudit(w, "Nadia Okafor", "human", s.id + " — decision withdrawn, segment returned for review.");
+    render();
+    railSay("");
+    say(s.id + " is back under review. The attestation was cleared because the packet changed.");
+    refocus("#seg-" + s.id);
+  }
+
+  function tryRelease() {
+    var p = packet(currentId), w = work();
+    if (w.released) return;
+    var b = blockers();
+    if (b.length) {
+      var names = b.map(function (x) { return x.seg.id; }).join(", ");
+      railSay("Release is blocked. " + b.length + " segment(s) still need a decision: " + names + ".");
+      currentSeg = b[0].seg.id;
+      render();
+      refocus("#seg-" + b[0].seg.id);
+      return;
+    }
+    if (!w.attested) {
+      railSay("Tick the reviewer attestation first. A named person has to stand behind this release.");
+      refocus("#attest");
+      return;
+    }
+    var t = pushAudit(w, "Nadia Okafor", "human", "Language release approved for " + p.locale + ". Reviewer attestation recorded against all " + p.segments.length + " segments.");
+    pushAudit(w, "Release gate", "system", "Packet handed to delivery: " + p.channels + ". Attributed for equity reporting and locked read-only.");
+    w.released = true;
+    state.awaiting = Math.max(0, state.awaiting - 1);
+    state.releasedToday += 1;
+    render();
+    railSay("Released at " + t + ". " + p.reach + " in the " + p.locale + " cohort will receive this packet on " + p.channels + ".");
+    say("");
+    /* The release button is genuinely disabled now, so it cannot hold focus.
+       Move the reviewer to the next packet still waiting on them. */
+    var nextOpen = null;
+    PACKETS.forEach(function (x) { if (!nextOpen && !SAVED[x.id].released) nextOpen = x.id; });
+    refocus("#q-" + (nextOpen || p.id));
+  }
+
+  /* --------------------------------------------------------------- wiring */
+
+  $("queueList").addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest("[data-pkt]") : null;
+    if (b) selectPacket(b.getAttribute("data-pkt"));
+  });
+
+  $("segList").addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest("[data-seg]") : null;
+    if (b) selectSegment(b.getAttribute("data-seg"));
+  });
+
+  $("segActions").addEventListener("click", function (e) {
+    var t = e.target.closest ? e.target.closest("button") : null;
+    if (!t) return;
+    if (t.id === "useApproved") useApproved();
+    else if (t.id === "keepProposed") openDlg("override", currentSeg);
+    else if (t.id === "routeSeg") openDlg("route", currentSeg);
+    else if (t.id === "undoSeg") undoSeg();
+  });
+
+  $("attest").addEventListener("change", function () {
+    var w = work();
+    if (w.released) return;
+    w.attested = $("attest").checked;
+    renderRail();
+    renderQueue();
+    renderPacketHead();
+    railSay(w.attested ? "Attestation recorded for this packet. You can release it now." : "Attestation cleared.");
+    refocus("#attest");
+  });
+
+  $("releaseBtn").addEventListener("click", tryRelease);
+
+  $("resetBtn").addEventListener("click", function () {
+    if (dlg.open) { dlg.close(); dlgMode = null; dlgSeg = null; }
+    reset();
+    render();
+    say("Demo reset. Every packet, counter and audit trail is back to its starting state.");
+    railSay("");
+    refocus("#resetBtn");
+  });
+
+  $("dlgOk").addEventListener("click", confirmDlg);
+  $("dlgCancel").addEventListener("click", function () { closeDlg(); });
+  $("dlgX").addEventListener("click", function () { closeDlg(); });
+  /* The dialog cancel event is unreliable across engines, so handle Escape directly. */
+  dlg.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") { e.preventDefault(); closeDlg(); }
+  });
+
+  reset();
+  render();
+  say("Segment " + currentSeg + " needs a decision before this packet can be released.");
+})();
+</script>
+</body>
+</html>
