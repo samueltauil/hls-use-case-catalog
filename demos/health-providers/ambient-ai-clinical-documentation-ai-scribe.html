@@ -1,0 +1,1173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Northgate Medical Group - Ambient documentation close-out</title>
+<style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* =========================================================================
+   Demo layout — close-out queue, note under review, transcript inspector.
+   ========================================================================= */
+
+.workspace { display: grid; gap: 13px; padding: 13px; align-items: start; }
+.rail { display: grid; gap: 13px; align-content: start; }
+.desk { display: grid; gap: 13px; min-width: 0; }
+.inspector { display: grid; gap: 13px; align-content: start; min-width: 0; }
+
+/* The note is what the clinician came here to do, so it leads the document and
+   therefore the reading order on a phone. Wider layouts place the queue rail
+   back on the left without changing that order. */
+@media (min-width: 900px) {
+  .workspace { grid-template-columns: minmax(0, 1fr) 328px; padding: 15px; gap: 15px; }
+  .desk { grid-column: 1; grid-row: 1; }
+  .inspector { grid-column: 2; grid-row: 1; }
+  .rail { grid-column: 1 / -1; grid-row: 2; grid-template-columns: 1fr 1fr; gap: 15px; }
+}
+@media (min-width: 1200px) {
+  .workspace { grid-template-columns: 258px minmax(0, 1fr) 340px; }
+  .rail { grid-column: 1; grid-row: 1; grid-template-columns: 1fr; gap: 13px; }
+  .desk { grid-column: 2; grid-row: 1; }
+  .inspector { grid-column: 3; grid-row: 1; }
+}
+
+/* ------------------------------------------------------------ desk head */
+.desk-head { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: flex-end; justify-content: space-between; }
+.desk-head .eyebrow { margin: 0 0 3px; font-size: 12px; color: var(--muted); }
+.desk-head h1 { margin: 0; font-size: 21px; line-height: 1.25; }
+.desk-head .sub { margin: 4px 0 0; font-size: 13px; color: var(--muted); max-width: 64ch; }
+
+/* ---------------------------------------------------------- queue list */
+.queue { list-style: none; margin: 0; padding: 0; display: grid; }
+.queue li + li { border-top: 1px solid var(--line-soft); }
+.queue-item {
+  font: inherit; text-align: left; width: 100%; background: none; border: 0;
+  padding: 10px 15px; cursor: pointer; display: grid; gap: 3px; color: var(--ink);
+  border-left: 3px solid transparent;
+}
+.queue-item:hover { background: var(--surface-2); }
+.queue-item[aria-current="true"] { background: var(--accent-soft); border-left-color: var(--accent); }
+.queue-top { display: flex; gap: 8px; align-items: baseline; justify-content: space-between; }
+.queue-name { font-weight: 600; font-size: 13.5px; }
+.queue-id { font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
+.queue-meta { font-size: 12px; color: var(--muted); }
+
+/* ------------------------------------------------------------- context */
+.ctx { display: grid; gap: 9px; margin: 0; font-size: 13px; }
+.ctx div { display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: 9px; }
+.ctx dt { color: var(--muted); font-size: 12.5px; }
+.ctx dd { margin: 0; }
+
+/* ---------------------------------------------------------- note sheet */
+.note-status { display: flex; flex-wrap: wrap; gap: 7px 12px; align-items: center; }
+.sheet { max-height: clamp(240px, 38vh, 430px); overflow-y: auto; padding: 4px 15px 14px; }
+.sheet section { padding-top: 13px; }
+.sheet h3 {
+  margin: 0 0 5px; font-size: 12px; letter-spacing: .02em; color: var(--muted);
+  font-weight: 700; border-bottom: 1px solid var(--line-soft); padding-bottom: 4px;
+}
+.lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+
+.sent {
+  font: inherit; font-size: 14px; line-height: 1.55; text-align: left; width: 100%;
+  background: none; border: 0; border-left: 3px solid transparent; color: var(--ink);
+  padding: 4px 8px 4px 9px; cursor: pointer; border-radius: 0 var(--radius) var(--radius) 0;
+  display: grid; gap: 3px; transition: background-color .12s ease;
+}
+.sent:hover { background: var(--surface-2); }
+.sent[aria-pressed="true"] { background: var(--accent-soft); border-left-color: var(--accent); }
+.sent-flag { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 11.5px; color: var(--muted); }
+.sent.is-chart { border-left-color: var(--line); }
+.sent.is-chart[aria-pressed="true"] { border-left-color: var(--accent); }
+.sent.is-dropped { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--muted-soft); }
+
+/* A sentence the transcript does not support is shown as a gap in the note,
+   never as prose, so nobody can mistake it for something the clinician said. */
+.gap {
+  border: 1px dashed #d8a3a6; background: var(--stop-bg); border-radius: var(--radius);
+  padding: 10px 11px; display: grid; gap: 8px; margin: 3px 0;
+}
+.gap-head { display: flex; flex-wrap: wrap; gap: 6px 9px; align-items: center; font-size: 12.5px; font-weight: 600; color: #8b1f25; }
+.gap.is-resolved {
+  border-style: solid; border-color: var(--line); background: var(--surface-2);
+  font-size: 14px; line-height: 1.55;
+}
+.gap-body { font-size: 13px; color: #6f2328; margin: 0; }
+.gap-quote { font-size: 13px; color: var(--muted); font-style: italic; margin: 0; }
+.opts { display: grid; gap: 6px; }
+.opt {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px; cursor: pointer;
+  padding: 9px 10px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+}
+.opt:hover { border-color: var(--muted-soft); }
+.opt input { width: 17px; height: 17px; margin: 1px 0 0; flex: none; }
+.opt small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+.gap-done { display: grid; gap: 3px; font-size: 13px; }
+
+.inline-act { display: flex; flex-wrap: wrap; gap: 7px; padding: 2px 0 0 9px; }
+.btn-sm { min-height: 30px; padding: 4px 10px; font-size: 12.5px; }
+
+.sheet-foot {
+  display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; justify-content: space-between;
+  padding: 12px 15px; border-top: 1px solid var(--line-soft); background: var(--bg);
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+
+/* ------------------------------------------------------------ transcript */
+.tape { max-height: clamp(190px, 27vh, 310px); overflow-y: auto; margin: 0; padding: 0; list-style: none; display: grid; gap: 1px; }
+.tape li {
+  display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 9px; font-size: 13px;
+  padding: 5px 7px; border-left: 3px solid transparent; border-radius: 0 var(--radius) var(--radius) 0;
+  transition: background-color .12s ease;
+}
+.tape li.is-cited { background: var(--accent-soft); border-left-color: var(--accent); }
+.tape time { font-family: var(--mono); font-size: 11.5px; color: var(--muted); padding-top: 2px; }
+.tape .spk { font-weight: 600; font-size: 11.5px; color: var(--muted); display: block; }
+.tape .said { display: block; }
+.tape .gapmark { color: var(--stop); font-weight: 600; font-style: normal; }
+.tape li.is-excluded .said { color: var(--muted); }
+
+.checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.checks li { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 9px; }
+.checks b { display: block; font-weight: 600; }
+.checks span { color: var(--muted); font-size: 12.5px; }
+.dot { width: 9px; height: 9px; border-radius: 50%; margin-top: 5px; }
+.dot-ok { background: var(--ok); }
+.dot-warn { background: var(--warn); }
+.dot-stop { background: var(--stop); }
+
+.meter { display: grid; gap: 5px; font-size: 12.5px; color: var(--muted); }
+.meter-bar { height: 7px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line-soft); overflow: hidden; }
+.meter-fill { height: 100%; background: var(--accent); width: 0; transition: width .18s ease; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 5px 10px; font-size: 11.5px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 5px; }
+.swatch { width: 10px; height: 10px; border-radius: 2px; border: 1px solid var(--line); }
+
+.stand-in { display: grid; gap: 12px; }
+</style>
+</head>
+<body data-subvertical="health-providers">
+
+<header class="appbar">
+  <div class="brand">
+    <svg class="brand-mark" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
+      <path d="M12 3v7a3 3 0 0 0 6 0V7" stroke-linecap="round"/>
+      <path d="M6 7v4a6 6 0 0 0 6 6" stroke-linecap="round"/>
+      <circle cx="18" cy="5" r="1.6"/>
+      <rect x="4" y="3" width="4" height="4" rx="1"/>
+    </svg>
+    <span class="brand-name">Northgate Medical Group
+      <span class="brand-sub">Ambient documentation &middot; clinic close-out</span>
+    </span>
+  </div>
+  <p class="disclosure">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <circle cx="12" cy="12" r="9"/><path d="M12 11v5" stroke-linecap="round"/><circle cx="12" cy="7.6" r="1" fill="currentColor" stroke="none"/>
+    </svg>
+    Illustrative demo - synthetic data
+  </p>
+  <p class="who"><b>Dr. Alina Boyd</b> &middot; Internal medicine<br>Clinic day close-out &middot; 21 Sep 2026, 18:24</p>
+</header>
+
+<div class="workspace">
+
+  <!-- ------------------------------------------------------------- desk -->
+  <main class="desk">
+    <div class="desk-head">
+      <div>
+        <p class="eyebrow">Care Delivery &amp; Clinical Operations &middot; Pilot</p>
+        <h1>Progress note awaiting your signature</h1>
+        <p class="sub">Drafted from the ambient recording of the visit. Nothing reaches the chart until you sign it.</p>
+      </div>
+      <button class="btn" type="button" data-reset>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M4 5v5h5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M4.6 14a7.5 7.5 0 1 0 1.2-6" stroke-linecap="round"/>
+        </svg>
+        Reset demo
+      </button>
+    </div>
+
+    <!-- Draft note for the selected encounter -->
+    <section class="card" aria-labelledby="note-h" data-note-card>
+      <div class="card-head">
+        <div>
+          <h2 id="note-h">Office visit note &middot; <span data-note-patient>Marcus Ellery</span></h2>
+          <p class="card-note" data-note-sub>Established patient, 25 minutes &middot; Encounter SYN-ENC-4471</p>
+        </div>
+        <div class="note-status">
+          <span class="tag" data-note-state>Draft - not in chart</span>
+          <span class="card-note">Select any line to see what it came from</span>
+        </div>
+      </div>
+
+      <div class="sheet" data-sheet></div>
+
+      <div class="sheet-foot">
+        <p class="status-line" role="status" aria-live="polite" data-status></p>
+        <div class="actions">
+          <button class="btn" type="button" data-discard>Return to draft queue</button>
+          <button class="btn btn-primary" type="button" data-sign>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M4 17c3-1 4-9 7-9s2 6 5 5" stroke-linecap="round"/><path d="M4 20h16" stroke-linecap="round"/>
+            </svg>
+            Sign and file to chart
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stand-in panel for queue entries that are not the active draft -->
+    <section class="card" aria-labelledby="alt-h" data-alt-card hidden>
+      <div class="card-head">
+        <h2 id="alt-h" data-alt-title>Encounter</h2>
+        <span class="card-note" data-alt-id></span>
+      </div>
+      <div class="card-body stand-in">
+        <div class="notice" data-alt-notice>
+          <span data-alt-notice-text></span>
+        </div>
+        <dl class="facts" data-alt-facts></dl>
+        <div class="actions">
+          <button class="btn btn-primary" type="button" data-alt-back>Back to the note awaiting signature</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ------------------------------------------------------------- rail -->
+  <aside class="rail" aria-label="Close-out queue and encounter context">
+    <section class="card" aria-labelledby="queue-h">
+      <div class="card-head">
+        <h2 id="queue-h">Notes to close</h2>
+        <span class="card-note" data-queue-count>3 encounters</span>
+      </div>
+      <ul class="queue" data-queue></ul>
+    </section>
+
+    <section class="card" aria-labelledby="ctx-h">
+      <div class="card-head"><h2 id="ctx-h">Encounter</h2></div>
+      <div class="card-body">
+        <dl class="ctx" data-ctx></dl>
+      </div>
+    </section>
+
+    <div class="rule">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>
+      </svg>
+      <span>Ambient audio is processed in memory for transcription and is not retained after the note is drafted. The transcript is kept with the encounter for review and is discarded on the retention schedule.</span>
+    </div>
+  </aside>
+
+  <!-- -------------------------------------------------------- inspector -->
+  <aside class="inspector" aria-label="Transcript and note checks">
+    <section class="card" aria-labelledby="tape-h">
+      <div class="card-head">
+        <h2 id="tape-h">Visit transcript</h2>
+        <span class="card-note" data-tape-note>Speakers separated automatically</span>
+      </div>
+      <div class="card-body" style="padding-bottom:10px">
+        <ul class="tape" data-tape></ul>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="basis-h">
+      <div class="card-head"><h2 id="basis-h">Basis for this line</h2></div>
+      <div class="card-body">
+        <p class="status-line" data-basis-note></p>
+        <ul class="checks" data-checks style="margin-top:11px"></ul>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="edits-h">
+      <div class="card-head">
+        <h2 id="edits-h">Review activity</h2>
+        <span class="card-note">Tracked for accuracy reporting</span>
+      </div>
+      <div class="card-body">
+        <div class="meter">
+          <div><span data-edit-label></span></div>
+          <div class="meter-bar"><div class="meter-fill" data-edit-fill></div></div>
+          <div data-edit-note></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="audit-h">
+      <div class="card-head"><h2 id="audit-h">Audit trail</h2></div>
+      <div class="card-body">
+        <ol class="audit" data-audit></ol>
+      </div>
+    </section>
+  </aside>
+</div>
+
+<footer class="footer">
+  <div class="built">
+    <span>Built on</span>
+    <span class="svc-chip">Azure AI Speech</span>
+    <span class="svc-chip">Azure OpenAI in Azure AI Foundry Models</span>
+    <span class="svc-chip">Azure AI Foundry</span>
+    <span class="svc-chip">Azure AI Search</span>
+  </div>
+  <p class="claim">Ambient documentation can cut documentation time by roughly <b>50 percent</b>; published results show <b>112 percent ROI</b> and about <b>five additional visits per provider per month</b>, improving throughput, access, and clinician retention.</p>
+</footer>
+
+<dialog data-dialog aria-labelledby="dlg-h">
+  <form method="dialog">
+    <div class="dlg-head">
+      <div>
+        <h2 id="dlg-h">Sign and file this note</h2>
+        <span class="dlg-sub">You become the author of record. The note enters the legal chart.</span>
+      </div>
+    </div>
+    <div class="dlg-body">
+      <dl class="meta-grid" data-dlg-meta></dl>
+      <div class="notice notice-warn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M12 4.5 2.8 19.5h18.4Z" stroke-linejoin="round"/><path d="M12 10v4" stroke-linecap="round"/><circle cx="12" cy="16.8" r="1" fill="currentColor" stroke="none"/>
+        </svg>
+        <span>Once filed, this note cannot be edited in place. A change has to be filed as a dated addendum.</span>
+      </div>
+      <label class="attest">
+        <input type="checkbox" data-dlg-attest>
+        <span>I have reviewed this note in full. It reflects the care I provided, and I am the author of record.</span>
+      </label>
+      <div class="field">
+        <label for="dlg-addendum">Note to the care team (optional)</label>
+        <textarea id="dlg-addendum" data-dlg-text placeholder="Anything the next clinician should know."></textarea>
+      </div>
+      <p class="dlg-error" role="alert" data-dlg-error></p>
+    </div>
+    <div class="dlg-foot">
+      <button class="btn" type="button" data-dlg-cancel>Keep as draft</button>
+      <button class="btn btn-primary" type="button" data-dlg-confirm>Sign note</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---------------------------------------------------------------- fixtures
+  // Diarized transcript. `gapmark` marks a span the recogniser could not
+  // resolve; any drafted line that leans on it inherits that uncertainty.
+  var TAPE = [
+    { id: 't1', t: '00:00:12', spk: 'Clinician', text: 'Good to see you, Marcus. How have the mornings been?' },
+    { id: 't2', t: '00:00:18', spk: 'Patient', text: 'Still thirsty a lot. Up twice a night to use the bathroom.' },
+    { id: 't3', t: '00:00:27', spk: 'Patient', text: 'We just got back from my niece\u2019s wedding in Tucson, so it has been a busy few weeks.', excluded: true },
+    { id: 't4', t: '00:00:41', spk: 'Clinician', text: 'Any numbness in the feet? Vision changes?' },
+    { id: 't5', t: '00:00:46', spk: 'Patient', text: 'Feet feel fine. Vision is about the same.' },
+    { id: 't6', t: '00:01:03', spk: 'Clinician', text: 'Your sugar has been running high. ', gapmark: '[inaudible - 4s, overlapping speech]', tail: ' and get your eyes and feet checked this year.' },
+    { id: 't7', t: '00:01:19', spk: 'Clinician', text: 'I want to add something to protect the kidneys, but let us check your kidney function first.' },
+    { id: 't8', t: '00:01:38', spk: 'Patient', text: 'Do I need to stop the metformin?' },
+    { id: 't9', t: '00:01:41', spk: 'Clinician', text: 'No, stay on it at the same dose.' }
+  ];
+
+  // Note lines. `prov` is how the line is supported:
+  //   speech  - said out loud in this encounter
+  //   chart   - pulled from the record, never spoken
+  //   unheard - leans on the inaudible span, held out until confirmed
+  var LINES = [
+    { id: 's1', sec: 'S', prov: 'speech', cites: ['t2'],
+      text: '58-year-old man with type 2 diabetes and hypertension reports persistent thirst and waking twice nightly to urinate.' },
+    { id: 's2', sec: 'S', prov: 'speech', cites: ['t4', 't5'],
+      text: 'Denies numbness in the feet. Reports no change in vision.' },
+
+    { id: 'o1', sec: 'O', prov: 'chart', cites: [], src: 'Rooming vitals, today 17:52',
+      text: 'Blood pressure 146/88, taken at rooming.' },
+    { id: 'o2', sec: 'O', prov: 'chart', cites: [], src: 'Lab result, 14 Sep 2026',
+      text: 'A1c 8.4 percent, up from 7.6 percent at the previous check.' },
+    { id: 'o3', sec: 'O', prov: 'chart', cites: [], src: 'Active medication list',
+      text: 'Current medications: metformin 1000 mg twice daily, lisinopril 20 mg daily.' },
+    { id: 'o4', sec: 'O', prov: 'chart', cites: [], src: 'Care gap register',
+      text: 'Retinal screening and foot exam are overdue.' },
+
+    { id: 'a1', sec: 'A', prov: 'speech', cites: ['t2', 't6'],
+      text: 'Type 2 diabetes mellitus, uncontrolled.' },
+    { id: 'a2', sec: 'A', prov: 'chart', cites: [], src: 'Rooming vitals and problem list',
+      text: 'Hypertension, suboptimally controlled.' },
+
+    { id: 'p1', sec: 'P', prov: 'speech', cites: ['t7'],
+      text: 'Check renal function before adding a second agent.' },
+    { id: 'p2', sec: 'P', prov: 'gap' },
+    { id: 'p3', sec: 'P', prov: 'speech', cites: ['t8', 't9'],
+      text: 'Continue metformin at the current dose.' },
+    { id: 'p4', sec: 'P', prov: 'unheard', cites: ['t6'],
+      text: 'Reinforce the diet and activity changes discussed in the visit.' },
+    { id: 'p5', sec: 'P', prov: 'speech', cites: ['t6'],
+      text: 'Order retinal screening and a foot exam this year.' }
+  ];
+
+  var SECTIONS = [
+    { key: 'S', label: 'Subjective' },
+    { key: 'O', label: 'Objective' },
+    { key: 'A', label: 'Assessment' },
+    { key: 'P', label: 'Plan' }
+  ];
+
+  // The model's own draft of the held line, shown only as a rejected proposal.
+  var GAP = {
+    proposed: 'Start empagliflozin 10 mg daily.',
+    why: 'The clinician said to add an agent for renal protection, but never named a drug, a dose, or a schedule. The recording does not support this sentence, so it was held out of the note.',
+    options: [
+      { id: 'keep', label: 'Record only what was said',
+        text: 'Add an agent for renal protection once renal function is reviewed; drug and dose to be selected at that time.',
+        note: 'Matches the transcript at 00:01:19.' },
+      { id: 'drop', label: 'Leave the plan item out',
+        text: null, note: 'The line is removed. Renal function check at 00:01:19 still stands on its own.' }
+    ]
+  };
+
+  var QUEUE = [
+    { id: 'SYN-ENC-4471', name: 'Marcus Ellery', meta: 'Draft ready \u00b7 needs your signature', kind: 'active' },
+    { id: 'SYN-ENC-4472', name: 'Priya Raman', meta: 'Ambient capture off \u00b7 consent declined', kind: 'consent',
+      title: 'Ambient capture was off for this visit',
+      notice: 'The patient declined to be recorded at check-in, so nothing was captured and no note was drafted. Document this encounter the usual way.',
+      tone: 'notice-warn',
+      facts: [
+        ['Consent to record', 'Declined at check-in, 16:40'],
+        ['Audio captured', 'None'],
+        ['Draft note', 'Not generated'],
+        ['Next step', 'Manual documentation by the clinician']
+      ] },
+    { id: 'SYN-ENC-4469', name: 'Dale Whitcomb', meta: 'Signed earlier today \u00b7 in chart', kind: 'signed',
+      title: 'Note is signed and in the chart',
+      notice: 'Signed by Dr. Alina Boyd at 15:07 and filed to the chart. Filed notes are read-only; a change has to be filed as a dated addendum.',
+      tone: 'notice-ok',
+      facts: [
+        ['Signed', '21 Sep 2026, 15:07'],
+        ['Author of record', 'Dr. Alina Boyd'],
+        ['Lines edited before signing', '2 of 9'],
+        ['Amendments', 'None']
+      ] }
+  ];
+
+  var CTX = [
+    ['Patient', 'Marcus Ellery (synthetic)'],
+    ['MRN', 'SYN-4410-772'],
+    ['Visit', 'Diabetes follow-up, Room 4'],
+    ['Recorded', '21 Sep 2026, 17:58 \u00b7 24 min'],
+    ['Consent', 'Given verbally at check-in'],
+    ['Audio', 'Not retained']
+  ];
+
+  // ------------------------------------------------------------------ state
+  var state;
+  function reset() {
+    state = {
+      encounter: 'SYN-ENC-4471',
+      selected: 'p2',
+      gap: null,        // null until the clinician resolves it
+      p4: 'held',       // held | confirmed | removed
+      edits: 0,
+      signed: false,
+      status: 'One line needs you before this note can be signed.',
+      audit: [
+        ['17:58', 'system', 'Ambient capture started with patient consent on file.'],
+        ['18:22', 'system', 'Transcript produced; speakers separated into clinician and patient.'],
+        ['18:22', 'system', '1 passage excluded as non-clinical (travel, 00:00:27).'],
+        ['18:23', 'system', 'Note drafted. 1 sentence held back as unsupported by the recording.']
+      ]
+    };
+  }
+
+  // ------------------------------------------------------------------ utils
+  function el(tag, cls, text) {
+    var node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text != null) node.textContent = text;
+    return node;
+  }
+  function q(sel) { return document.querySelector(sel); }
+  function lineById(id) {
+    for (var i = 0; i < LINES.length; i++) if (LINES[i].id === id) return LINES[i];
+    return null;
+  }
+  function say(text) { state.status = text; q('[data-status]').textContent = text; }
+  function pushAudit(time, who, text) { state.audit.push([time, who, text]); }
+
+  // Rendering replaces the node that was just activated, so focus has to be
+  // put back deliberately or a keyboard user is dumped to the top of the page.
+  function refocus(sel) {
+    var target = q(sel);
+    if (target && !target.disabled) target.focus();
+  }
+
+  // True once the unsupported line has been dealt with one way or the other.
+  function blockers() { return state.gap ? 0 : 1; }
+
+  // --------------------------------------------------------------- rendering
+  function renderQueue() {
+    var list = q('[data-queue]');
+    list.textContent = '';
+    QUEUE.forEach(function (item) {
+      var li = el('li');
+      var btn = el('button', 'queue-item');
+      btn.type = 'button';
+      btn.setAttribute('aria-current', item.id === state.encounter ? 'true' : 'false');
+      var top = el('div', 'queue-top');
+      top.appendChild(el('span', 'queue-name', item.name));
+      top.appendChild(el('span', 'queue-id', item.id.replace('SYN-ENC-', '#')));
+      btn.appendChild(top);
+      var meta = item.meta;
+      if (item.kind === 'active' && state.signed) meta = 'Signed \u00b7 filed to chart';
+      btn.appendChild(el('span', 'queue-meta', meta));
+      btn.addEventListener('click', function () {
+        state.encounter = item.id;
+        if (item.kind === 'active') say(state.status);
+        renderAll();
+      });
+      li.appendChild(btn);
+      list.appendChild(li);
+    });
+    q('[data-queue-count]').textContent = QUEUE.length + ' encounters';
+  }
+
+  function renderCtx() {
+    var dl = q('[data-ctx]');
+    dl.textContent = '';
+    CTX.forEach(function (row) {
+      var wrap = el('div');
+      wrap.appendChild(el('dt', null, row[0]));
+      wrap.appendChild(el('dd', null, row[1]));
+      dl.appendChild(wrap);
+    });
+  }
+
+  function renderTape() {
+    var list = q('[data-tape]');
+    list.textContent = '';
+    var active = lineById(state.selected);
+    var cited = active && active.cites ? active.cites : [];
+    TAPE.forEach(function (row) {
+      var li = el('li');
+      if (cited.indexOf(row.id) !== -1) li.className = 'is-cited';
+      if (row.excluded) li.className += ' is-excluded';
+      var time = el('time', null, row.t);
+      li.appendChild(time);
+      var body = el('div');
+      body.appendChild(el('span', 'spk', row.spk + (row.excluded ? ' \u00b7 excluded, non-clinical' : '')));
+      var said = el('span', 'said');
+      said.appendChild(document.createTextNode(row.text));
+      if (row.gapmark) {
+        said.appendChild(el('em', 'gapmark', row.gapmark));
+        said.appendChild(document.createTextNode(row.tail));
+      }
+      body.appendChild(said);
+      li.appendChild(body);
+      list.appendChild(li);
+    });
+  }
+
+  function provTag(line) {
+    if (line.prov === 'chart') return ['tag', 'From the chart'];
+    if (line.prov === 'unheard') return ['tag tag-warn', 'Not clearly heard'];
+    return ['tag tag-ok', 'Said in the visit'];
+  }
+
+  function buildSentence(line) {
+    var btn = el('button', 'sent' + (line.prov === 'chart' ? ' is-chart' : ''));
+    btn.type = 'button';
+    btn.dataset.id = line.id;
+    btn.setAttribute('aria-pressed', state.selected === line.id ? 'true' : 'false');
+
+    if (line.id === 'p4' && state.p4 === 'removed') {
+      btn.className += ' is-dropped';
+      btn.appendChild(el('span', null, line.text));
+      var gone = el('span', 'sent-flag');
+      gone.appendChild(el('span', 'tag', 'Removed by Dr. Boyd'));
+      btn.appendChild(gone);
+    } else {
+      btn.appendChild(el('span', null, line.text));
+      var flag = el('span', 'sent-flag');
+      var tag = provTag(line);
+      flag.appendChild(el('span', tag[0], tag[1]));
+      if (line.prov === 'chart' && line.src) flag.appendChild(el('span', null, line.src));
+      if (line.prov === 'speech' && line.cites.length) {
+        flag.appendChild(el('span', null, line.cites.map(function (c) {
+          for (var i = 0; i < TAPE.length; i++) if (TAPE[i].id === c) return TAPE[i].t;
+          return c;
+        }).join(', ')));
+      }
+      if (line.id === 'p4' && state.p4 === 'confirmed') {
+        flag.appendChild(el('span', 'tag tag-ok', 'Confirmed by Dr. Boyd'));
+      }
+      btn.appendChild(flag);
+    }
+
+    btn.addEventListener('click', function () {
+      state.selected = line.id;
+      renderSheet();
+      renderTape();
+      renderBasis();
+      refocus('.sent[data-id="' + line.id + '"]');
+    });
+    return btn;
+  }
+
+  // The inaudible-span line offers its two honest choices inline.
+  function buildUnheardActions() {
+    var wrap = el('div', 'inline-act');
+    var confirm = el('button', 'btn btn-sm');
+    confirm.type = 'button';
+    confirm.textContent = 'I said this - keep it';
+    confirm.addEventListener('click', function () {
+      state.p4 = 'confirmed';
+      state.edits += 1;
+      state.selected = 'p4';
+      pushAudit('18:29', 'human', 'confirmed a line the recording could not verify.');
+      say('Line confirmed from your own recollection and marked as clinician-attested.');
+      renderAll();
+      refocus('.sent[data-id="p4"]');
+    });
+    var drop = el('button', 'btn btn-sm');
+    drop.type = 'button';
+    drop.textContent = 'Leave it out';
+    drop.addEventListener('click', function () {
+      state.p4 = 'removed';
+      state.edits += 1;
+      state.selected = 'p4';
+      pushAudit('18:29', 'human', 'removed a line the recording could not verify.');
+      say('Line removed. It will not appear in the filed note.');
+      renderAll();
+      refocus('.sent[data-id="p4"]');
+    });
+    wrap.appendChild(confirm);
+    wrap.appendChild(drop);
+    return wrap;
+  }
+
+  // The held sentence renders as a visible gap, never as prose.
+  function buildGap() {
+    if (state.gap) {
+      var done = el('div', 'gap is-resolved');
+      done.appendChild(el('span', null, state.gap.text || 'Plan item left out.'));
+      var meta = el('span', 'sent-flag');
+      meta.appendChild(el('span', 'tag tag-ok', 'Resolved by Dr. Boyd'));
+      meta.appendChild(el('span', null, state.gap.note));
+      done.appendChild(meta);
+      return done;
+    }
+
+    var box = el('div', 'gap');
+    var head = el('div', 'gap-head');
+    head.appendChild(el('span', null, 'Held back - the recording does not support this'));
+    box.appendChild(head);
+    box.appendChild(el('p', 'gap-quote', 'Model proposed: \u201c' + GAP.proposed + '\u201d'));
+    box.appendChild(el('p', 'gap-body', GAP.why));
+
+    var opts = el('div', 'opts');
+    GAP.options.forEach(function (opt) {
+      var label = el('label', 'opt');
+      var input = document.createElement('input');
+      input.type = 'radio';
+      input.name = 'gap-choice';
+      input.value = opt.id;
+      var span = el('span');
+      span.appendChild(document.createTextNode(opt.text || opt.label));
+      span.appendChild(el('small', null, opt.note));
+      label.appendChild(input);
+      label.appendChild(span);
+      input.addEventListener('change', function () {
+        state.gap = { text: opt.text, note: opt.note };
+        state.edits += 1;
+        pushAudit('18:27', 'human', 'resolved the unsupported plan item.');
+        say(opt.text
+          ? 'Plan item rewritten to match what was actually said.'
+          : 'Plan item left out of the note.');
+        renderAll();
+        // The last blocker is gone, so send focus to the action it unlocked.
+        refocus('[data-sign]');
+      });
+      opts.appendChild(label);
+    });
+    box.appendChild(opts);
+    return box;
+  }
+
+  function renderSheet() {
+    var sheet = q('[data-sheet]');
+    sheet.textContent = '';
+    SECTIONS.forEach(function (sec) {
+      var section = el('section');
+      section.appendChild(el('h3', null, sec.label));
+      var ul = el('ul', 'lines');
+      LINES.filter(function (l) { return l.sec === sec.key; }).forEach(function (line) {
+        var li = el('li');
+        if (line.prov === 'gap') {
+          li.appendChild(buildGap());
+        } else {
+          li.appendChild(buildSentence(line));
+          if (line.id === 'p4' && state.p4 === 'held' && !state.signed) {
+            li.appendChild(buildUnheardActions());
+          }
+        }
+        ul.appendChild(li);
+      });
+      section.appendChild(ul);
+      sheet.appendChild(section);
+    });
+  }
+
+  function renderBasis() {
+    var note = q('[data-basis-note]');
+    var line = lineById(state.selected);
+
+    if (!line || line.prov === 'gap') {
+      note.textContent = state.gap
+        ? 'This plan item was written by Dr. Boyd after the model\u2019s draft was held back.'
+        : 'The model drafted a specific drug and dose that nobody said out loud. It is held out of the note until you decide.';
+    } else if (line.prov === 'chart') {
+      note.textContent = 'Taken from the record, not from the conversation. Source: ' + line.src + '.';
+    } else if (line.prov === 'unheard') {
+      note.textContent = 'Drafted from a stretch of audio the recogniser could not resolve at 00:01:03. It needs you to confirm or remove it.';
+    } else {
+      note.textContent = 'Drafted from what was said in the visit. The supporting lines are highlighted in the transcript.';
+    }
+    renderChecks(line);
+  }
+
+  function renderChecks(line) {
+    var checks = [];
+    if (line && line.prov === 'gap' && !state.gap) {
+      checks.push(['stop', 'Grounding', 'Not supported by the transcript. Held out of the note.']);
+      checks.push(['warn', 'Needs a decision', 'Only the clinician can complete or drop this item.']);
+    } else if (line && line.prov === 'unheard' && state.p4 === 'held') {
+      checks.push(['warn', 'Grounding', 'Depends on audio that could not be resolved.']);
+      checks.push(['warn', 'Needs a decision', 'Confirm from memory or leave it out.']);
+    } else if (line && line.prov === 'chart') {
+      checks.push(['ok', 'Grounding', 'Matches the field it was copied from.']);
+      checks.push(['ok', 'Provenance', 'Marked as record-derived, not as something said.']);
+    } else {
+      checks.push(['ok', 'Grounding', 'Every claim maps to a transcript line.']);
+      checks.push(['ok', 'Scope', 'No diagnosis, dose, or order invented beyond the conversation.']);
+    }
+    checks.push(['ok', 'Non-clinical content', '1 passage excluded (travel, 00:00:27).']);
+    checks.push([state.signed ? 'ok' : 'warn', 'Signature',
+      state.signed ? 'Signed by Dr. Alina Boyd. In the chart.' : 'Unsigned. Nothing has reached the chart.']);
+
+    var list = q('[data-checks]');
+    list.textContent = '';
+    checks.forEach(function (row) {
+      var li = el('li');
+      li.appendChild(el('span', 'dot dot-' + row[0]));
+      var body = el('div');
+      body.appendChild(el('b', null, row[1]));
+      body.appendChild(el('span', null, row[2]));
+      li.appendChild(body);
+      list.appendChild(li);
+    });
+  }
+
+  function renderEdits() {
+    var total = LINES.length;
+    var pct = Math.round((state.edits / total) * 100);
+    q('[data-edit-label]').textContent = 'Clinician edits: ' + state.edits + ' of ' + total + ' lines (' + pct + '%)';
+    q('[data-edit-fill]').style.width = Math.max(pct, 2) + '%';
+    q('[data-edit-note]').textContent = state.signed
+      ? 'Edit rate recorded against this note for accuracy reporting.'
+      : 'Edit rate is tracked per clinician and per specialty to show whether the draft is actually trustworthy.';
+  }
+
+  function renderAudit() {
+    var list = q('[data-audit]');
+    list.textContent = '';
+    state.audit.forEach(function (row) {
+      var li = el('li');
+      li.appendChild(el('time', null, row[0]));
+      var body = el('div');
+      body.appendChild(el('span', 'actor is-' + row[1], row[1] === 'human' ? 'Dr. Alina Boyd' : 'Scribe'));
+      body.appendChild(document.createTextNode(' ' + row[2]));
+      li.appendChild(body);
+      list.appendChild(li);
+    });
+  }
+
+  function renderAlt() {
+    var item = null;
+    for (var i = 0; i < QUEUE.length; i++) if (QUEUE[i].id === state.encounter) item = QUEUE[i];
+    var isActive = !item || item.kind === 'active';
+
+    q('[data-note-card]').hidden = !isActive;
+    q('[data-alt-card]').hidden = isActive;
+    if (isActive) return;
+
+    q('[data-alt-title]').textContent = item.title;
+    q('[data-alt-id]').textContent = item.name + ' \u00b7 ' + item.id;
+    q('[data-alt-notice]').className = 'notice ' + item.tone;
+    q('[data-alt-notice-text]').textContent = item.notice;
+
+    var facts = q('[data-alt-facts]');
+    facts.textContent = '';
+    item.facts.forEach(function (row) {
+      facts.appendChild(el('dt', null, row[0]));
+      facts.appendChild(el('dd', null, row[1]));
+    });
+  }
+
+  function renderNoteState() {
+    var tag = q('[data-note-state]');
+    var signBtn = q('[data-sign]');
+    var discard = q('[data-discard]');
+
+    if (state.signed) {
+      tag.className = 'tag tag-ok';
+      tag.textContent = 'Signed - in chart';
+      signBtn.disabled = true;
+      signBtn.textContent = 'Signed and filed';
+      discard.disabled = true;
+    } else {
+      tag.className = 'tag';
+      tag.textContent = 'Draft - not in chart';
+      signBtn.disabled = blockers() > 0;
+      discard.disabled = false;
+    }
+    q('[data-status]').textContent = state.status;
+  }
+
+  function renderAll() {
+    renderQueue();
+    renderCtx();
+    renderAlt();
+    renderSheet();
+    renderTape();
+    renderBasis();
+    renderEdits();
+    renderAudit();
+    renderNoteState();
+  }
+
+  // ------------------------------------------------------------- signing
+  var dialogEl = q('[data-dialog]');
+  var attestEl = q('[data-dlg-attest]');
+  var errorEl = q('[data-dlg-error]');
+
+  q('[data-sign]').addEventListener('click', function () {
+    if (blockers() > 0) {
+      say('Resolve the held plan item before signing.');
+      return;
+    }
+    var meta = q('[data-dlg-meta]');
+    meta.textContent = '';
+    [
+      ['Patient', 'Marcus Ellery (synthetic)'],
+      ['Encounter', 'SYN-ENC-4471'],
+      ['Note type', 'Office visit, established patient'],
+      ['Author of record', 'Dr. Alina Boyd'],
+      ['Lines you edited', String(state.edits) + ' of ' + LINES.length],
+      ['Audio', 'Not retained']
+    ].forEach(function (row) {
+      meta.appendChild(el('dt', null, row[0]));
+      meta.appendChild(el('dd', null, row[1]));
+    });
+    attestEl.checked = false;
+    errorEl.textContent = '';
+    q('[data-dlg-text]').value = '';
+    if (typeof dialogEl.showModal === 'function') dialogEl.showModal();
+    q('[data-dlg-text]').focus();
+  });
+
+  q('[data-dlg-confirm]').addEventListener('click', function () {
+    if (!attestEl.checked) {
+      errorEl.textContent = 'Confirm that you reviewed the note and are the author of record.';
+      attestEl.focus();
+      return;
+    }
+    state.signed = true;
+    pushAudit('18:31', 'human', 'signed the note and filed it to the chart.');
+    dialogEl.close();
+    say('Signed by Dr. Alina Boyd at 18:31 and filed to the chart.');
+    renderAll();
+  });
+
+  q('[data-dlg-cancel]').addEventListener('click', function () {
+    dialogEl.close();
+    say('Kept as a draft. Nothing was filed.');
+  });
+
+  dialogEl.addEventListener('cancel', function (event) {
+    event.preventDefault();
+    dialogEl.close();
+    say('Kept as a draft. Nothing was filed.');
+  });
+
+  // Close on Escape explicitly rather than relying on the user agent, so the
+  // dismissal behaves the same way in every browser the demo is shown in.
+  dialogEl.addEventListener('keydown', function (event) {
+    if (event.key !== 'Escape' || !dialogEl.open) return;
+    event.preventDefault();
+    dialogEl.close();
+    say('Kept as a draft. Nothing was filed.');
+  });
+
+  q('[data-discard]').addEventListener('click', function () {
+    say('Left in the close-out queue. The draft stays out of the chart until you sign it.');
+  });
+
+  q('[data-alt-back]').addEventListener('click', function () {
+    state.encounter = 'SYN-ENC-4471';
+    renderAll();
+  });
+
+  q('[data-reset]').addEventListener('click', function () {
+    reset();
+    renderAll();
+  });
+
+  reset();
+  renderAll();
+})();
+</script>
+</body>
+</html>
