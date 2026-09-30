@@ -1,0 +1,1265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cascade Health Network - Virtual triage disposition review</title>
+<style>
+/* =========================================================================
+   HLS demo shell — shared visual identity for every self-contained demo.
+
+   Paste this block verbatim into the demo's <style> element, before any
+   demo-specific layout CSS, and set the subvertical on the body element:
+
+     <body data-subvertical="medtech">
+
+   Tokens mirror assets/styles.css so a demo looks like the catalog it is
+   launched from. The accent follows the subvertical, exactly as the catalog
+   overlay does. Do not fork these values per demo; add layout CSS instead.
+   ========================================================================= */
+
+:root {
+  --ms-blue: #0078d4;
+  --ms-blue-dark: #005a9e;
+  --ms-blue-darker: #004578;
+  --ms-blue-light: #c7e0f4;
+  --ms-blue-tint: #eff6fc;
+
+  --ink: #201f1e;
+  --ink-soft: #3b3a39;
+  --muted: #605e5c;
+  --muted-soft: #8a8886;
+  --line: #e1dfdd;
+  --line-soft: #edebe9;
+  --bg: #faf9f8;
+  --surface: #ffffff;
+  --surface-2: #f3f2f1;
+
+  --ok: #107c10;
+  --ok-bg: #dff6dd;
+  --warn: #97620a;
+  --warn-bg: #fff4ce;
+  --stop: #a4262c;
+  --stop-bg: #fde7e9;
+
+  --accent: var(--ms-blue);
+  --accent-strong: var(--ms-blue-darker);
+  --accent-soft: var(--ms-blue-tint);
+  --accent-line: var(--ms-blue-light);
+
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-1: 0 1.6px 3.6px rgba(0, 0, 0, .10), 0 .3px .9px rgba(0, 0, 0, .07);
+  --shadow-2: 0 6.4px 14.4px rgba(0, 0, 0, .13), 0 1.2px 3.6px rgba(0, 0, 0, .10);
+
+  --font: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+}
+
+body[data-subvertical="health-providers"] { --accent: #038387; --accent-strong: #026266; --accent-soft: #e6f4f4; --accent-line: #a8dcdd; }
+body[data-subvertical="health-payers"] { --accent: #0b6a0b; --accent-strong: #084f08; --accent-soft: #e9f3e9; --accent-line: #b3d9b3; }
+body[data-subvertical="pharma-life-sciences"] { --accent: #8764b8; --accent-strong: #5c2e91; --accent-soft: #f2edf9; --accent-line: #d3c4e8; }
+body[data-subvertical="medtech"] { --accent: #ca5010; --accent-strong: #9a3c0c; --accent-soft: #fbeee6; --accent-line: #f0c3a6; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+/* Author display rules outrank the UA [hidden] rule, so restore it explicitly. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.mono { font-family: var(--mono); }
+
+/* ------------------------------------------------------------- app bar */
+/* Dark bar with an accent rule. Every demo shares this so the family reads as
+   one product suite; the accent is the only part that varies by subvertical. */
+.appbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding: 10px 18px; background: var(--ink); color: var(--surface-2);
+  border-bottom: 3px solid var(--accent);
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.brand-mark { color: var(--accent); flex: none; }
+.brand-name { font-weight: 600; }
+.brand-sub { display: block; font-size: 12px; font-weight: 400; color: var(--line); }
+.disclosure {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0; flex: none;
+  padding: 5px 10px; border: 1px solid var(--muted); border-radius: 999px;
+  background: transparent; color: var(--surface-2); font-size: 12px; font-weight: 600;
+}
+.who { margin: 0; font-size: 13px; color: var(--line); text-align: right; }
+.who b { color: var(--surface); font-weight: 600; }
+
+/* ------------------------------------------------------------- buttons */
+.btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  min-height: 38px;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted-soft); }
+.btn:disabled { cursor: not-allowed; opacity: .55; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-link {
+  font: inherit; font-size: 13px; color: var(--accent-strong); background: none;
+  border: 0; border-bottom: 1px solid var(--accent-line); padding: 0 0 1px; cursor: pointer;
+}
+.btn-link:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------- cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card-head {
+  display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between;
+  padding: 12px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.card-head h2, .card-head h3 { margin: 0; font-size: 14.5px; font-weight: 600; }
+.card-note { font-size: 12.5px; color: var(--muted); }
+.card-body { padding: 14px 15px; }
+
+/* --------------------------------------------------------- small parts */
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 11px; min-height: 32px;
+  border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 5px; flex: none;
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--muted); white-space: nowrap;
+}
+.tag-ok { background: var(--ok-bg); color: var(--ok); border-color: #a7d9a7; }
+.tag-warn { background: var(--warn-bg); color: var(--warn); border-color: #e6d08a; }
+.tag-stop { background: var(--stop-bg); color: var(--stop); border-color: #e5b4b7; }
+
+.st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+.st-ok { color: var(--ok); }
+.st-warn { color: var(--warn); }
+.st-stop { color: var(--stop); }
+.st-idle { color: var(--muted); }
+
+.notice {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px;
+  padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--ink-soft);
+}
+.notice svg { flex: none; margin-top: 2px; }
+.notice-ok { background: var(--ok-bg); border-color: #a7d9a7; color: #0b5c0b; }
+.notice-warn { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.notice-stop { background: var(--stop-bg); border-color: #e5b4b7; color: #8b1f25; }
+.notice-note { display: block; margin-top: 3px; font-size: 12.5px; opacity: .92; }
+
+.rule {
+  display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+  background: var(--surface-2); border: 1px solid var(--line-soft); padding: 9px 11px; border-radius: var(--radius);
+}
+.rule svg { flex: none; margin-top: 1px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 11px 16px; margin: 0; }
+.facts dt { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.facts dd { margin: 0; font-size: 14px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.status-line { font-size: 13.5px; color: var(--ink-soft); margin: 0; min-height: 20px; }
+
+/* --------------------------------------------------------------- audit */
+.audit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 13px; }
+.audit li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.audit time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.audit .actor { font-weight: 600; }
+.audit .actor.is-system { color: var(--muted); }
+.audit .actor.is-human { color: var(--accent-strong); }
+
+/* -------------------------------------------------------------- dialog */
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0;
+  background: var(--surface); color: var(--ink);
+  width: min(660px, calc(100vw - 32px)); box-shadow: var(--shadow-2);
+}
+dialog::backdrop { background: rgba(32, 31, 30, .45); }
+.dlg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 17px; border-bottom: 1px solid var(--line-soft); }
+.dlg-head h2 { margin: 0; font-size: 16px; }
+.dlg-sub { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.dlg-body { padding: 15px 17px; display: grid; gap: 12px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; padding: 13px 17px; border-top: 1px solid var(--line-soft); background: var(--bg); }
+.dlg-error { font-size: 13px; color: var(--stop); min-height: 18px; margin: 0; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 9px 14px; font-size: 13px; margin: 0; }
+.meta-grid dt { color: var(--muted); font-size: 12px; }
+.meta-grid dd { margin: 0; }
+
+.attest, .scope-item {
+  display: flex; gap: 10px; align-items: flex-start; font-size: 14px;
+  padding: 11px 12px; background: var(--bg); border: 1px solid var(--line-soft); border-radius: var(--radius);
+}
+.attest input, .scope-item input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; }
+.scope-item span small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.field textarea, .field input[type="date"] {
+  font: inherit; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+  border-radius: var(--radius); color: var(--ink); background: var(--surface);
+}
+.field textarea { resize: vertical; min-height: 66px; }
+
+.evidence {
+  font-size: 13.5px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border: 1px solid var(--line-soft); border-left: 3px solid var(--accent);
+  padding: 11px 12px; border-radius: 0 var(--radius) var(--radius) 0;
+}
+.evidence-mono { font-family: var(--mono); font-size: 12.5px; overflow-x: auto; }
+
+/* -------------------------------------------------------------- footer */
+.footer {
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center;
+  padding: 11px 18px; background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--muted); font-size: 12.5px;
+}
+.built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.svc-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; padding: 2px 7px; color: var(--ink-soft); }
+.claim { margin-left: auto; max-width: 56ch; }
+.claim b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 700px) {
+  .who { text-align: left; }
+  .claim { margin-left: 0; }
+  .appbar { gap: 8px 12px; padding: 8px 14px; }
+  .brand-sub { display: none; }
+  .brand-name { font-size: 14.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+/* =========================================================================
+   Demo layout — virtual triage disposition review.
+   ========================================================================= */
+
+.workspace { display: grid; gap: 13px; padding: 13px; align-items: start; }
+.rail { display: grid; gap: 13px; align-content: start; min-width: 0; }
+.desk { display: grid; gap: 13px; min-width: 0; }
+.inspector { display: grid; gap: 13px; align-content: start; min-width: 0; }
+
+/* The desk leads the DOM so the case under review is the first thing read and
+   the first thing tabbed to; grid placement moves the rail without reordering. */
+@media (min-width: 900px) {
+  .workspace { grid-template-columns: minmax(0, 1fr) 330px; padding: 15px; gap: 15px; }
+  .desk { grid-column: 1; grid-row: 1; }
+  .inspector { grid-column: 2; grid-row: 1; }
+  .rail { grid-column: 1 / -1; grid-row: 2; grid-template-columns: 1fr 1fr; gap: 15px; }
+}
+@media (min-width: 1200px) {
+  .workspace { grid-template-columns: 262px minmax(0, 1fr) 342px; }
+  .rail { grid-column: 1; grid-row: 1; grid-template-columns: 1fr; gap: 13px; }
+  .desk { grid-column: 2; grid-row: 1; }
+  .inspector { grid-column: 3; grid-row: 1; }
+}
+
+.desk-head { display: grid; gap: 5px; }
+.desk-head .eyebrow { margin: 0; font-size: 12px; font-weight: 600; color: var(--accent-strong); text-transform: uppercase; letter-spacing: .04em; }
+.desk-head h1 { margin: 0; font-size: 21px; line-height: 1.25; }
+.desk-head .sub { margin: 0; font-size: 13.5px; color: var(--muted); max-width: 66ch; }
+.desk-top { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start; justify-content: space-between; }
+
+/* ---------------------------------------------------------- queue rail */
+.queue { list-style: none; margin: 0; padding: 0; display: grid; }
+.queue li { border-bottom: 1px solid var(--line-soft); }
+.queue li:last-child { border-bottom: 0; }
+.q-item {
+  width: 100%; font: inherit; text-align: left; background: none; border: 0;
+  padding: 11px 15px; cursor: pointer; display: grid; gap: 3px; border-left: 3px solid transparent;
+}
+.q-item:hover { background: var(--surface-2); }
+.q-item[aria-current="true"] { background: var(--accent-soft); border-left-color: var(--accent); }
+.q-top { display: flex; align-items: baseline; gap: 8px; justify-content: space-between; }
+.q-name { font-weight: 600; font-size: 14px; }
+.q-id { font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
+.q-line { font-size: 12.5px; color: var(--muted); }
+
+/* --------------------------------------------------------- care ladder */
+.ladder { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+.rung {
+  width: 100%; font: inherit; text-align: left; cursor: pointer;
+  display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 11px; align-items: start;
+  padding: 11px 12px; border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--surface); color: var(--ink);
+}
+.rung:hover:not([aria-disabled="true"]) { border-color: var(--muted-soft); background: var(--surface-2); }
+.rung-dot {
+  width: 18px; height: 18px; margin-top: 1px; border-radius: 50%;
+  border: 2px solid var(--muted-soft); background: var(--surface); flex: none;
+}
+.rung[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+.rung[aria-pressed="true"] .rung-dot { border-color: var(--accent); background: var(--accent); box-shadow: inset 0 0 0 3px var(--surface); }
+.rung-name { font-weight: 600; font-size: 14.5px; }
+.rung-note { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.rung[aria-disabled="true"] { background: var(--surface-2); color: var(--muted); cursor: not-allowed; border-style: dashed; }
+.rung[aria-disabled="true"] .rung-name { text-decoration: line-through; }
+.rung-flags { display: flex; flex-wrap: wrap; gap: 5px; justify-content: flex-end; }
+
+/* The floor marker sits between rungs to show where protocol pins the minimum. */
+.floor-mark {
+  display: flex; align-items: center; gap: 9px; font-size: 12px; font-weight: 600;
+  color: var(--stop); padding: 2px 0;
+}
+.floor-mark::before, .floor-mark::after { content: ""; height: 2px; background: var(--stop-bg); border-top: 2px dashed var(--stop); flex: 1; }
+.floor-mark::before { flex: 0 0 22px; }
+
+/* ------------------------------------------------------------- intake */
+.intake { display: grid; gap: 8px; max-height: clamp(180px, 26vh, 300px); overflow: auto; padding-right: 3px; }
+.turn { display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 10px; font-size: 13.5px; padding: 5px 6px; border-radius: 6px; }
+.turn time { font-family: var(--mono); font-size: 11.5px; color: var(--muted); padding-top: 2px; }
+.turn .spk { display: block; font-size: 11.5px; font-weight: 600; color: var(--muted); }
+.turn.is-hit { background: var(--warn-bg); box-shadow: inset 3px 0 0 var(--warn); }
+.turn.is-cue .txt b { background: var(--stop-bg); box-shadow: 0 0 0 2px var(--stop-bg); border-radius: 2px; }
+
+/* ------------------------------------------------------------- slots */
+.slots { display: flex; flex-wrap: wrap; gap: 7px; }
+.cap-bar { height: 8px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line-soft); overflow: hidden; }
+.cap-fill { height: 100%; background: var(--accent); }
+.cap-row { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; font-size: 13px; }
+.cap-num { font-size: 19px; font-weight: 600; }
+
+/* ------------------------------------------------------ basis / flags */
+.basis { display: grid; gap: 9px; font-size: 13.5px; }
+.cue-btn {
+  font: inherit; font-size: 12.5px; text-align: left; cursor: pointer;
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--ink-soft);
+  border-radius: 999px; padding: 4px 10px;
+}
+.cue-btn:hover { border-color: var(--muted-soft); background: var(--surface); }
+.cue-btn[aria-pressed="true"] { background: var(--warn-bg); border-color: #e6d08a; color: #7a4e08; }
+.cue-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.sheet-foot { display: grid; gap: 10px; padding: 13px 15px; border-top: 1px solid var(--line-soft); background: var(--bg); border-radius: 0 0 var(--radius) var(--radius); }
+.foot-actions { display: flex; flex-wrap: wrap; gap: 9px; align-items: center; }
+.foot-actions .spacer { margin-left: auto; }
+
+/* On a phone the patient block would otherwise stack one fact per row and push
+   the care ladder below the first screen. The ladder is the control the nurse
+   opened this case to use, so it has to stay in reach. */
+@media (max-width: 700px) {
+  .workspace { padding: 11px; gap: 11px; }
+  .facts { grid-template-columns: 1fr 1fr; gap: 9px 12px; }
+  .desk-head h1 { font-size: 19px; }
+  .intake { max-height: none; }
+}
+</style>
+</head>
+<body data-subvertical="health-providers">
+
+<header class="appbar">
+  <div class="brand">
+    <svg class="brand-mark" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <path d="M3 12h3l2-5 3 10 2.5-7 1.8 4h5.7" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span class="brand-name">Cascade Health Network<span class="brand-sub">Virtual triage &middot; disposition review</span></span>
+  </div>
+  <p class="disclosure">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true">
+      <circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01" stroke-linecap="round"/>
+    </svg>
+    Illustrative demo - synthetic data
+  </p>
+  <p class="who"><b>Renata Alvarez, RN</b> &middot; Virtual triage &middot; 30 Sep 2026, 14:07</p>
+</header>
+
+<div class="workspace">
+
+  <!-- ================================================================ desk -->
+  <main class="desk">
+    <div class="desk-top">
+      <div class="desk-head">
+        <p class="eyebrow">Access &amp; Patient Engagement &middot; Pilot</p>
+        <h1>Confirm the level of care</h1>
+        <p class="sub">The intake assistant proposed a level from a governed protocol. It is a proposal only &mdash; nothing reaches the patient until you release it.</p>
+      </div>
+      <button type="button" class="btn" data-reset>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M3 12a9 9 0 1 1 3 6.7" stroke-linecap="round"/><path d="M3 20v-5h5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Reset demo
+      </button>
+    </div>
+
+    <!-- Live case -->
+    <section class="card" data-case-card aria-labelledby="case-h">
+      <div class="card-head">
+        <h2 id="case-h">Proposed disposition</h2>
+        <span class="tag" data-case-state>Not released</span>
+      </div>
+      <div class="card-body" style="display:grid;gap:13px;">
+        <dl class="facts" data-pt></dl>
+
+        <div data-proposal></div>
+
+        <div>
+          <h3 style="margin:0 0 7px;font-size:13px;color:var(--muted);font-weight:600;">Level of care</h3>
+          <ul class="ladder" data-ladder></ul>
+        </div>
+
+        <div data-booking></div>
+      </div>
+      <div class="sheet-foot">
+        <p class="status-line" role="status" aria-live="polite" data-status></p>
+        <div class="foot-actions">
+          <button type="button" class="btn" data-callback hidden>Queue nurse callback</button>
+          <span class="spacer"></span>
+          <button type="button" class="btn btn-primary" data-release disabled>Release to patient</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stand-in for cases with no live disposition to make -->
+    <section class="card" data-alt-card hidden aria-labelledby="alt-h">
+      <div class="card-head">
+        <h2 id="alt-h" data-alt-title>Nothing to review</h2>
+      </div>
+      <div class="card-body" style="display:grid;gap:12px;">
+        <div class="notice" data-alt-notice></div>
+        <dl class="facts" data-alt-facts></dl>
+        <div class="actions"><button type="button" class="btn" data-alt-back>Back to the queue</button></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ================================================================ rail -->
+  <aside class="rail" aria-label="Queue and capacity">
+    <section class="card" aria-labelledby="q-h">
+      <div class="card-head">
+        <h2 id="q-h">Waiting for a nurse</h2>
+        <span class="card-note" data-q-note></span>
+      </div>
+      <ul class="queue" data-queue></ul>
+    </section>
+
+    <section class="card" aria-labelledby="cap-h">
+      <div class="card-head">
+        <h2 id="cap-h">Telehealth capacity today</h2>
+        <span class="card-note">Synthetic</span>
+      </div>
+      <div class="card-body" style="display:grid;gap:9px;">
+        <div class="cap-row">
+          <span><span class="cap-num" data-cap-open></span> <span style="color:var(--muted);font-size:13px;">of 34 slots open</span></span>
+          <span class="st st-idle" data-cap-next></span>
+        </div>
+        <div class="cap-bar"><div class="cap-fill" data-cap-fill></div></div>
+        <p style="margin:0;font-size:12.5px;color:var(--muted);">Pilot ledger: <b data-ledger>41</b> ER-avoidable contacts routed to virtual care this week. Synthetic operational data.</p>
+      </div>
+    </section>
+
+    <div class="rule">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M12 3l7.5 3.4v5.1c0 4.3-3.1 8.1-7.5 9.2-4.4-1.1-7.5-4.9-7.5-9.2V6.4z" stroke-linejoin="round"/>
+      </svg>
+      <span>Triage decides where care happens, not what the diagnosis is. Guidance is released by a licensed clinician, never by the assistant.</span>
+    </div>
+  </aside>
+
+  <!-- =========================================================== inspector -->
+  <aside class="inspector" aria-label="Basis and audit">
+    <section class="card" aria-labelledby="in-h">
+      <div class="card-head">
+        <h2 id="in-h">What the patient said</h2>
+        <span class="card-note" data-intake-note></span>
+      </div>
+      <div class="card-body">
+        <div class="intake" data-intake></div>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="why-h">
+      <div class="card-head">
+        <h2 id="why-h">Why this level</h2>
+      </div>
+      <div class="card-body">
+        <div class="basis" data-basis></div>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="aud-h">
+      <div class="card-head">
+        <h2 id="aud-h">Audit trail</h2>
+        <span class="card-note">Who did what</span>
+      </div>
+      <div class="card-body">
+        <ul class="audit" data-audit></ul>
+      </div>
+    </section>
+  </aside>
+</div>
+
+<footer class="footer">
+  <div class="built">
+    <span>Built with</span>
+    <span class="svc-chip">Azure OpenAI in Azure AI Foundry Models</span>
+    <span class="svc-chip">Azure AI Bot Service</span>
+    <span class="svc-chip">Azure Communication Services</span>
+    <span class="svc-chip">Azure App Service</span>
+  </div>
+  <p class="claim">Intelligent triage steers patients to the right setting and has been shown to cut ER visits by <b>roughly 20 percent</b>; expands telehealth capacity and improves access without adding staff.</p>
+</footer>
+
+<!-- ================================================================ dialogs -->
+<dialog data-dialog aria-labelledby="dlg-h">
+  <form method="dialog">
+    <div class="dlg-head">
+      <div>
+        <h2 id="dlg-h" data-dlg-title>Release this disposition</h2>
+        <span class="dlg-sub" data-dlg-sub></span>
+      </div>
+    </div>
+    <div class="dlg-body">
+      <dl class="meta-grid" data-dlg-meta></dl>
+      <div data-dlg-extra></div>
+      <label class="attest">
+        <input type="checkbox" data-dlg-attest>
+        <span data-dlg-attest-text></span>
+      </label>
+      <p class="dlg-error" role="alert" data-dlg-error></p>
+    </div>
+    <div class="dlg-foot">
+      <button type="button" class="btn" data-dlg-cancel>Cancel</button>
+      <button type="button" class="btn btn-primary" data-dlg-confirm>Release to patient</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------------------------------------------------------------- data */
+
+  var LEVELS = [
+    { name: 'Self-care at home', note: 'Symptom guidance and a watch list. No visit booked.' },
+    { name: 'Virtual visit today', note: 'Video visit with a Cascade clinician.' },
+    { name: 'In-person urgent care', note: 'Same-day urgent care slot within the network.' },
+    { name: 'Emergency department now', note: 'Immediate ER. Warm transfer to 911 offered.' }
+  ];
+
+  var SLOTS = ['14:40', '15:10', '16:00'];
+
+  var CASES = [
+    {
+      id: 'TRI-2211', kind: 'live',
+      name: 'Marisol Vance', age: '34', sex: 'F', mrn: 'SYN-8802-114',
+      chief: 'Sore throat and fever, 3 days',
+      channel: 'Patient app - symptom check', waited: '6 min',
+      proposed: 1, floor: 0, confidence: 'High',
+      protocol: { id: 'CHN-RESP-04', name: 'Sore Throat', ver: 'v3.2', by: 'Dr. Imani Osei, Medical Director, Virtual Care', eff: '12 Aug 2026' },
+      basis: 'Fever under 3 days with no airway red flags routes to a virtual visit under CHN-RESP-04.',
+      cues: [
+        { id: 'c1', label: 'fever 101.2 for 3 days', turn: 't2', phrase: 'temperature was 101.2', kind: 'sup' },
+        { id: 'c2', label: 'no airway compromise', turn: 't4', phrase: 'No trouble breathing', kind: 'sup' },
+        { id: 'c3', label: 'strep exposure at home', turn: 't6', phrase: 'My son had strep', kind: 'sup' }
+      ],
+      intake: [
+        { id: 't1', t: '13:58', spk: 'Assistant', text: 'What is bothering you today?' },
+        { id: 't2', t: '13:58', spk: 'Patient', text: 'My throat has hurt for three days and my temperature was 101.2 this morning.' },
+        { id: 't3', t: '13:59', spk: 'Assistant', text: 'Any trouble breathing or swallowing your own saliva?' },
+        { id: 't4', t: '13:59', spk: 'Patient', text: 'No trouble breathing. I can swallow fine, it just hurts.' },
+        { id: 't5', t: '14:00', spk: 'Assistant', text: 'Any rash, neck stiffness, or recent strep exposure?' },
+        { id: 't6', t: '14:00', spk: 'Patient', text: 'No rash. My son had strep two weeks ago.' }
+      ]
+    },
+    {
+      id: 'TRI-2212', kind: 'live',
+      name: 'Grant Delacroix', age: '58', sex: 'M', mrn: 'SYN-8802-119',
+      chief: 'Heartburn since lunch',
+      channel: 'Nurse line - voice', waited: '2 min',
+      proposed: 3, floor: 3, confidence: 'High',
+      protocol: { id: 'CHN-CARD-01', name: 'Chest Pain and Cardiac Equivalents', ver: 'v5.0', by: 'Dr. Imani Osei, Medical Director, Virtual Care', eff: '01 Jul 2026' },
+      basis: 'The patient calls it heartburn, but three cardiac-equivalent cues are present in a 58-year-old male. CHN-CARD-01 pins the floor at the emergency department.',
+      selfDesc: 'Patient describes this as indigestion. The protocol does not accept a patient\u2019s own label as a reason to lower the level.',
+      cues: [
+        { id: 'c1', label: 'left arm heaviness', turn: 't4', phrase: 'My left arm feels heavy', kind: 'flag' },
+        { id: 'c2', label: 'diaphoresis', turn: 't4', phrase: 'sweating a lot', kind: 'flag' },
+        { id: 'c3', label: 'exertional dyspnea', turn: 't5', phrase: 'short of breath going up the stairs', kind: 'flag' }
+      ],
+      intake: [
+        { id: 't1', t: '14:03', spk: 'Assistant', text: 'What is bothering you today?' },
+        { id: 't2', t: '14:03', spk: 'Patient', text: 'Just bad heartburn since lunch. I took an antacid and it did not touch it.' },
+        { id: 't3', t: '14:04', spk: 'Assistant', text: 'Does the discomfort travel anywhere?' },
+        { id: 't4', t: '14:04', spk: 'Patient', text: 'My left arm feels heavy, and I have been sweating a lot. Probably the heat.' },
+        { id: 't5', t: '14:05', spk: 'Patient', text: 'I did get short of breath going up the stairs earlier, which is not like me.' },
+        { id: 't6', t: '14:05', spk: 'Assistant', text: 'Staying with you. A nurse is joining this conversation now.' }
+      ]
+    },
+    {
+      id: 'TRI-2213', kind: 'abstain',
+      name: 'Theo Brightwater', age: '4', sex: 'M', mrn: 'SYN-8802-121',
+      chief: 'Intake not finished',
+      channel: 'Patient app - symptom check', waited: '11 min',
+      proposed: null, floor: 0, confidence: 'Not proposed',
+      protocol: { id: 'CHN-PEDS-00', name: 'Pediatric intake', ver: 'v2.1', by: 'Dr. Imani Osei, Medical Director, Virtual Care', eff: '05 Sep 2026' },
+      basis: 'Intake stopped at 40 percent. Required pediatric fields for weight, fluid intake, and breathing effort were never answered, so no level was proposed.',
+      cues: [],
+      intake: [
+        { id: 't1', t: '13:52', spk: 'Assistant', text: 'Who is this visit for?' },
+        { id: 't2', t: '13:52', spk: 'Caregiver', text: 'My son, he is 4. He has been pulling at his ear and crying.' },
+        { id: 't3', t: '13:53', spk: 'Assistant', text: 'Has he had any fever, and how much has he had to drink today?' },
+        { id: 't4', t: '13:56', spk: 'System', text: 'Session ended before the caregiver answered. Pediatric intake incomplete.' }
+      ]
+    },
+    {
+      id: 'TRI-2209', kind: 'closed',
+      name: 'Ruth Kimani', age: '71', sex: 'F', mrn: 'SYN-8802-108',
+      chief: 'Medication question, released 13:12',
+      channel: 'Patient app - symptom check', waited: '\u2014',
+      proposed: 0, floor: 0, confidence: 'High',
+      protocol: { id: 'CHN-MED-02', name: 'Medication Question', ver: 'v1.4', by: 'Dr. Imani Osei, Medical Director, Virtual Care', eff: '20 Jun 2026' },
+      basis: 'Released as self-care with a pharmacist message by Renata Alvarez, RN at 13:12.',
+      cues: [],
+      intake: [
+        { id: 't1', t: '13:08', spk: 'Patient', text: 'Can I take my blood pressure pill at night instead of the morning?' },
+        { id: 't2', t: '13:09', spk: 'Assistant', text: 'Routing this to a pharmacist message with your medication list attached.' }
+      ]
+    }
+  ];
+
+  var BASE_AUDIT = [
+    { t: '13:58', who: 'Intake assistant', sys: true, what: 'collected symptom intake over the patient app.' },
+    { t: '14:00', who: 'Triage model', sys: true, what: 'proposed a level of care from the governed protocol set.' },
+    { t: '14:00', who: 'Protocol engine', sys: true, what: 'applied the red-flag floor and locked lower levels.' },
+    { t: '14:01', who: 'Queue', sys: true, what: 'placed the case in the nurse review queue.' }
+  ];
+
+  /* --------------------------------------------------------------- state */
+
+  var state, dlgMode, SAVED;
+
+  /* Each case carries its own working record. Capacity and the pilot ledger are
+     organisation-wide, so they stay on state and survive a case switch. */
+  var WORK_KEYS = ['level', 'slot', 'released', 'override', 'pendingLevel', 'callback', 'cue', 'status', 'audit'];
+
+  function blankWork() {
+    return {
+      level: null, slot: null, released: false, override: null, pendingLevel: null,
+      callback: false, cue: null, status: '', audit: BASE_AUDIT.slice()
+    };
+  }
+
+  function stashWork() {
+    var o = {};
+    WORK_KEYS.forEach(function (k) { o[k] = state[k]; });
+    SAVED[state.caseId] = o;
+  }
+
+  function loadWork(id) {
+    var o = SAVED[id] || blankWork();
+    WORK_KEYS.forEach(function (k) { state[k] = o[k]; });
+    state.caseId = id;
+  }
+
+  function reset() {
+    SAVED = {};
+    state = { caseId: 'TRI-2211', capOpen: 6, ledger: 41 };
+    loadWork('TRI-2211');
+    dlgMode = 'release';
+  }
+
+  /* ------------------------------------------------------------- helpers */
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined && text !== null) n.textContent = text;
+    return n;
+  }
+  function q(sel) { return document.querySelector(sel); }
+  function current() {
+    for (var i = 0; i < CASES.length; i++) { if (CASES[i].id === state.caseId) return CASES[i]; }
+    return CASES[0];
+  }
+  function say(msg) { state.status = msg; }
+  function pushAudit(who, what, human) {
+    var mins = 7 + state.audit.length;
+    var stamp = '14:' + (mins < 10 ? '0' + mins : mins);
+    state.audit = state.audit.concat([{ t: stamp, who: who, sys: !human, what: what }]);
+    return stamp;
+  }
+  /* Re-rendering replaces nodes, so focus has to be put back deliberately. */
+  function refocus(sel) {
+    var n = q(sel);
+    if (n) n.focus();
+  }
+
+  /* -------------------------------------------------------------- render */
+
+  function renderQueue() {
+    var ul = q('[data-queue]');
+    ul.textContent = '';
+    var waiting = 0;
+    CASES.forEach(function (c) {
+      if (c.kind !== 'closed') waiting++;
+      var li = el('li');
+      var b = el('button', 'q-item');
+      b.type = 'button';
+      b.dataset.case = c.id;
+      if (c.id === state.caseId) b.setAttribute('aria-current', 'true');
+
+      var top = el('div', 'q-top');
+      top.appendChild(el('span', 'q-name', c.name + ', ' + c.age + c.sex));
+      top.appendChild(el('span', 'q-id', c.id));
+      b.appendChild(top);
+      b.appendChild(el('div', 'q-line', c.chief));
+
+      var meta = el('div', 'q-line');
+      if (c.kind === 'closed') {
+        meta.appendChild(el('span', 'tag tag-ok', 'Released'));
+      } else if (c.kind === 'abstain') {
+        meta.appendChild(el('span', 'tag tag-warn', 'No level proposed'));
+      } else if (c.floor === 3) {
+        meta.appendChild(el('span', 'tag tag-stop', 'Red flag'));
+      } else {
+        meta.appendChild(el('span', 'tag', 'Waiting ' + c.waited));
+      }
+      b.appendChild(meta);
+      li.appendChild(b);
+      ul.appendChild(li);
+    });
+    q('[data-q-note]').textContent = waiting + ' open';
+  }
+
+  function renderCapacity() {
+    q('[data-cap-open]').textContent = String(state.capOpen);
+    q('[data-cap-next]').textContent = state.capOpen > 0 ? 'Next ' + SLOTS[0] : 'None left today';
+    q('[data-cap-fill]').style.width = Math.round((state.capOpen / 34) * 100) + '%';
+    q('[data-ledger]').textContent = String(state.ledger);
+  }
+
+  function renderPatient(c) {
+    var dl = q('[data-pt]');
+    dl.textContent = '';
+    [
+      ['Patient', c.name + ' \u00b7 ' + c.age + c.sex],
+      ['Record', c.mrn],
+      ['Reason for contact', c.chief],
+      ['Channel', c.channel]
+    ].forEach(function (row) {
+      dl.appendChild(el('dt', null, row[0]));
+      dl.appendChild(el('dd', null, row[1]));
+    });
+  }
+
+  function renderProposal(c) {
+    var box = q('[data-proposal]');
+    box.textContent = '';
+
+    if (c.proposed === null) {
+      var warn = el('div', 'notice notice-warn');
+      var w = el('div');
+      w.appendChild(el('b', null, 'No level proposed.'));
+      w.appendChild(el('span', 'notice-note', c.basis));
+      warn.appendChild(w);
+      box.appendChild(warn);
+      return;
+    }
+
+    var tone = c.floor === 3 ? 'notice notice-stop' : 'notice';
+    var n = el('div', tone);
+    var body = el('div');
+    body.appendChild(el('b', null, 'Assistant proposes: ' + LEVELS[c.proposed].name));
+    body.appendChild(el('span', 'notice-note', c.basis));
+    if (c.selfDesc) body.appendChild(el('span', 'notice-note', c.selfDesc));
+    n.appendChild(body);
+    box.appendChild(n);
+  }
+
+  function renderLadder(c) {
+    var ul = q('[data-ladder]');
+    ul.textContent = '';
+    if (c.proposed === null) {
+      var li0 = el('li');
+      li0.appendChild(el('p', 'card-note', 'The ladder stays empty until the intake is complete. A nurse callback collects the missing pediatric fields.'));
+      ul.appendChild(li0);
+      return;
+    }
+
+    for (var i = LEVELS.length - 1; i >= 0; i--) {
+      if (i === c.floor - 1 && c.floor > 0) {
+        var mark = el('li');
+        var fm = el('div', 'floor-mark');
+        fm.appendChild(el('span', null, 'Protocol floor \u2014 ' + c.protocol.id + ' will not allow a lower level'));
+        mark.appendChild(fm);
+        ul.appendChild(mark);
+      }
+
+      var li = el('li');
+      var b = el('button', 'rung');
+      b.type = 'button';
+      b.dataset.level = String(i);
+      var locked = i < c.floor;
+      var readonly = c.kind === 'closed' || state.released;
+
+      b.setAttribute('aria-pressed', String(state.level === i));
+      if (locked) b.setAttribute('aria-disabled', 'true');
+      if (readonly) b.disabled = true;
+
+      b.appendChild(el('span', 'rung-dot'));
+
+      var mid = el('span');
+      mid.appendChild(el('span', 'rung-name', LEVELS[i].name));
+      mid.appendChild(el('span', 'rung-note', locked ? 'Locked by ' + c.protocol.id + '. A physician co-sign is required to go below the floor.' : LEVELS[i].note));
+      b.appendChild(mid);
+
+      var flags = el('span', 'rung-flags');
+      if (i === c.proposed) flags.appendChild(el('span', 'tag', 'Proposed'));
+      if (locked) flags.appendChild(el('span', 'tag tag-stop', 'Locked'));
+      b.appendChild(flags);
+
+      li.appendChild(b);
+      ul.appendChild(li);
+    }
+  }
+
+  function renderBooking(c) {
+    var box = q('[data-booking]');
+    box.textContent = '';
+    if (state.level !== 1 || state.released) return;
+
+    var head = el('h3');
+    head.style.cssText = 'margin:0 0 7px;font-size:13px;color:var(--muted);font-weight:600;';
+    head.textContent = 'Pick a virtual visit slot';
+    box.appendChild(head);
+
+    if (state.capOpen === 0) {
+      var none = el('div', 'notice notice-warn');
+      var nb = el('div');
+      nb.appendChild(el('b', null, 'No virtual slots left today.'));
+      nb.appendChild(el('span', 'notice-note', 'Offer the first slot tomorrow at 08:10, or move the patient to in-person urgent care.'));
+      none.appendChild(nb);
+      box.appendChild(none);
+      return;
+    }
+
+    var row = el('div', 'slots');
+    SLOTS.forEach(function (s) {
+      var b = el('button', 'chip');
+      b.type = 'button';
+      b.dataset.slot = s;
+      b.setAttribute('aria-pressed', String(state.slot === s));
+      b.textContent = s;
+      row.appendChild(b);
+    });
+    box.appendChild(row);
+  }
+
+  function renderIntake(c) {
+    var box = q('[data-intake]');
+    box.textContent = '';
+    q('[data-intake-note]').textContent = c.channel;
+
+    var active = null;
+    if (state.cue) {
+      c.cues.forEach(function (cu) { if (cu.id === state.cue) active = cu; });
+    }
+    var hit = active ? active.turn : null;
+
+    c.intake.forEach(function (turn) {
+      var row = el('div', 'turn' + (turn.id === hit ? ' is-hit' : ''));
+      row.dataset.turn = turn.id;
+      var t = el('time', null, turn.t);
+      row.appendChild(t);
+      var right = el('span');
+      right.appendChild(el('span', 'spk', turn.spk));
+      var txt = el('span', 'txt');
+      if (active && turn.id === hit && turn.text.indexOf(active.phrase) !== -1) {
+        var parts = turn.text.split(active.phrase);
+        txt.appendChild(document.createTextNode(parts[0]));
+        txt.appendChild(el('b', null, active.phrase));
+        txt.appendChild(document.createTextNode(parts.slice(1).join(active.phrase)));
+        row.classList.add('is-cue');
+      } else {
+        txt.textContent = turn.text;
+      }
+      right.appendChild(txt);
+      row.appendChild(right);
+      box.appendChild(row);
+    });
+  }
+
+  function renderBasis(c) {
+    var box = q('[data-basis]');
+    box.textContent = '';
+
+    var p = c.protocol;
+    var dl = el('dl', 'meta-grid');
+    [
+      ['Protocol', p.id + ' ' + p.name],
+      ['Version', p.ver + ', effective ' + p.eff],
+      ['Approved by', p.by],
+      ['Model confidence', c.confidence]
+    ].forEach(function (row) {
+      dl.appendChild(el('dt', null, row[0]));
+      dl.appendChild(el('dd', null, row[1]));
+    });
+    box.appendChild(dl);
+
+    if (c.cues.length) {
+      var lab = el('p', 'card-note');
+      lab.style.margin = '0';
+      lab.textContent = c.floor === 3 ? 'Red-flag cues that set the floor. Select one to find it in the intake.' : 'Cues the protocol matched. Select one to find it in the intake.';
+      box.appendChild(lab);
+
+      var wrap = el('div', 'cue-wrap');
+      c.cues.forEach(function (cu) {
+        var b = el('button', 'cue-btn');
+        b.type = 'button';
+        b.dataset.cue = cu.id;
+        b.setAttribute('aria-pressed', String(state.cue === cu.id));
+        b.textContent = (cu.kind === 'flag' ? '\u26a0 ' : '') + cu.label;
+        wrap.appendChild(b);
+      });
+      box.appendChild(wrap);
+    }
+
+    var gov = el('div', 'rule');
+    gov.appendChild(el('span', null, 'The model may only return one of the four protocol levels. It cannot invent a disposition, and it cannot return a level below the floor.'));
+    box.appendChild(gov);
+
+    if (state.override) {
+      var ov = el('div', 'notice notice-warn');
+      var ob = el('div');
+      ob.appendChild(el('b', null, 'Override sent for physician co-sign.'));
+      ob.appendChild(el('span', 'notice-note', 'Requested level: ' + LEVELS[state.override.level].name + '. Reason: ' + state.override.reason));
+      ob.appendChild(el('span', 'notice-note', 'Pending with Dr. Elias Ferrand, on-call. The floor stays in force until a physician signs.'));
+      ov.appendChild(ob);
+      box.appendChild(ov);
+    }
+  }
+
+  function renderAudit() {
+    var ul = q('[data-audit]');
+    ul.textContent = '';
+    state.audit.forEach(function (row) {
+      var li = el('li');
+      li.appendChild(el('time', null, row.t));
+      var span = el('span');
+      var who = el('span', 'actor ' + (row.sys ? 'is-system' : 'is-human'), row.who);
+      span.appendChild(who);
+      span.appendChild(document.createTextNode(' ' + row.what));
+      li.appendChild(span);
+      ul.appendChild(li);
+    });
+  }
+
+  function renderAlt(c) {
+    var live = c.kind !== 'closed';
+    q('[data-case-card]').hidden = !live;
+    q('[data-alt-card]').hidden = live;
+    if (live) return;
+
+    q('[data-alt-title]').textContent = 'This case is already closed';
+    var n = q('[data-alt-notice]');
+    n.className = 'notice notice-ok';
+    n.textContent = '';
+    var b = el('div');
+    b.appendChild(el('b', null, 'Released as self-care at 13:12.'));
+    b.appendChild(el('span', 'notice-note', c.basis));
+    n.appendChild(b);
+
+    var dl = q('[data-alt-facts]');
+    dl.textContent = '';
+    [
+      ['Patient', c.name + ' \u00b7 ' + c.age + c.sex],
+      ['Disposition', LEVELS[c.proposed].name],
+      ['Released by', 'Renata Alvarez, RN'],
+      ['Protocol', c.protocol.id + ' ' + c.protocol.ver]
+    ].forEach(function (row) {
+      dl.appendChild(el('dt', null, row[0]));
+      dl.appendChild(el('dd', null, row[1]));
+    });
+  }
+
+  function renderFoot(c) {
+    var tag = q('[data-case-state]');
+    var rel = q('[data-release]');
+    var cb = q('[data-callback]');
+
+    cb.hidden = c.kind !== 'abstain';
+    rel.hidden = c.kind === 'abstain';
+
+    if (c.kind === 'abstain') {
+      tag.className = 'tag tag-warn';
+      tag.textContent = state.callback ? 'Callback queued' : 'Needs a nurse';
+      q('[data-status]').textContent = state.status || 'The assistant did not propose a level. A nurse has to finish the intake by phone.';
+      cb.disabled = state.callback;
+      cb.textContent = state.callback ? 'Callback queued' : 'Queue nurse callback';
+      return;
+    }
+
+    if (state.released) {
+      tag.className = 'tag tag-ok';
+      tag.textContent = 'Released to patient';
+      rel.disabled = true;
+      rel.textContent = 'Released';
+    } else {
+      tag.className = 'tag';
+      tag.textContent = 'Not released';
+      rel.disabled = !canRelease(c);
+      rel.textContent = 'Release to patient';
+    }
+    q('[data-status]').textContent = state.status || defaultStatus(c);
+  }
+
+  function canRelease(c) {
+    if (state.released || c.kind !== 'live') return false;
+    if (state.level === null) return false;
+    if (state.level === 1 && !state.slot) return false;
+    return true;
+  }
+
+  function defaultStatus(c) {
+    if (state.level === null) return 'Choose the level of care you are releasing. The proposal is not applied until you pick it.';
+    if (state.level === 1 && !state.slot) return 'Pick a virtual visit slot to finish the booking.';
+    return 'Ready to release ' + LEVELS[state.level].name.toLowerCase() + ' to ' + c.name + '.';
+  }
+
+  function renderAll() {
+    var c = current();
+    renderQueue();
+    renderCapacity();
+    renderAlt(c);
+    if (c.kind !== 'closed') {
+      renderPatient(c);
+      renderProposal(c);
+      renderLadder(c);
+      renderBooking(c);
+      renderFoot(c);
+    }
+    renderIntake(c);
+    renderBasis(c);
+    renderAudit();
+  }
+
+  /* ------------------------------------------------------------- dialogs */
+
+  var dlg = q('[data-dialog]');
+
+  function openDialog(mode) {
+    var c = current();
+    dlgMode = mode;
+    q('[data-dlg-error]').textContent = '';
+    q('[data-dlg-attest]').checked = false;
+
+    var meta = q('[data-dlg-meta]');
+    meta.textContent = '';
+    var extra = q('[data-dlg-extra]');
+    extra.textContent = '';
+
+    if (mode === 'override') {
+      q('[data-dlg-title]').textContent = 'Request a level below the protocol floor';
+      q('[data-dlg-sub]').textContent = c.protocol.id + ' pins this case at ' + LEVELS[c.floor].name + '.';
+      q('[data-dlg-confirm]').textContent = 'Send for physician co-sign';
+      q('[data-dlg-attest-text]').textContent = 'I understand this does not change the patient\u2019s instruction now. The emergency instruction stands until a physician signs.';
+
+      [
+        ['Patient', c.name + ' \u00b7 ' + c.age + c.sex],
+        ['Protocol floor', LEVELS[c.floor].name],
+        ['Requested level', LEVELS[state.pendingLevel].name],
+        ['Goes to', 'Dr. Elias Ferrand, on-call physician']
+      ].forEach(function (row) {
+        meta.appendChild(el('dt', null, row[0]));
+        meta.appendChild(el('dd', null, row[1]));
+      });
+
+      var stop = el('div', 'notice notice-stop');
+      var sb = el('div');
+      sb.appendChild(el('b', null, 'The patient keeps the emergency instruction while this is pending.'));
+      sb.appendChild(el('span', 'notice-note', 'Lowering a red-flag case is a physician decision, not a nurse decision. Nothing about the patient\u2019s guidance changes when you send this.'));
+      stop.appendChild(sb);
+      extra.appendChild(stop);
+
+      var f = el('div', 'field');
+      var lab = el('label', null, 'Why is a lower level clinically appropriate? Required.');
+      lab.setAttribute('for', 'ov-reason');
+      var ta = el('textarea');
+      ta.id = 'ov-reason';
+      ta.setAttribute('data-dlg-reason', '');
+      ta.placeholder = 'Document what you assessed that the protocol could not see.';
+      f.appendChild(lab);
+      f.appendChild(ta);
+      extra.appendChild(f);
+    } else {
+      q('[data-dlg-title]').textContent = 'Release this disposition';
+      q('[data-dlg-sub]').textContent = 'This is what the patient will receive.';
+      q('[data-dlg-confirm]').textContent = 'Release to patient';
+      q('[data-dlg-attest-text]').textContent = 'I reviewed the intake and I am the clinician accountable for this disposition.';
+
+      var rows = [
+        ['Patient', c.name + ' \u00b7 ' + c.age + c.sex],
+        ['Level of care', LEVELS[state.level].name],
+        ['Protocol', c.protocol.id + ' ' + c.protocol.ver],
+        ['Released by', 'Renata Alvarez, RN']
+      ];
+      if (state.slot) rows.push(['Visit time', 'Today ' + state.slot]);
+      rows.forEach(function (row) {
+        meta.appendChild(el('dt', null, row[0]));
+        meta.appendChild(el('dd', null, row[1]));
+      });
+
+      var sends = el('div', 'rule');
+      sends.appendChild(el('span', null, state.level === 1
+        ? 'The patient gets a secure message and a text with the visit link. The link opens a browser video visit; no app install is required.'
+        : 'The patient gets a secure message with the instruction and what to watch for.'));
+      extra.appendChild(sends);
+    }
+
+    if (typeof dlg.showModal === 'function') dlg.showModal();
+  }
+
+  function closeDialog(msg) {
+    if (dlg.open) dlg.close();
+    if (msg) { say(msg); renderAll(); }
+  }
+
+  /* -------------------------------------------------------------- events */
+
+  document.addEventListener('click', function (ev) {
+    var t = ev.target;
+    var c = current();
+
+    var queueBtn = t.closest ? t.closest('[data-case]') : null;
+    if (queueBtn) {
+      if (queueBtn.dataset.case === state.caseId) return;
+      stashWork();
+      loadWork(queueBtn.dataset.case);
+      renderAll();
+      return;
+    }
+
+    var rung = t.closest ? t.closest('[data-level]') : null;
+    if (rung) {
+      var lvl = Number(rung.dataset.level);
+      if (rung.getAttribute('aria-disabled') === 'true') {
+        state.pendingLevel = lvl;
+        say('That level is below the protocol floor for this case.');
+        renderAll();
+        openDialog('override');
+        return;
+      }
+      state.level = lvl;
+      if (lvl !== 1) state.slot = null;
+      say('');
+      renderAll();
+      refocus('[data-level="' + lvl + '"]');
+      return;
+    }
+
+    var slot = t.closest ? t.closest('[data-slot]') : null;
+    if (slot) {
+      state.slot = slot.dataset.slot;
+      say('');
+      renderAll();
+      refocus('[data-slot="' + state.slot + '"]');
+      return;
+    }
+
+    var cue = t.closest ? t.closest('[data-cue]') : null;
+    if (cue) {
+      state.cue = state.cue === cue.dataset.cue ? null : cue.dataset.cue;
+      renderAll();
+      refocus('[data-cue="' + cue.dataset.cue + '"]');
+      return;
+    }
+
+    if (t.closest && t.closest('[data-release]')) { openDialog('release'); return; }
+    if (t.closest && t.closest('[data-alt-back]')) { stashWork(); loadWork('TRI-2211'); renderAll(); return; }
+
+    if (t.closest && t.closest('[data-callback]')) {
+      state.callback = true;
+      pushAudit('Renata Alvarez, RN', 'queued a callback to finish the pediatric intake.', true);
+      say('Callback queued. The intake stays open until a nurse completes it by phone.');
+      renderAll();
+      return;
+    }
+
+    if (t.closest && t.closest('[data-reset]')) {
+      reset();
+      renderAll();
+      refocus('[data-reset]');
+      return;
+    }
+
+    if (t.closest && t.closest('[data-dlg-cancel]')) {
+      closeDialog(dlgMode === 'override' ? 'Override cancelled. The emergency instruction stands.' : 'Nothing was sent to the patient.');
+      return;
+    }
+
+    if (t.closest && t.closest('[data-dlg-confirm]')) {
+      var attest = q('[data-dlg-attest]');
+      if (!attest.checked) {
+        q('[data-dlg-error]').textContent = dlgMode === 'override'
+          ? 'Confirm that you understand the emergency instruction stays in force.'
+          : 'Confirm that you reviewed the intake and are the accountable clinician.';
+        return;
+      }
+
+      if (dlgMode === 'override') {
+        var reason = q('[data-dlg-reason]');
+        if (!reason || !reason.value.trim()) {
+          q('[data-dlg-error]').textContent = 'A written clinical reason is required before a physician can review this.';
+          return;
+        }
+        state.override = { level: state.pendingLevel, reason: reason.value.trim() };
+        pushAudit('Renata Alvarez, RN', 'requested a level below the protocol floor and sent it for physician co-sign.', true);
+        pushAudit('Protocol engine', 'kept the emergency instruction in force pending co-sign.', false);
+        closeDialog('Sent to Dr. Elias Ferrand for co-sign. The patient still has the emergency instruction.');
+        return;
+      }
+
+      state.released = true;
+      if (state.level === 1) {
+        state.capOpen = Math.max(0, state.capOpen - 1);
+        state.ledger = state.ledger + 1;
+      }
+      var at = pushAudit('Renata Alvarez, RN', 'released ' + LEVELS[state.level].name.toLowerCase() + ' to the patient.', true);
+      if (state.level === 1) pushAudit('Communication service', 'sent the secure message and the visit link by text.', false);
+      closeDialog('Released at ' + at + '. ' + c.name + ' has ' + LEVELS[state.level].name.toLowerCase() +
+        (state.slot ? ' booked for ' + state.slot + '.' : '.'));
+      return;
+    }
+  });
+
+  /* <dialog> cancel does not always fire, so Escape is handled explicitly. */
+  dlg.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape') {
+      ev.preventDefault();
+      closeDialog(dlgMode === 'override' ? 'Override cancelled. The emergency instruction stands.' : 'Nothing was sent to the patient.');
+    }
+  });
+
+  dlg.addEventListener('change', function () {
+    q('[data-dlg-error]').textContent = '';
+  });
+
+  reset();
+  renderAll();
+})();
+</script>
+</body>
+</html>
